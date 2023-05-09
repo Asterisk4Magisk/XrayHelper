@@ -1,0 +1,11 @@
+xrayHelper:
+    xray: /data/adb/xray/bin/xray
+proxy:
+    enableIPv6: false
+    uidList:
+        - 10254
+        - 10255
+        - 10256
+    apList:
+        - wlan2
+        - rndis0
