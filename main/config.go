@@ -1,6 +1,6 @@
 package main
 
-type Config struct {
+var Config struct {
 	XrayHelper struct {
 		Busybox       string `yaml:"busybox"`
 		Xray          string `yaml:"xray"`

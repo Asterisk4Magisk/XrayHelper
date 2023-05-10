@@ -1,39 +1,39 @@
 package main
 
 import (
-	"flag"
+	"XrayHelper/main/utils"
 	"fmt"
-	"github.com/creasty/defaults"
-	"gopkg.in/yaml.v3"
-	"os"
+	"github.com/jessevdk/go-flags"
 )
 
-var (
-	configPath  string
-	startXray   bool
-	showVersion bool
-)
+var Option struct {
+	VerboseFlag bool           `long:"verbose" description:"show verbose debug information"`
+	VersionFlag bool           `short:"v" long:"version" description:"show current version"`
+	Service     ServiceCommand `command:"service"`
+	Tproxy      TproxyCommand  `command:"tproxy"`
+}
 
 func main() {
-	fmt.Println(VersionStatement())
-	flag.BoolVar(&showVersion, "v", false, "show version")
-	flag.StringVar(&configPath, "c", "./config.yaml", "config file path")
-	flag.Parse()
-	if startXray {
-		fmt.Println(Version())
-		return
-	}
-	configFile, err := os.ReadFile(configPath)
+	utils.Verbose = &Option.VerboseFlag
+	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
+	_, err := parser.Parse()
 	if err != nil {
-		panic(err)
+		if _, ok := err.(*flags.Error); ok {
+			typ := err.(*flags.Error).Type
+			if typ == flags.ErrCommandRequired {
+				if Option.VersionFlag {
+					fmt.Println(Version())
+				}
+				err = nil
+			}
+			if typ == flags.ErrHelp {
+				fmt.Println(VersionStatement())
+				fmt.Println(err.Error())
+				err = nil
+			}
+			utils.HandleError(err)
+		} else {
+			utils.HandleError(err)
+		}
 	}
-	var config Config
-	if err := defaults.Set(&config); err != nil {
-		panic(err)
-	}
-	if err := yaml.Unmarshal(configFile, &config); err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", config.XrayHelper)
-	fmt.Printf("%+v\n", config.Proxy)
 }
