@@ -2,7 +2,6 @@ package builds
 
 import (
 	"XrayHelper/main/utils"
-	"fmt"
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -29,18 +28,15 @@ var Config struct {
 func LoadConfig() error {
 	configFile, err := os.ReadFile(*ConfigFilePath)
 	if err != nil {
-		utils.HandleError(err)
 		return err
 	}
 	if err := defaults.Set(&Config); err != nil {
-		utils.HandleError(err)
 		return err
 	}
 	if err := yaml.Unmarshal(configFile, &Config); err != nil {
-		utils.HandleError(err)
 		return err
 	}
-	fmt.Printf("%+v\n", Config.XrayHelper)
-	fmt.Printf("%+v\n", Config.Proxy)
+	utils.HandleDebug(Config.XrayHelper)
+	utils.HandleDebug(Config.Proxy)
 	return nil
 }

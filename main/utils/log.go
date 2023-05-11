@@ -8,18 +8,25 @@ import (
 
 var Verbose *bool
 
-func HandleError(err error) {
-	if err != nil {
-		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", ToString(err))
+func HandleError(v interface{}) {
+	str := ToString(v)
+	if str != "" {
+		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", str)
 	}
 }
 
-func HandleInfo(str string) {
-	fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.GreenString("INFO"), ":", str)
+func HandleInfo(v interface{}) {
+	str := ToString(v)
+	if str != "" {
+		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.GreenString("INFO"), ":", str)
+	}
 }
 
-func HandleDebug(str string) {
+func HandleDebug(v interface{}) {
 	if *Verbose {
-		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.BlueString("DEBUG"), ":", str)
+		str := ToString(v)
+		if str != "" {
+			fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.BlueString("DEBUG"), ":", str)
+		}
 	}
 }

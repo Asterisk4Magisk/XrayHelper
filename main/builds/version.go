@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	Version_x byte = 0
-	Version_y byte = 0
-	Version_z byte = 1
-	build          = "-debug"
+	VersionX byte = 0
+	VersionY byte = 0
+	VersionZ byte = 1
+	build         = "-debug"
 )
 
 func Version() string {
-	return fmt.Sprintf("%v.%v.%v", Version_x, Version_y, Version_z)
+	return fmt.Sprintf("%v.%v.%v", VersionX, VersionY, VersionZ)
 }
 
 func VersionStatement() string {

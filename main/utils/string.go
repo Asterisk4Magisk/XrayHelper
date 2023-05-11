@@ -10,7 +10,6 @@ func ToString(v interface{}) string {
 	if v == nil {
 		return ""
 	}
-
 	switch value := v.(type) {
 	case string:
 		return value
