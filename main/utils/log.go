@@ -10,7 +10,7 @@ var Verbose *bool
 
 func HandleError(err error) {
 	if err != nil {
-		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", err.Error())
+		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", ToString(err))
 	}
 }
 

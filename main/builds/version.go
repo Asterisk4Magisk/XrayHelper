@@ -1,4 +1,4 @@
-package main
+package builds
 
 import (
 	"XrayHelper/main/utils"
