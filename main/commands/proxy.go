@@ -7,9 +7,8 @@ import (
 )
 
 type ProxyCommand struct {
-	ConfigPath string `short:"c" long:"config" default:"./config.yml" description:"specify configuration file"`
-	Args       []string
-	Result     int64
+	Args   []string
+	Result int64
 }
 
 func (this *ProxyCommand) Execute(args []string) error {
