@@ -10,8 +10,8 @@ import (
 
 var Option struct {
 	ConfigFilePath string                  `short:"c" long:"config" default:"./config.yml" description:"specify configuration file"`
-	VerboseFlag    bool                    `long:"verbose" description:"show verbose debug information"`
-	VersionFlag    bool                    `short:"v" long:"version" description:"show current version"`
+	VerboseFlag    bool                    `short:"v" long:"verbose" description:"show verbose debug information"`
+	VersionFlag    bool                    `short:"V" long:"version" description:"show current version"`
 	Service        commands.ServiceCommand `command:"service" description:"control xray service"`
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
 }
