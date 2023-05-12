@@ -6,11 +6,12 @@ import (
 	"runtime"
 )
 
-var (
+const (
 	VersionX byte = 0
 	VersionY byte = 0
 	VersionZ byte = 1
-	build         = "-debug"
+	Build         = "-debug"
+	Intro         = "An xray helper for Android to control system proxy."
 )
 
 func Version() string {
@@ -18,5 +19,9 @@ func Version() string {
 }
 
 func VersionStatement() string {
-	return utils.Concat("XrayHelper ", Version(), build, " (", runtime.Version(), " ", runtime.GOOS, "/", runtime.GOARCH, ")")
+	return utils.Concat("XrayHelper ", Version(), Build, " (", runtime.Version(), " ", runtime.GOOS, "/", runtime.GOARCH, ")")
+}
+
+func IntroStatement() string {
+	return Intro
 }

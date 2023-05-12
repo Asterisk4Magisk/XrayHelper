@@ -6,6 +6,7 @@ import (
 	"XrayHelper/main/utils"
 	"fmt"
 	"github.com/jessevdk/go-flags"
+	"os"
 )
 
 var Option struct {
@@ -17,6 +18,11 @@ var Option struct {
 }
 
 func LoadOption() {
+	if len(os.Args) == 1 {
+		fmt.Println(builds.VersionStatement())
+		fmt.Println(builds.IntroStatement())
+		return
+	}
 	utils.Verbose = &Option.VerboseFlag
 	builds.ConfigFilePath = &Option.ConfigFilePath
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
