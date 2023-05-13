@@ -6,10 +6,7 @@ import (
 	"XrayHelper/main/log"
 )
 
-type ProxyCommand struct {
-	Args   []string
-	Result int64
-}
+type ProxyCommand struct{}
 
 func (this *ProxyCommand) Execute(args []string) error {
 	err := builds.LoadConfig()
@@ -36,7 +33,5 @@ func (this *ProxyCommand) Execute(args []string) error {
 	default:
 		return errors.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
-	this.Result = 0
-	this.Args = args
 	return nil
 }

@@ -6,10 +6,7 @@ import (
 	"XrayHelper/main/log"
 )
 
-type ServiceCommand struct {
-	Args   []string
-	Result int64
-}
+type ServiceCommand struct{}
 
 func (this *ServiceCommand) Execute(args []string) error {
 	err := builds.LoadConfig()
@@ -38,7 +35,5 @@ func (this *ServiceCommand) Execute(args []string) error {
 	default:
 		return errors.New("unknown operation " + args[0] + ", available operation [start|stop|restart|status]").WithPrefix("service").WithPathObj(*this)
 	}
-	this.Result = 0
-	this.Args = args
 	return nil
 }

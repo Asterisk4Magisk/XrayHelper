@@ -15,6 +15,7 @@ var Option struct {
 	VersionFlag    bool                    `short:"V" long:"version" description:"show current version"`
 	Service        commands.ServiceCommand `command:"service" description:"control xray service"`
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
+	Notify         commands.NotifyCommand  `command:"notify" description:"notify"`
 }
 
 // LoadOption load Option, the program entry
