@@ -11,7 +11,6 @@ var ConfigFilePath *string
 
 var Config struct {
 	XrayHelper struct {
-		Busybox       string `yaml:"busybox"`
 		Xray          string `yaml:"xray"`
 		XrayConfigDir string `yaml:"xrayConfigDir"`
 		RunDir        string `yaml:"runDir"`
@@ -20,7 +19,7 @@ var Config struct {
 		Method     string   `default:"tproxy" yaml:"method"`
 		EnableIPv6 bool     `default:"true" yaml:"enableIPv6"`
 		Mode       string   `default:"blacklist" yaml:"mode"`
-		UidList    []uint16 `yaml:"uidList"`
+		PkgList    []string `yaml:"pkgList"`
 		ApList     []string `yaml:"apList"`
 	} `yaml:"proxy"`
 }

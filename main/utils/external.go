@@ -14,6 +14,7 @@ type External interface {
 	Run()
 	Start()
 	Wait() error
+	Kill() error
 }
 
 type external struct {
@@ -53,11 +54,6 @@ func (this *external) Run() {
 
 func (this *external) Start() {
 	this.err = this.cmd.Start()
-	if this.timeout > 0 {
-		if this.ctx.Err() == context.DeadlineExceeded {
-			this.err = errors.New("command timed out")
-		}
-	}
 }
 
 func (this *external) Err() error {
@@ -75,4 +71,8 @@ func (this *external) Wait() error {
 		}
 	}
 	return err
+}
+
+func (this *external) Kill() error {
+	return this.cmd.Process.Kill()
 }

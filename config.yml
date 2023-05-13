@@ -2,10 +2,8 @@ xrayHelper:
     xray: /data/adb/xray/bin/xray
 proxy:
     enableIPv6: false
-    uidList:
-        - 10254
-        - 10255
-        - 10256
+    pkgList:
+        - com.android.vending
     apList:
         - wlan2
         - rndis0
