@@ -1,7 +1,7 @@
 package builds
 
 import (
-	"XrayHelper/main/utils"
+	"XrayHelper/main/log"
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -9,6 +9,7 @@ import (
 
 var ConfigFilePath *string
 
+// Config the program configuration, yml
 var Config struct {
 	XrayHelper struct {
 		Xray          string `yaml:"xray"`
@@ -24,6 +25,7 @@ var Config struct {
 	} `yaml:"proxy"`
 }
 
+// LoadConfig load program configuration file, should be called before any command Execute
 func LoadConfig() error {
 	configFile, err := os.ReadFile(*ConfigFilePath)
 	if err != nil {
@@ -35,7 +37,7 @@ func LoadConfig() error {
 	if err := yaml.Unmarshal(configFile, &Config); err != nil {
 		return err
 	}
-	utils.HandleDebug(Config.XrayHelper)
-	utils.HandleDebug(Config.Proxy)
+	log.HandleDebug(Config.XrayHelper)
+	log.HandleDebug(Config.Proxy)
 	return nil
 }

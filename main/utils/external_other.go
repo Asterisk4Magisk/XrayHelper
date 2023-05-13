@@ -2,8 +2,9 @@
 
 package utils
 
-import "errors"
+import "XrayHelper/main/errors"
 
+// SetUidGid not implement
 func (this *external) SetUidGid(uid uint32, gid uint32) error {
-	return errors.New("SetUidGid: system not support")
+	return errors.New("system not support SetUidGid").WithPrefix("external_other").WithPathObj(*this)
 }

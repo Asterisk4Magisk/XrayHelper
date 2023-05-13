@@ -1,7 +1,7 @@
 package builds
 
 import (
-	"XrayHelper/main/utils"
+	"XrayHelper/main/serial"
 	"fmt"
 	"runtime"
 )
@@ -19,7 +19,7 @@ func Version() string {
 }
 
 func VersionStatement() string {
-	return utils.Concat("XrayHelper ", Version(), Build, " (", runtime.Version(), " ", runtime.GOOS, "/", runtime.GOARCH, ")")
+	return serial.Concat("XrayHelper ", Version(), Build, " (", runtime.Version(), " ", runtime.GOOS, "/", runtime.GOARCH, ")")
 }
 
 func IntroStatement() string {

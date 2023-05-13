@@ -1,6 +1,7 @@
-package utils
+package log
 
 import (
+	"XrayHelper/main/serial"
 	"fmt"
 	"github.com/fatih/color"
 	"time"
@@ -8,23 +9,26 @@ import (
 
 var Verbose *bool
 
+// HandleError record error log
 func HandleError(v interface{}) {
-	str := ToString(v)
+	str := serial.ToString(v)
 	if str != "" {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", str)
 	}
 }
 
+// HandleInfo record info log
 func HandleInfo(v interface{}) {
-	str := ToString(v)
+	str := serial.ToString(v)
 	if str != "" {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.GreenString("INFO"), ":", str)
 	}
 }
 
+// HandleDebug record debug log
 func HandleDebug(v interface{}) {
 	if *Verbose {
-		str := ToString(v)
+		str := serial.ToString(v)
 		if str != "" {
 			fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.BlueString("DEBUG"), ":", str)
 		}

@@ -2,8 +2,8 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
-	"XrayHelper/main/utils"
-	"errors"
+	"XrayHelper/main/errors"
+	"XrayHelper/main/log"
 )
 
 type ProxyCommand struct {
@@ -17,24 +17,24 @@ func (this *ProxyCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify proxy operation, available operation [enable|disable|refresh]")
+		return errors.New("proxy: not specify operation, available operation [enable|disable|refresh]")
 	}
 	if len(args) > 1 {
-		return errors.New("too many proxy arguments")
+		return errors.New("proxy: too many arguments")
 	}
-	utils.HandleInfo("current proxy method is " + builds.Config.Proxy.Method)
+	log.HandleInfo("proxy: current method is " + builds.Config.Proxy.Method)
 	switch args[0] {
 	case "enable":
-		utils.HandleInfo("enabling proxy rule")
+		log.HandleInfo("proxy: enabling rules")
 		//TODO
 	case "disable":
-		utils.HandleInfo("disabling proxy rule")
+		log.HandleInfo("proxy: disabling rules")
 		//TODO
 	case "refresh":
-		utils.HandleInfo("refreshing proxy rule")
+		log.HandleInfo("proxy: refreshing rules")
 		//TODO
 	default:
-		return errors.New("unknown proxy operation " + args[0] + ", available operation [enable|disable|refresh]")
+		return errors.New("proxy: unknown operation " + args[0] + ", available operation [enable|disable|refresh]")
 	}
 	this.Result = 0
 	this.Args = args

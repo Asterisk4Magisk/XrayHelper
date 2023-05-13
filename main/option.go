@@ -3,7 +3,7 @@ package main
 import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/commands"
-	"XrayHelper/main/utils"
+	"XrayHelper/main/log"
 	"fmt"
 	"github.com/jessevdk/go-flags"
 	"os"
@@ -17,13 +17,14 @@ var Option struct {
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
 }
 
+// LoadOption load Option, the program entry
 func LoadOption() {
 	if len(os.Args) == 1 {
 		fmt.Println(builds.VersionStatement())
 		fmt.Println(builds.IntroStatement())
 		return
 	}
-	utils.Verbose = &Option.VerboseFlag
+	log.Verbose = &Option.VerboseFlag
 	builds.ConfigFilePath = &Option.ConfigFilePath
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
 	_, err := parser.Parse()
@@ -41,9 +42,9 @@ func LoadOption() {
 				fmt.Println(err.Error())
 				err = nil
 			}
-			utils.HandleError(err)
+			log.HandleError(err)
 		} else {
-			utils.HandleError(err)
+			log.HandleError(err)
 		}
 	}
 }

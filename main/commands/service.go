@@ -2,8 +2,8 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
-	"XrayHelper/main/utils"
-	"errors"
+	"XrayHelper/main/errors"
+	"XrayHelper/main/log"
 )
 
 type ServiceCommand struct {
@@ -17,26 +17,26 @@ func (this *ServiceCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify service operation, available operation [start|stop|restart|status]")
+		return errors.New("service: not specify operation, available operation [start|stop|restart|status]")
 	}
 	if len(args) > 1 {
-		return errors.New("too many service arguments")
+		return errors.New("service: too many arguments")
 	}
 	switch args[0] {
 	case "start":
-		utils.HandleInfo("starting xray service")
+		log.HandleInfo("service: starting xray")
 		//TODO
 	case "stop":
-		utils.HandleInfo("stopping xray service")
+		log.HandleInfo("service: stopping xray")
 		//TODO
 	case "restart":
-		utils.HandleInfo("restarting xray service")
+		log.HandleInfo("service: restarting xray")
 		//TODO
 	case "status":
-		utils.HandleInfo("xray is running")
+		log.HandleInfo("service: xray is running")
 		//TODO
 	default:
-		return errors.New("unknown service operation " + args[0] + ", available operation [start|stop|restart|status]")
+		return errors.New("service: unknown operation " + args[0] + ", available operation [start|stop|restart|status]")
 	}
 	this.Result = 0
 	this.Args = args
