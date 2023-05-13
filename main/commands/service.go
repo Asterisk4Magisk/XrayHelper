@@ -17,7 +17,7 @@ func (this *ServiceCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("service: not specify operation, available operation [start|stop|restart|status]")
+		return errors.New("not specify operation, available operation [start|stop|restart|status]").WithPrefix("service").WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return errors.New("service: too many arguments")
@@ -36,7 +36,7 @@ func (this *ServiceCommand) Execute(args []string) error {
 		log.HandleInfo("service: xray is running")
 		//TODO
 	default:
-		return errors.New("service: unknown operation " + args[0] + ", available operation [start|stop|restart|status]")
+		return errors.New("unknown operation " + args[0] + ", available operation [start|stop|restart|status]").WithPrefix("service").WithPathObj(*this)
 	}
 	this.Result = 0
 	this.Args = args

@@ -17,7 +17,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("proxy: not specify operation, available operation [enable|disable|refresh]")
+		return errors.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return errors.New("proxy: too many arguments")
@@ -34,7 +34,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 		log.HandleInfo("proxy: refreshing rules")
 		//TODO
 	default:
-		return errors.New("proxy: unknown operation " + args[0] + ", available operation [enable|disable|refresh]")
+		return errors.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
 	this.Result = 0
 	this.Args = args
