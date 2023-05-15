@@ -56,6 +56,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 	return nil
 }
 
+// enableTproxy enable proxy(tproxy)
 func enableTproxy() error {
 	var retErr error
 	defer func() {
@@ -86,6 +87,7 @@ func enableTproxy() error {
 	return retErr
 }
 
+// disableTproxy disable proxy(tproxy)
 func disableTproxy() {
 	tproxy.DeleteRoute(false)
 	tproxy.CleanIptablesChain(false)

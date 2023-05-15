@@ -3,14 +3,13 @@ package utils
 import (
 	"XrayHelper/main/errors"
 	"net"
-	"strconv"
 	"time"
 )
 
 // CheckPort check whether the port is listening
-func CheckPort(protocol string, host string, port int) bool {
-	addr := net.JoinHostPort(host, strconv.Itoa(port))
-	conn, err := net.DialTimeout(protocol, addr, 3*time.Second)
+func CheckPort(protocol string, host string, port string) bool {
+	addr := net.JoinHostPort(host, port)
+	conn, err := net.DialTimeout(protocol, addr, 1*time.Second)
 	if err != nil {
 		return false
 	}
