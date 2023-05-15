@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/creasty/defaults v1.7.0
 	github.com/fatih/color v1.15.0
-	github.com/fsnotify/fsnotify v1.6.0
 	github.com/jessevdk/go-flags v1.5.0
 	gopkg.in/yaml.v3 v3.0.1
 )
