@@ -58,7 +58,7 @@ func DeleteRoute(ipv6 bool) {
 	} else {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
 	}
-	log.HandleDebug(outMsg)
+	log.HandleDebug(&outMsg)
 }
 
 // CreateProxyChain Create PROXY chain for local applications
