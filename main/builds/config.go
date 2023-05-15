@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const PackageListFilePath = "/data/system/packages.list"
+const packageListPath = "/data/system/packages.list"
 
 var ConfigFilePath *string
 var PackageMap = make(map[string]uint32)
@@ -25,7 +25,8 @@ var Config struct {
 	} `yaml:"xrayHelper"`
 	Proxy struct {
 		Method     string   `default:"tproxy" yaml:"method"`
-		EnableIPv6 bool     `default:"true" yaml:"enableIPv6"`
+		TproxyPort uint16   `default:"65535" yaml:"tproxyPort"`
+		EnableIPv6 bool     `default:"false" yaml:"enableIPv6"`
 		Mode       string   `default:"blacklist" yaml:"mode"`
 		PkgList    []string `yaml:"pkgList"`
 		ApList     []string `yaml:"apList"`
@@ -51,7 +52,7 @@ func LoadConfig() error {
 
 // LoadPackage load and parse Android package with uid list into a map
 func LoadPackage() error {
-	packageListFile, err := os.Open(PackageListFilePath)
+	packageListFile, err := os.Open(packageListPath)
 	if err != nil {
 		return errors.New("load package failed, ", err).WithPrefix("config")
 	}
