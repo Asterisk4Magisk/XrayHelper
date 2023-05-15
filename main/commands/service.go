@@ -35,6 +35,7 @@ func (this *ServiceCommand) Execute(args []string) error {
 		}
 		log.HandleInfo("service: xray is running, pid is " + getServicePid())
 	case "stop":
+		log.HandleInfo("service: stopping xray")
 		stopService()
 		log.HandleInfo("service: xray is stopped")
 	case "restart":
