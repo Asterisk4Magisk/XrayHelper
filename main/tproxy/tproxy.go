@@ -31,22 +31,22 @@ func AddRoute(ipv6 bool) error {
 	if !ipv6 {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "add", "fwmark", markId, "table", tableId).Run()
 		if outMsg.Len() > 0 {
-			return errors.New("add ip rule failed, ", &outMsg).WithPrefix("tproxy")
+			return errors.New("add ip rule failed, ", outMsg.String()).WithPrefix("tproxy")
 		}
 		outMsg.Reset()
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
 		if outMsg.Len() > 0 {
-			return errors.New("add ip route failed, ", &outMsg).WithPrefix("tproxy")
+			return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
 		}
 	} else {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "add", "fwmark", markId, "table", tableId).Run()
 		if outMsg.Len() > 0 {
-			return errors.New("add ip rule failed, ", &outMsg).WithPrefix("tproxy")
+			return errors.New("add ip rule failed, ", outMsg.String()).WithPrefix("tproxy")
 		}
 		outMsg.Reset()
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
 		if outMsg.Len() > 0 {
-			return errors.New("add ip route failed, ", &outMsg).WithPrefix("tproxy")
+			return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
 		}
 	}
 	return nil
