@@ -107,6 +107,8 @@ func status() string {
 	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid")); err != nil {
 		pidFile, _ := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir))
 		return string(pidFile)
+	} else {
+		log.HandleDebug(err)
 	}
 	return ""
 }
