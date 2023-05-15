@@ -60,7 +60,7 @@ func DeleteRoute(ipv6 bool) {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "del", "fwmark", markId, "table", tableId).Run()
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
 	}
-	log.HandleDebug(&outMsg)
+	log.HandleDebug(outMsg.String())
 }
 
 // CreateProxyChain Create PROXY chain for local applications
