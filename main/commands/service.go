@@ -41,7 +41,7 @@ func (this *ServiceCommand) Execute(args []string) error {
 		}
 	case "status":
 		pidStr := status()
-		if pidStr != "" {
+		if len(pidStr) > 0 {
 			log.HandleInfo("service: xray is running, pid is " + pidStr)
 		} else {
 			log.HandleInfo("service: xray is stopped")
