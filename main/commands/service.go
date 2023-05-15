@@ -97,11 +97,12 @@ func stopService() {
 		if err != nil {
 			log.HandleDebug(err)
 		}
-		log.HandleDebug(string(pidFile))
 		pid, _ := strconv.Atoi(string(pidFile))
-		if serviceProcess, err := os.FindProcess(pid); err != nil {
+		if serviceProcess, err := os.FindProcess(pid); err == nil {
 			_ = serviceProcess.Kill()
 			_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid"))
+		} else {
+			log.HandleDebug(err)
 		}
 	} else {
 		log.HandleDebug(err)
