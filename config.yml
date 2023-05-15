@@ -1,6 +1,7 @@
 xrayHelper:
     core: /data/adb/xray/bin/xray
     coreConfig: /data/adb/xray/confs/
+    baseDir: /data/adb/xray/
     runDir: /data/adb/xray/run
 proxy:
     method: tproxy

@@ -11,6 +11,7 @@ import (
 type External interface {
 	Err() error
 	SetUidGid(uid uint32, gid uint32) error
+	AppendEnv(env string)
 	Run()
 	Start()
 	Pid() int
@@ -25,6 +26,10 @@ type external struct {
 	cancel  context.CancelFunc
 	cmd     *exec.Cmd
 	err     error
+}
+
+func (this *external) AppendEnv(env string) {
+	this.cmd.Env = append(this.cmd.Env, env)
 }
 
 // NewExternal returns a new external object with cmd

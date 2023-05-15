@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"time"
 )
 
 var service utils.External
@@ -68,11 +69,13 @@ func startService() error {
 			service = utils.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.Core, "run", "-c", builds.Config.XrayHelper.CoreConfig)
 		}
 	}
+	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.BaseDir)
 	if err := service.SetUidGid(0, xrayGid); err != nil {
 		return err
 	}
 	service.Start()
 	for i := 0; i < 3; i++ {
+		time.Sleep(1 * time.Second)
 		if utils.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.TproxyPort) {
 			listenFlag = true
 			break
@@ -85,6 +88,7 @@ func startService() error {
 		}
 	} else {
 		_ = service.Kill()
+		log.HandleDebug(service.Err())
 		return errors.New("start xray service failed").WithPrefix("service")
 	}
 	return nil

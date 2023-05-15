@@ -20,6 +20,7 @@ var Config struct {
 	XrayHelper struct {
 		Core       string `yaml:"core"`
 		CoreConfig string `yaml:"coreConfig"`
+		BaseDir    string `yaml:"baseDir"`
 		RunDir     string `yaml:"runDir"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {
