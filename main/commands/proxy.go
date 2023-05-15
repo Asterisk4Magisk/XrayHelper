@@ -86,9 +86,9 @@ func enableTproxy() error {
 
 func disableTproxy() {
 	tproxy.DeleteRoute(false)
-	tproxy.CleanMangleChain(false)
+	tproxy.CleanIptablesChain(false)
 	if builds.Config.Proxy.EnableIPv6 {
 		tproxy.DeleteRoute(true)
-		tproxy.CleanMangleChain(true)
+		tproxy.CleanIptablesChain(true)
 	}
 }

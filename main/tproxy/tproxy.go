@@ -25,6 +25,7 @@ var (
 		"2001:10::/28", "2001:20::/28", "2001:db8::/32", "2002::/16", "fc00::/7", "fe80::/10", "ff00::/8"}
 )
 
+// AddRoute Add ip route to proxy
 func AddRoute(ipv6 bool) error {
 	var outMsg bytes.Buffer
 	if !ipv6 {
@@ -51,6 +52,7 @@ func AddRoute(ipv6 bool) error {
 	return nil
 }
 
+// DeleteRoute Delete ip route to proxy
 func DeleteRoute(ipv6 bool) {
 	var outMsg bytes.Buffer
 	if !ipv6 {
@@ -104,6 +106,13 @@ func CreateProxyChain(ipv6 bool) error {
 		for _, intraIp6 := range intraNet6 {
 			if err := currentIpt.Append("mangle", "PROXY", "-d", intraIp6, "-j", "RETURN"); err != nil {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+			}
+		}
+		if externalIPv6, err := utils.GetIPv6Addr(); err != nil && len(externalIPv6) > 0 {
+			for _, external := range externalIPv6 {
+				if err := currentIpt.Append("mangle", "PROXY", "-d", external, "-j", "RETURN"); err != nil {
+					return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+				}
 			}
 		}
 	}
@@ -165,6 +174,7 @@ func CreateProxyChain(ipv6 bool) error {
 	return nil
 }
 
+// CreateMangleChain Create XRAY chain for AP interface
 func CreateMangleChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := ipt
@@ -196,6 +206,13 @@ func CreateMangleChain(ipv6 bool) error {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 			}
 		}
+		if externalIPv6, err := utils.GetIPv6Addr(); err != nil && len(externalIPv6) > 0 {
+			for _, external := range externalIPv6 {
+				if err := currentIpt.Append("mangle", "XRAY", "-d", external, "-j", "RETURN"); err != nil {
+					return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
+				}
+			}
+		}
 	}
 	// mark all traffic
 	if err := currentIpt.Append("mangle", "XRAY", "-p", "tcp", "-m", "mark", "--mark", markId, "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", markId); err != nil {
@@ -220,7 +237,8 @@ func CreateMangleChain(ipv6 bool) error {
 	return nil
 }
 
-func CleanMangleChain(ipv6 bool) {
+// CleanIptablesChain Clean all changed iptables rules by XrayHelper
+func CleanIptablesChain(ipv6 bool) {
 	currentIpt := ipt
 	if ipv6 {
 		currentIpt = ipt6
