@@ -13,6 +13,9 @@ func (this *ProxyCommand) Execute(args []string) error {
 	if err := builds.LoadConfig(); err != nil {
 		return err
 	}
+	if err := builds.LoadPackage(); err != nil {
+		return err
+	}
 	if len(args) == 0 {
 		return errors.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
