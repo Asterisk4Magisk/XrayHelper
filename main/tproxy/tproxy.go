@@ -3,11 +3,10 @@ package tproxy
 import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/errors"
+	"XrayHelper/main/log"
 	"XrayHelper/main/utils"
 	"bytes"
 	"github.com/coreos/go-iptables/iptables"
-	"os"
-	"syscall"
 )
 
 const (
@@ -27,32 +26,39 @@ var (
 )
 
 func AddRoute(ipv6 bool) error {
-	opt := ""
-	if ipv6 {
-		opt = "-6"
-	}
-	outMsg := os.NewFile(uintptr(syscall.Stdout), os.DevNull)
-	var errMsg bytes.Buffer
-	utils.NewExternal(0, outMsg, &errMsg, "ip", opt, "rule", "add", "fwmark", markId, "table", tableId).Run()
-	if errMsg.Len() > 0 {
-		return errors.New("add ip rule failed, ", &errMsg).WithPrefix("tproxy")
-	}
-	errMsg.Reset()
-	utils.NewExternal(0, outMsg, &errMsg, "ip", opt, "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
-	if errMsg.Len() > 0 {
-		return errors.New("add ip route failed, ", &errMsg).WithPrefix("tproxy")
+	var outMsg bytes.Buffer
+	if !ipv6 {
+		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "add", "fwmark", markId, "table", tableId).Run()
+		if outMsg.Len() > 0 {
+			return errors.New("add ip rule failed, ", &outMsg).WithPrefix("tproxy")
+		}
+		outMsg.Reset()
+		utils.NewExternal(0, &outMsg, &outMsg, "ip", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
+		if outMsg.Len() > 0 {
+			return errors.New("add ip route failed, ", &outMsg).WithPrefix("tproxy")
+		}
+	} else {
+		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "add", "fwmark", markId, "table", tableId).Run()
+		if outMsg.Len() > 0 {
+			return errors.New("add ip rule failed, ", &outMsg).WithPrefix("tproxy")
+		}
+		outMsg.Reset()
+		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
+		if outMsg.Len() > 0 {
+			return errors.New("add ip route failed, ", &outMsg).WithPrefix("tproxy")
+		}
 	}
 	return nil
 }
 
 func DeleteRoute(ipv6 bool) {
-	opt := ""
-	if ipv6 {
-		opt = "-6"
+	var outMsg bytes.Buffer
+	if !ipv6 {
+		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "del", "fwmark", markId, "table", tableId).Run()
+	} else {
+		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
 	}
-	nullDev := os.NewFile(uintptr(syscall.Stdout), os.DevNull)
-	utils.NewExternal(0, nullDev, nullDev, "ip", opt, "rule", "del", "fwmark", markId, "table", tableId).Run()
-	utils.NewExternal(0, nullDev, nullDev, "ip", opt, "route", "flush", "table", tableId).Run()
+	log.HandleDebug(outMsg)
 }
 
 // CreateProxyChain Create PROXY chain for local applications
