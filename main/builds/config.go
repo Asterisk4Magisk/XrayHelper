@@ -3,12 +3,18 @@ package builds
 import (
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"bufio"
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v3"
 	"os"
+	"strconv"
+	"strings"
 )
 
+const PackageListFilePath = "/data/system/packages.list"
+
 var ConfigFilePath *string
+var PackageMap = make(map[string]uint32)
 
 // Config the program configuration, yml
 var Config struct {
@@ -40,5 +46,31 @@ func LoadConfig() error {
 	}
 	log.HandleDebug(Config.XrayHelper)
 	log.HandleDebug(Config.Proxy)
+	return nil
+}
+
+// LoadPackage load and parse Android package with uid list into a map
+func LoadPackage() error {
+	packageListFile, err := os.Open(PackageListFilePath)
+	if err != nil {
+		return errors.New("load package failed, ", err).WithPrefix("config")
+	}
+	packageScanner := bufio.NewScanner(packageListFile)
+	packageScanner.Split(bufio.ScanLines)
+	for packageScanner.Scan() {
+		packageInfo := strings.Fields(packageScanner.Text())
+		if len(packageInfo) >= 2 {
+			parseUint, err := strconv.ParseUint(packageInfo[1], 10, 32)
+			if err != nil {
+				return errors.New("parse package failed, ", err).WithPrefix("config")
+			}
+			PackageMap[packageInfo[0]] = uint32(parseUint)
+		}
+	}
+	err = packageListFile.Close()
+	if err != nil {
+		return errors.New("close package file failed, ", err).WithPrefix("config")
+	}
+	log.HandleDebug(PackageMap)
 	return nil
 }
