@@ -4,9 +4,7 @@ import (
 	"XrayHelper/main/errors"
 	"context"
 	"io"
-	"net"
 	"os/exec"
-	"strconv"
 	"time"
 )
 
@@ -87,20 +85,4 @@ func (this *external) Wait() error {
 
 func (this *external) Kill() error {
 	return this.cmd.Process.Kill()
-}
-
-// CheckPort check whether the port is listening
-func CheckPort(protocol string, host string, port int) bool {
-	addr := net.JoinHostPort(host, strconv.Itoa(port))
-	conn, err := net.DialTimeout(protocol, addr, 3*time.Second)
-	if err != nil {
-		return false
-	}
-	defer func(conn net.Conn) {
-		err := conn.Close()
-		if err != nil {
-			return
-		}
-	}(conn)
-	return true
 }
