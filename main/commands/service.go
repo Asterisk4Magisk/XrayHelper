@@ -33,15 +33,19 @@ func (this *ServiceCommand) Execute(args []string) error {
 		if err := startService(); err != nil {
 			return err
 		}
+		log.HandleInfo("service: xray is running, pid is " + getServicePid())
 	case "stop":
 		stopService()
+		log.HandleInfo("service: xray is stopped")
 	case "restart":
+		log.HandleInfo("service: restarting xray")
 		stopService()
 		if err := startService(); err != nil {
 			return err
 		}
+		log.HandleInfo("service: xray is running, pid is " + getServicePid())
 	case "status":
-		pidStr := status()
+		pidStr := getServicePid()
 		if len(pidStr) > 0 {
 			log.HandleInfo("service: xray is running, pid is " + pidStr)
 		} else {
@@ -114,7 +118,7 @@ func stopService() {
 }
 
 // status check xray status, return xray pid
-func status() string {
+func getServicePid() string {
 	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid")); err == nil {
 		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid"))
 		if err != nil {
