@@ -118,7 +118,7 @@ func stopService() {
 	}
 }
 
-// status check xray status, return xray pid
+// getServicePid get xray pid from pid file
 func getServicePid() string {
 	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid")); err == nil {
 		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid"))
