@@ -92,13 +92,18 @@ func startService() error {
 
 // stopService stop xray service
 func stopService() {
-	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid")); err != nil {
-		pidFile, _ := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid"))
+	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid")); err == nil {
+		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid"))
+		if err != nil {
+			log.HandleDebug(err)
+		}
 		pid, _ := strconv.Atoi(string(pidFile))
 		if serviceProcess, err := os.FindProcess(pid); err != nil {
 			_ = serviceProcess.Kill()
 			_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "xray.pid"))
 		}
+	} else {
+		log.HandleDebug(err)
 	}
 }
 
