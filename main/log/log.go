@@ -11,16 +11,14 @@ var Verbose *bool
 
 // HandleError record error log
 func HandleError(v interface{}) {
-	str := serial.ToString(v)
-	if str != "" {
+	if str := serial.ToString(v); str != "" {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", str)
 	}
 }
 
 // HandleInfo record info log
 func HandleInfo(v interface{}) {
-	str := serial.ToString(v)
-	if str != "" {
+	if str := serial.ToString(v); str != "" {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.GreenString("INFO"), ":", str)
 	}
 }
@@ -28,8 +26,7 @@ func HandleInfo(v interface{}) {
 // HandleDebug record debug log
 func HandleDebug(v interface{}) {
 	if *Verbose {
-		str := serial.ToString(v)
-		if str != "" {
+		if str := serial.ToString(v); str != "" {
 			fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.BlueString("DEBUG"), ":", str)
 		}
 	}

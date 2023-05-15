@@ -4,34 +4,88 @@ import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"XrayHelper/main/tproxy"
 )
 
 type ProxyCommand struct{}
 
 func (this *ProxyCommand) Execute(args []string) error {
-	err := builds.LoadConfig()
-	if err != nil {
+	if err := builds.LoadConfig(); err != nil {
 		return err
 	}
 	if len(args) == 0 {
 		return errors.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
 	if len(args) > 1 {
-		return errors.New("proxy: too many arguments")
+		return errors.New("too many arguments").WithPrefix("proxy").WithPathObj(*this)
 	}
 	log.HandleInfo("proxy: current method is " + builds.Config.Proxy.Method)
 	switch args[0] {
 	case "enable":
 		log.HandleInfo("proxy: enabling rules")
-		//TODO
+		if builds.Config.Proxy.Method == "tproxy" {
+			if err := enableTproxy(); err != nil {
+				return err
+			}
+		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
-		//TODO
+		if builds.Config.Proxy.Method == "tproxy" {
+			disableTproxy()
+		} else {
+			return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxy").WithPathObj(*this)
+		}
 	case "refresh":
 		log.HandleInfo("proxy: refreshing rules")
-		//TODO
+		if builds.Config.Proxy.Method == "tproxy" {
+			disableTproxy()
+			if err := enableTproxy(); err != nil {
+				return err
+			}
+		} else {
+			return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxy").WithPathObj(*this)
+		}
 	default:
 		return errors.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
 	return nil
+}
+
+func enableTproxy() error {
+	var retErr error
+	defer func() {
+		if retErr != nil {
+			disableTproxy()
+		}
+	}()
+	if err := tproxy.AddRoute(false); err != nil {
+		retErr = err
+	}
+	if err := tproxy.CreateMangleChain(false); err != nil {
+		retErr = err
+	}
+	if err := tproxy.CreateProxyChain(false); err != nil {
+		retErr = err
+	}
+	if builds.Config.Proxy.EnableIPv6 {
+		if err := tproxy.AddRoute(true); err != nil {
+			retErr = err
+		}
+		if err := tproxy.CreateMangleChain(true); err != nil {
+			retErr = err
+		}
+		if err := tproxy.CreateProxyChain(true); err != nil {
+			retErr = err
+		}
+	}
+	return retErr
+}
+
+func disableTproxy() {
+	tproxy.DeleteRoute(false)
+	tproxy.CleanMangleChain(false)
+	if builds.Config.Proxy.EnableIPv6 {
+		tproxy.DeleteRoute(true)
+		tproxy.CleanMangleChain(true)
+	}
 }

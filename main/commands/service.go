@@ -9,8 +9,7 @@ import (
 type ServiceCommand struct{}
 
 func (this *ServiceCommand) Execute(args []string) error {
-	err := builds.LoadConfig()
-	if err != nil {
+	if err := builds.LoadConfig(); err != nil {
 		return err
 	}
 	if len(args) == 0 {

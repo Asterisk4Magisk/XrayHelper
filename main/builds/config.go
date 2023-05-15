@@ -7,29 +7,29 @@ import (
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v3"
 	"os"
-	"strconv"
 	"strings"
 )
 
 const packageListPath = "/data/system/packages.list"
 
 var ConfigFilePath *string
-var PackageMap = make(map[string]uint32)
+var PackageMap = make(map[string]string)
 
 // Config the program configuration, yml
 var Config struct {
 	XrayHelper struct {
-		Xray          string `yaml:"xray"`
-		XrayConfigDir string `yaml:"xrayConfigDir"`
-		RunDir        string `yaml:"runDir"`
+		Core       string `yaml:"core"`
+		CoreConfig string `yaml:"coreConfig"`
+		RunDir     string `yaml:"runDir"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {
 		Method     string   `default:"tproxy" yaml:"method"`
-		TproxyPort uint16   `default:"65535" yaml:"tproxyPort"`
+		TproxyPort string   `default:"65535" yaml:"tproxyPort"`
 		EnableIPv6 bool     `default:"false" yaml:"enableIPv6"`
 		Mode       string   `default:"blacklist" yaml:"mode"`
 		PkgList    []string `yaml:"pkgList"`
 		ApList     []string `yaml:"apList"`
+		IgnoreList []string `yaml:"IgnoreList"`
 	} `yaml:"proxy"`
 }
 
@@ -61,15 +61,10 @@ func LoadPackage() error {
 	for packageScanner.Scan() {
 		packageInfo := strings.Fields(packageScanner.Text())
 		if len(packageInfo) >= 2 {
-			parseUint, err := strconv.ParseUint(packageInfo[1], 10, 32)
-			if err != nil {
-				return errors.New("parse package failed, ", err).WithPrefix("config")
-			}
-			PackageMap[packageInfo[0]] = uint32(parseUint)
+			PackageMap[packageInfo[0]] = packageInfo[1]
 		}
 	}
-	err = packageListFile.Close()
-	if err != nil {
+	if err := packageListFile.Close(); err != nil {
 		return errors.New("close package file failed, ", err).WithPrefix("config")
 	}
 	log.HandleDebug(PackageMap)

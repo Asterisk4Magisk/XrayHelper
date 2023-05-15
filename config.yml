@@ -1,9 +1,14 @@
 xrayHelper:
-    xray: /data/adb/xray/bin/xray
+    core: /data/adb/xray/bin/xray
+    coreConfig: /data/adb/xray/confs/config.json
+    runDir: /data/adb/xray/run
 proxy:
+    method: tproxy
+    tproxyPort: 65535
     enableIPv6: false
+    mode: whitelist
     pkgList:
-        - com.android.vending
+        - com.kiwibrowser.browser
     apList:
         - wlan2
         - rndis0

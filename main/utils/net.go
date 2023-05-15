@@ -23,7 +23,7 @@ func CheckPort(protocol string, host string, port int) bool {
 	return true
 }
 
-// GetIPv6Addr get external ipv6 address, which need bypass
+// GetIPv6Addr get external ipv6 address, which should bypass
 func GetIPv6Addr() ([]string, error) {
 	var ipv6Addrs []string
 	addrs, err := net.InterfaceAddrs()

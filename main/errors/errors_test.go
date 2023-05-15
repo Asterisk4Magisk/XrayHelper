@@ -11,8 +11,7 @@ import (
 func TestError(t *testing.T) {
 	external := utils.NewExternal(2*time.Second, os.Stdout, os.Stderr, "ping", "-n", "6", "127.0.0.1")
 	external.Start()
-	err := external.Wait()
-	if err != nil {
+	if err := external.Wait(); err != nil {
 		log.HandleError(err)
 	}
 	if external.Err() != nil {
