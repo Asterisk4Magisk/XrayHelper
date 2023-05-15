@@ -30,6 +30,8 @@ func (this *ProxyCommand) Execute(args []string) error {
 			if err := enableTproxy(); err != nil {
 				return err
 			}
+		} else {
+			return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxy").WithPathObj(*this)
 		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
