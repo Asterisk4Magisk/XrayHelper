@@ -10,6 +10,7 @@ proxy:
     mode: whitelist
     pkgList:
         - com.kiwibrowser.browser
+        - com.termux
     apList:
         - wlan2
         - rndis0
