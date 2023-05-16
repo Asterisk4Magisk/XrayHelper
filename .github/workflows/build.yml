@@ -15,21 +15,18 @@ on:
       - "**/*.go"
       - "go.mod"
       - ".github/workflows/*.yml"
+
 jobs:
   build:
     permissions:
       contents: write
     strategy:
       matrix:
-        # Include amd64 on all platforms.
-        goos: [android]
-        goarch: [amd64, 386]
         include:
           - goos: android
             goarch: arm64
           - goos: android
-            goarch: arm
-            goarm: 7
+            goarch: amd64
       fail-fast: false
 
     runs-on: ubuntu-latest
@@ -64,7 +61,6 @@ jobs:
 
       - name: Copy README.md & LICENSE
         run: |
-          mv -f resources/* build_assets
           cp ${GITHUB_WORKSPACE}/README.md ./build_assets/README.md
           cp ${GITHUB_WORKSPACE}/LICENSE ./build_assets/LICENSE
 
