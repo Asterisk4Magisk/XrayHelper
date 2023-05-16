@@ -79,6 +79,7 @@ func updateCore() error {
 	if len(getServicePid()) > 0 {
 		stopService()
 		serviceRunFlag = true
+		_ = os.Remove(builds.Config.XrayHelper.CorePath)
 	}
 	zipReader, err := zip.OpenReader(coreZipPath)
 	if err != nil {
