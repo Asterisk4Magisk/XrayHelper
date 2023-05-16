@@ -1,24 +1,97 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+name: Build
 
-name: build
 on:
+  workflow_dispatch:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - ".github/workflows/*.yml"
   pull_request:
-    branches: [ "master" ]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - ".github/workflows/*.yml"
 jobs:
-  generate:
-    name: Generate cross-platform builds
+  prepare:
     runs-on: ubuntu-latest
+  build:
+    needs: prepare
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        # Include amd64 on all platforms.
+        goos: [android]
+        goarch: [amd64, 386]
+        include:
+          - goos: android
+            goarch: arm64
+          - goos: android
+            goarch: arm
+            goarm: 7
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      GOARM: ${{ matrix.goarm }}
+      CGO_ENABLED: 0
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v2
-      - name: Generate build files
-        uses: thatisuday/go-cross-build@v1
+      - name: Checkout codebase
+        uses: actions/checkout@v3
+
+      - name: Show workflow information 
+        run: |
+          export _NAME=$(jq ".[\"$GOOS-$GOARCH$GOARM$GOMIPS\"].friendlyName" -r < .github/build/friendly-filenames.json)
+          echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, GOMIPS: $GOMIPS, RELEASE_NAME: $_NAME"
+          echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-            platforms: 'android/386, android/amd64, android/arm, android/arm64'
-            package: 'main'
-            name: 'XrayHelper'
-            compress: 'true'
-            dest: 'dist'
+          go-version: '1.20'
+          check-latest: true
+
+      - name: Get project dependencies
+        run: go mod download
+ 
+      - name: Build XrayHelper
+        run: |
+          mkdir -p build_assets
+          go build -v -o build_assets/xrayhelper -trimpath -ldflags "-s -w -buildid=" ./main
+
+      - name: Copy README.md & LICENSE
+        run: |
+          mv -f resources/* build_assets
+          cp ${GITHUB_WORKSPACE}/README.md ./build_assets/README.md
+          cp ${GITHUB_WORKSPACE}/LICENSE ./build_assets/LICENSE
+
+      - name: Create ZIP archive
+        shell: bash
+        run: |
+          pushd build_assets || exit 1
+          touch -mt $(date +%Y01010000) *
+          zip -9vr ../XrayHelper-${{ env.ASSET_NAME }}.zip .
+          popd || exit 1
+          FILE=./XrayHelper-${{ env.ASSET_NAME }}.zip
+          DGST=$FILE.dgst
+          for METHOD in {"md5","sha1","sha256","sha512"}
+          do
+            openssl dgst -$METHOD $FILE | sed 's/([^)]*)//g' >>$DGST
+          done
+
+      - name: Change the name
+        run: |
+          mv build_assets XrayHelper-${{ env.ASSET_NAME }}
+
+      - name: Upload files to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: XrayHelper-${{ env.ASSET_NAME }}
+          path: |
+            ./XrayHelper-${{ env.ASSET_NAME }}/*
