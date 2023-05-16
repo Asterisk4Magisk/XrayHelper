@@ -1,0 +1,4 @@
+{
+  "android-arm64": { "friendlyName": "android-arm64" },
+  "android-amd64": { "friendlyName": "android-amd64" }
+}
