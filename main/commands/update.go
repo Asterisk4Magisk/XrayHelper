@@ -104,6 +104,8 @@ func updateCore() error {
 			if err != nil {
 				return errors.New("save file "+savePath+" failed, ", err).WithPrefix("net")
 			}
+			_ = saveFile.Close()
+			_ = fileReader.Close()
 			break
 		}
 	}
