@@ -16,10 +16,7 @@ on:
       - "go.mod"
       - ".github/workflows/*.yml"
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
   build:
-    needs: prepare
     permissions:
       contents: write
     strategy:
