@@ -57,6 +57,7 @@ func updateCore() error {
 	if runtime.GOARCH != "arm64" {
 		return errors.New("this feature only support arm64 device").WithPrefix("update")
 	}
+	serviceRunFlag := false
 	coreZipPath := path.Join(builds.Config.XrayHelper.RunDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
@@ -77,9 +78,7 @@ func updateCore() error {
 	// update core need stop core service first
 	if len(getServicePid()) > 0 {
 		stopService()
-		defer func() {
-			_ = startService()
-		}()
+		serviceRunFlag = true
 	}
 	zipReader, err := zip.OpenReader(coreZipPath)
 	if err != nil {
@@ -106,6 +105,9 @@ func updateCore() error {
 			}
 			break
 		}
+	}
+	if serviceRunFlag {
+		_ = startService()
 	}
 	return nil
 }
