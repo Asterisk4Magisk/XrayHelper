@@ -91,18 +91,17 @@ func updateCore() error {
 	}(zipReader)
 	for _, file := range zipReader.File {
 		if strings.Contains(file.Name, "ray") {
-			savePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), file.Name)
 			fileReader, err := file.Open()
 			if err != nil {
 				return errors.New("cannot get file reader "+file.Name+", ", err).WithPrefix("update")
 			}
-			saveFile, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+			saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 			if err != nil {
-				return errors.New("cannot open file "+savePath+", ", err).WithPrefix("update")
+				return errors.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix("update")
 			}
 			_, err = io.Copy(saveFile, fileReader)
 			if err != nil {
-				return errors.New("save file "+savePath+" failed, ", err).WithPrefix("net")
+				return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("net")
 			}
 			_ = saveFile.Close()
 			_ = fileReader.Close()
