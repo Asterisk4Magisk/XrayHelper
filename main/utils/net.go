@@ -51,7 +51,7 @@ func DownloadFile(filepath string, url string) error {
 			PreferGo: true,
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 				d := net.Dialer{Timeout: 5000 * time.Millisecond}
-				return d.DialContext(ctx, "udp", "223.5.5.5")
+				return d.DialContext(ctx, "udp", "223.5.5.5:53")
 			},
 		},
 	}
