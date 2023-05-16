@@ -1,8 +1,9 @@
 xrayHelper:
-    core: /data/adb/xray/bin/xray
+    coreType: xray
+    corePath: /data/adb/xray/bin/xray
     coreConfig: /data/adb/xray/confs/
-    baseDir: /data/adb/xray/
-    runDir: /data/adb/xray/run
+    geodataDir: /data/adb/xray/
+    runDir: /data/adb/xray/run/
 proxy:
     method: tproxy
     tproxyPort: 65535

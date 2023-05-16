@@ -1,4 +1,4 @@
-package tproxy
+package proxy
 
 import (
 	"XrayHelper/main/builds"
@@ -11,7 +11,7 @@ import (
 
 const (
 	tableId = "233"
-	xrayGid = "3003"
+	coreGid = "3003"
 	markId  = "1111"
 )
 
@@ -120,9 +120,9 @@ func CreateProxyChain(ipv6 bool) error {
 			return err
 		}
 	}
-	// bypass Xray itself
-	if err := currentIpt.Append("mangle", "PROXY", "-m", "owner", "--gid-owner", xrayGid, "-j", "RETURN"); err != nil {
-		return errors.New("bypass xray gid on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+	// bypass Core itself
+	if err := currentIpt.Append("mangle", "PROXY", "-m", "owner", "--gid-owner", coreGid, "-j", "RETURN"); err != nil {
+		return errors.New("bypass core gid on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 	}
 	// start processing proxy rules
 	// if PkgList has no package, should proxy everything
