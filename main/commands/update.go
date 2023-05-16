@@ -74,6 +74,8 @@ func updateCore() error {
 	default:
 		return errors.New("unknown core type " + builds.Config.XrayHelper.CoreType).WithPrefix("update")
 	}
+	// update core need stop core service first
+	stopService()
 	zipReader, err := zip.OpenReader(coreZipPath)
 	if err != nil {
 		return errors.New("open core.zip failed ,", err).WithPrefix("update")
