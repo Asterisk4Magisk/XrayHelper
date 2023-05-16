@@ -61,6 +61,10 @@ func (this *ServiceCommand) Execute(args []string) error {
 // startService start xray service
 func startService() error {
 	listenFlag := false
+	servicePid := getServicePid()
+	if len(servicePid) > 0 {
+		return errors.New("xray is running, pid is " + servicePid).WithPrefix("service")
+	}
 	serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "error.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0644)
 	if err != nil {
 		return errors.New("open xray log file failed, ", err).WithPrefix("service")
