@@ -2,6 +2,7 @@ package utils
 
 import (
 	"XrayHelper/main/errors"
+	"context"
 	"io"
 	"net"
 	"net/http"
@@ -44,6 +45,22 @@ func GetIPv6Addr() ([]string, error) {
 
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
+	// construct a httpClient, use AliDNS
+	dialer := &net.Dialer{
+		Resolver: &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: 5000 * time.Millisecond}
+				return d.DialContext(ctx, "udp", "223.5.5.5")
+			},
+		},
+	}
+	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return dialer.DialContext(ctx, network, addr)
+	}
+	http.DefaultTransport.(*http.Transport).DialContext = dialContext
+	httpClient := &http.Client{}
+	// open saveFile
 	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
 	if err != nil {
 		return errors.New("cannot open file "+filepath+", ", err).WithPrefix("net")
@@ -51,7 +68,8 @@ func DownloadFile(filepath string, url string) error {
 	defer func(saveFile *os.File) {
 		_ = saveFile.Close()
 	}(saveFile)
-	response, err := http.Get(url)
+	// get file from url
+	response, err := httpClient.Get(url)
 	if err != nil {
 		return errors.New("cannot get file "+url+", ", err).WithPrefix("net")
 	}
