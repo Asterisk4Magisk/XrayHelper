@@ -1,4 +1,4 @@
-package proxy
+package proxys
 
 import (
 	"XrayHelper/main/builds"
@@ -25,8 +25,8 @@ var (
 		"2001:10::/28", "2001:20::/28", "2001:db8::/32", "2002::/16", "fc00::/7", "fe80::/10", "ff00::/8"}
 )
 
-// AddRoute Add ip route to proxy
-func AddRoute(ipv6 bool) error {
+// AddRouteTproxy Add ip route to proxy, tproxy
+func AddRouteTproxy(ipv6 bool) error {
 	var outMsg bytes.Buffer
 	if !ipv6 {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "add", "fwmark", markId, "table", tableId).Run()
@@ -52,8 +52,8 @@ func AddRoute(ipv6 bool) error {
 	return nil
 }
 
-// DeleteRoute Delete ip route to proxy
-func DeleteRoute(ipv6 bool) {
+// DeleteRouteTproxy Delete ip route to proxy, tproxy
+func DeleteRouteTproxy(ipv6 bool) {
 	var outMsg bytes.Buffer
 	if !ipv6 {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "del", "fwmark", markId, "table", tableId).Run()
@@ -70,8 +70,8 @@ func DeleteRoute(ipv6 bool) {
 	}
 }
 
-// CreateProxyChain Create PROXY chain for local applications
-func CreateProxyChain(ipv6 bool) error {
+// CreateProxyChainTproxy Create PROXY chain for local applications, tproxy
+func CreateProxyChainTproxy(ipv6 bool) error {
 	var currentProto string
 	currentIpt := ipt
 	if ipv6 {
@@ -178,8 +178,8 @@ func CreateProxyChain(ipv6 bool) error {
 	return nil
 }
 
-// CreateMangleChain Create XRAY chain for AP interface
-func CreateMangleChain(ipv6 bool) error {
+// CreateMangleChainTproxy Create XRAY chain for AP interface, tproxy
+func CreateMangleChainTproxy(ipv6 bool) error {
 	var currentProto string
 	currentIpt := ipt
 	if ipv6 {
@@ -245,8 +245,8 @@ func CreateMangleChain(ipv6 bool) error {
 	return nil
 }
 
-// CleanIptablesChain Clean all changed iptables rules by XrayHelper
-func CleanIptablesChain(ipv6 bool) {
+// CleanIptablesChainTproxy Clean all changed iptables rules by XrayHelper, tproxy
+func CleanIptablesChainTproxy(ipv6 bool) {
 	currentIpt := ipt
 	if ipv6 {
 		currentIpt = ipt6

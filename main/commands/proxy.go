@@ -4,7 +4,7 @@ import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
-	"XrayHelper/main/proxy"
+	"XrayHelper/main/proxys"
 )
 
 type ProxyCommand struct{}
@@ -64,23 +64,23 @@ func enableTproxy() error {
 			disableTproxy()
 		}
 	}()
-	if err := proxy.AddRoute(false); err != nil {
+	if err := proxys.AddRouteTproxy(false); err != nil {
 		retErr = err
 	}
-	if err := proxy.CreateMangleChain(false); err != nil {
+	if err := proxys.CreateMangleChainTproxy(false); err != nil {
 		retErr = err
 	}
-	if err := proxy.CreateProxyChain(false); err != nil {
+	if err := proxys.CreateProxyChainTproxy(false); err != nil {
 		retErr = err
 	}
 	if builds.Config.Proxy.EnableIPv6 {
-		if err := proxy.AddRoute(true); err != nil {
+		if err := proxys.AddRouteTproxy(true); err != nil {
 			retErr = err
 		}
-		if err := proxy.CreateMangleChain(true); err != nil {
+		if err := proxys.CreateMangleChainTproxy(true); err != nil {
 			retErr = err
 		}
-		if err := proxy.CreateProxyChain(true); err != nil {
+		if err := proxys.CreateProxyChainTproxy(true); err != nil {
 			retErr = err
 		}
 	}
@@ -89,10 +89,10 @@ func enableTproxy() error {
 
 // disableTproxy disable proxy(tproxy)
 func disableTproxy() {
-	proxy.DeleteRoute(false)
-	proxy.CleanIptablesChain(false)
+	proxys.DeleteRouteTproxy(false)
+	proxys.CleanIptablesChainTproxy(false)
 	if builds.Config.Proxy.EnableIPv6 {
-		proxy.DeleteRoute(true)
-		proxy.CleanIptablesChain(true)
+		proxys.DeleteRouteTproxy(true)
+		proxys.CleanIptablesChainTproxy(true)
 	}
 }
