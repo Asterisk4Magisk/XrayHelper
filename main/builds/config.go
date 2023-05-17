@@ -18,11 +18,12 @@ var PackageMap = make(map[string]string)
 // Config the program configuration, yml
 var Config struct {
 	XrayHelper struct {
-		CoreType   string `yaml:"coreType"`
-		CorePath   string `yaml:"corePath"`
-		CoreConfig string `yaml:"coreConfig"`
-		GeodataDir string `yaml:"geodataDir"`
-		RunDir     string `yaml:"runDir"`
+		CoreType   string   `default:"xray" yaml:"coreType"`
+		CorePath   string   `yaml:"corePath"`
+		CoreConfig string   `yaml:"coreConfig"`
+		GeodataDir string   `yaml:"geodataDir"`
+		RunDir     string   `yaml:"runDir"`
+		SubList    []string `yaml:"subList"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {
 		Method     string   `default:"tproxy" yaml:"method"`
