@@ -28,10 +28,6 @@ type external struct {
 	err     error
 }
 
-func (this *external) AppendEnv(env string) {
-	this.cmd.Env = append(this.cmd.Env, env)
-}
-
 // NewExternal returns a new external object with cmd
 func NewExternal(timeout time.Duration, out io.Writer, err io.Writer, name string, arg ...string) External {
 	var e = external{timeout: timeout}
@@ -46,6 +42,11 @@ func NewExternal(timeout time.Duration, out io.Writer, err io.Writer, name strin
 		e.cmd.Stderr = err
 	}
 	return &e
+}
+
+// AppendEnv add env variable, eg: JAVA_HOME=/usr/local/java/
+func (this *external) AppendEnv(env string) {
+	this.cmd.Env = append(this.cmd.Env, env)
 }
 
 func (this *external) Run() {
