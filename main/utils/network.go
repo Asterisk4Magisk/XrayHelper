@@ -10,6 +10,28 @@ import (
 	"time"
 )
 
+const (
+	timeout = 5000
+	dns     = "223.5.5.5:53"
+)
+
+// getHttpClient get a http client with custom dns
+func getHttpClient(dns string, timeout time.Duration) *http.Client {
+	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		dialer := &net.Dialer{
+			Resolver: &net.Resolver{
+				PreferGo: true,
+				Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+					d := net.Dialer{Timeout: timeout}
+					return d.DialContext(ctx, "udp", dns)
+				},
+			},
+		}
+		return dialer.DialContext(ctx, network, addr)
+	}
+	return &http.Client{}
+}
+
 // CheckPort check whether the port is listening
 func CheckPort(protocol string, host string, port string) bool {
 	addr := net.JoinHostPort(host, port)
@@ -45,21 +67,6 @@ func GetIPv6Addr() ([]string, error) {
 
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
-	// construct a httpClient, use AliDNS
-	dialer := &net.Dialer{
-		Resolver: &net.Resolver{
-			PreferGo: true,
-			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-				d := net.Dialer{Timeout: 5000 * time.Millisecond}
-				return d.DialContext(ctx, "udp", "223.5.5.5:53")
-			},
-		},
-	}
-	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
-		return dialer.DialContext(ctx, network, addr)
-	}
-	http.DefaultTransport.(*http.Transport).DialContext = dialContext
-	httpClient := &http.Client{}
 	// open saveFile
 	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
 	if err != nil {
@@ -69,7 +76,7 @@ func DownloadFile(filepath string, url string) error {
 		_ = saveFile.Close()
 	}(saveFile)
 	// get file from url
-	response, err := httpClient.Get(url)
+	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
 		return errors.New("cannot get file "+url+", ", err).WithPrefix("net")
 	}
@@ -84,4 +91,24 @@ func DownloadFile(filepath string, url string) error {
 		return errors.New("save file "+filepath+" failed, ", err).WithPrefix("net")
 	}
 	return nil
+}
+
+// GetRowData get row data from a url
+func GetRowData(url string) ([]byte, error) {
+	// get row from url
+	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
+	if err != nil {
+		return nil, errors.New("cannot get url "+url+", ", err).WithPrefix("net")
+	}
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New("bad http status "+response.Status+", ", err).WithPrefix("net")
+	}
+	row, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.New("read row data failed, ", err).WithPrefix("net")
+	}
+	return row, nil
 }
