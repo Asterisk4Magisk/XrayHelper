@@ -77,6 +77,7 @@ func updateCore() error {
 	}
 	// update core need stop core service first
 	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
 		stopService()
 		serviceRunFlag = true
 		_ = os.Remove(builds.Config.XrayHelper.CorePath)
@@ -109,6 +110,7 @@ func updateCore() error {
 		}
 	}
 	if serviceRunFlag {
+		log.HandleInfo("update: starting core with new version")
 		_ = startService()
 	}
 	return nil
