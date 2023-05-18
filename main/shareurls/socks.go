@@ -1,4 +1,4 @@
-package sharelinks
+package shareurls
 
 import (
 	"XrayHelper/main/errors"
@@ -16,6 +16,6 @@ func (this *Socks) ToOutoundWithTag(tag string) interface{} {
 	return ""
 }
 
-func newSocksShareLink(socksUrl string) (ShareLink, error) {
+func newSocksShareUrl(socksUrl string) (ShareUrl, error) {
 	return nil, errors.New("TODO").WithPrefix("socks")
 }

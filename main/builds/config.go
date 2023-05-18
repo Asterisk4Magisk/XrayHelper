@@ -23,6 +23,7 @@ var Config struct {
 		CoreConfig string   `yaml:"coreConfig"`
 		DataDir    string   `yaml:"dataDir"`
 		RunDir     string   `yaml:"runDir"`
+		ProxyTag   string   `default:"proxy" yaml:"proxyTag"`
 		SubList    []string `yaml:"subList"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {

@@ -4,6 +4,7 @@ xrayHelper:
     coreConfig: /data/adb/xray/confs/
     dataDir: /data/adb/xray/data/
     runDir: /data/adb/xray/run/
+    proxyTag: proxy
     subList:
         - https://testsuburl.com
 proxy:

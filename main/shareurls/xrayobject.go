@@ -1,4 +1,4 @@
-package sharelinks
+package shareurls
 
 // getMuxObject get xray MuxObject
 func getMuxObject(enabled bool) map[string]interface{} {

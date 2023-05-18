@@ -16,6 +16,7 @@ var Option struct {
 	Service        commands.ServiceCommand `command:"service" description:"control xray service"`
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
 	Update         commands.UpdateCommand  `command:"update" description:"update core, geodata or subscribe nodes"`
+	Switch         commands.SwitchCommand  `command:"switch" description:"switch proxy node config in subscribe"`
 }
 
 // LoadOption load Option, the program entry

@@ -65,10 +65,10 @@ func updateCore() error {
 	}
 	serviceRunFlag := false
 	if err := os.MkdirAll(builds.Config.XrayHelper.RunDir, 0644); err != nil {
-		return errors.New("create run dir failed ,", err).WithPrefix("update")
+		return errors.New("create run dir failed, ", err).WithPrefix("update")
 	}
 	if err := os.MkdirAll(path.Dir(builds.Config.XrayHelper.CorePath), 0644); err != nil {
-		return errors.New("create core path dir failed ,", err).WithPrefix("update")
+		return errors.New("create core path dir failed, ", err).WithPrefix("update")
 	}
 	coreZipPath := path.Join(builds.Config.XrayHelper.RunDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
@@ -96,7 +96,7 @@ func updateCore() error {
 	}
 	zipReader, err := zip.OpenReader(coreZipPath)
 	if err != nil {
-		return errors.New("open core.zip failed ,", err).WithPrefix("update")
+		return errors.New("open core.zip failed, ", err).WithPrefix("update")
 	}
 	defer func(zipReader *zip.ReadCloser) {
 		_ = zipReader.Close()
@@ -131,7 +131,7 @@ func updateCore() error {
 // updateGeodata update geodata
 func updateGeodata() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
-		return errors.New("create DataDir failed ,", err).WithPrefix("update")
+		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
 	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipUrl); err != nil {
 		return err
@@ -145,7 +145,7 @@ func updateGeodata() error {
 // updateSubscribe update subscribe
 func updateSubscribe() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
-		return errors.New("create DataDir failed ,", err).WithPrefix("update")
+		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
 	builder := strings.Builder{}
 	for _, subUrl := range builds.Config.XrayHelper.SubList {

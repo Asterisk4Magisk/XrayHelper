@@ -1,8 +1,8 @@
-package sharelinks_test
+package shareurls_test
 
 import (
 	"XrayHelper/main/log"
-	"XrayHelper/main/sharelinks"
+	"XrayHelper/main/shareurls"
 	"encoding/json"
 	"github.com/tailscale/hujson"
 	"os"
@@ -53,14 +53,14 @@ func TestShadowsocks(t *testing.T) {
 		}
 		if tag == "proxy" {
 			log.HandleInfo(outbound)
-			// new a shareLink with shadowsocks url
-			shareLink, err := sharelinks.NewShareLink(testSS)
+			// new a shareUrl with shadowsocks url
+			shareUrl, err := shareurls.NewShareUrl(testSS)
 			if err != nil {
 				t.Error(err)
 			}
-			log.HandleInfo(shareLink.GetNodeInfo())
+			log.HandleInfo(shareUrl.GetNodeInfo())
 			// replace
-			outbound = shareLink.ToOutoundWithTag("proxy")
+			outbound = shareUrl.ToOutoundWithTag("proxy")
 			outboundsMap[i] = outbound
 			jsonMap["outbounds"] = outboundsMap
 			// marshal

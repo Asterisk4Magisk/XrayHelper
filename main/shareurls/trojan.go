@@ -1,4 +1,4 @@
-package sharelinks
+package shareurls
 
 import "XrayHelper/main/errors"
 
@@ -14,6 +14,6 @@ func (this *Trojan) ToOutoundWithTag(tag string) interface{} {
 	return ""
 }
 
-func newTrojanShareLink(trojanUrl string) (ShareLink, error) {
+func newTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 	return nil, errors.New("TODO").WithPrefix("trojan")
 }

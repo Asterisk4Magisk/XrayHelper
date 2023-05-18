@@ -1,4 +1,4 @@
-package sharelinks
+package shareurls
 
 import "XrayHelper/main/errors"
 
@@ -14,6 +14,6 @@ func (this *VLESS) ToOutoundWithTag(tag string) interface{} {
 	return ""
 }
 
-func newVLESSShareLink(vlessUrl string) (ShareLink, error) {
+func newVLESSShareUrl(vlessUrl string) (ShareUrl, error) {
 	return nil, errors.New("TODO").WithPrefix("vless")
 }

@@ -1,4 +1,4 @@
-package sharelinks
+package shareurls
 
 import (
 	"XrayHelper/main/errors"
@@ -31,7 +31,7 @@ func (this *Shadowsocks) ToOutoundWithTag(tag string) interface{} {
 	return outboundObject
 }
 
-func newShadowsocksShareLink(ssUrl string) (ShareLink, error) {
+func newShadowsocksShareUrl(ssUrl string) (ShareUrl, error) {
 	ss := new(Shadowsocks)
 	nodeAndName := strings.Split(ssUrl, "#")
 	nodeName, err := url.QueryUnescape(nodeAndName[1])
