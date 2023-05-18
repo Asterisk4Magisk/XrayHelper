@@ -33,7 +33,7 @@ var Config struct {
 		Mode       string   `default:"blacklist" yaml:"mode"`
 		PkgList    []string `yaml:"pkgList"`
 		ApList     []string `yaml:"apList"`
-		IgnoreList []string `yaml:"IgnoreList"`
+		IgnoreList []string `yaml:"ignoreList"`
 	} `yaml:"proxy"`
 }
 

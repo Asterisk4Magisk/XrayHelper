@@ -18,5 +18,5 @@ proxy:
     apList:
         - wlan2
         - rndis0
-    IgnoreList:
+    ignoreList:
         - ignore

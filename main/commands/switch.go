@@ -62,7 +62,7 @@ func (this *SwitchCommand) Execute(args []string) error {
 				}
 			}
 		} else {
-			confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, confInfo.Name()))
+			confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig)
 			if err != nil {
 				return errors.New("read config file failed, ", err).WithPrefix("switch").WithPathObj(*this)
 			}
