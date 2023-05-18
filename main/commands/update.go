@@ -64,6 +64,9 @@ func updateCore() error {
 		return errors.New("this feature only support arm64 device").WithPrefix("update")
 	}
 	serviceRunFlag := false
+	if err := os.MkdirAll(builds.Config.XrayHelper.RunDir, 0644); err != nil {
+		return errors.New("create RunDir failed ,", err).WithPrefix("update")
+	}
 	coreZipPath := path.Join(builds.Config.XrayHelper.RunDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
@@ -124,6 +127,9 @@ func updateCore() error {
 
 // updateGeodata update geodata
 func updateGeodata() error {
+	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
+		return errors.New("create DataDir failed ,", err).WithPrefix("update")
+	}
 	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipUrl); err != nil {
 		return err
 	}
@@ -135,6 +141,9 @@ func updateGeodata() error {
 
 // updateSubscribe update subscribe
 func updateSubscribe() error {
+	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
+		return errors.New("create DataDir failed ,", err).WithPrefix("update")
+	}
 	builder := strings.Builder{}
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
 		rawData, err := utils.GetRawData(subUrl)
