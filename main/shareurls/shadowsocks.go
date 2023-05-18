@@ -2,15 +2,15 @@ package shareurls
 
 import (
 	"XrayHelper/main/errors"
-	"XrayHelper/main/serial"
 	"XrayHelper/main/utils"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
 )
 
 type Shadowsocks struct {
-	nodeName string
+	name     string
 	address  string
 	port     uint16
 	method   string
@@ -18,7 +18,7 @@ type Shadowsocks struct {
 }
 
 func (this *Shadowsocks) GetNodeInfo() string {
-	return serial.Concat("Node Name: ", this.nodeName, ", Type: Shadowsocks, Address: ", this.address, ", Port: ", this.port, ", Method: ", this.method, ", Password: ", this.password)
+	return fmt.Sprintf("Name: %+v, Type: Shadowsocks, Address: %+v, Port: %+v, Method: %+v, Password: %+v", this.name, this.address, this.port, this.method, this.password)
 }
 
 func (this *Shadowsocks) ToOutoundWithTag(tag string) interface{} {
@@ -34,11 +34,11 @@ func (this *Shadowsocks) ToOutoundWithTag(tag string) interface{} {
 func newShadowsocksShareUrl(ssUrl string) (ShareUrl, error) {
 	ss := new(Shadowsocks)
 	nodeAndName := strings.Split(ssUrl, "#")
-	nodeName, err := url.QueryUnescape(nodeAndName[1])
+	name, err := url.QueryUnescape(nodeAndName[1])
 	if err != nil {
 		return nil, errors.New("unescape node name failed, ", err).WithPrefix("shadowsocks")
 	}
-	ss.nodeName = nodeName
+	ss.name = name
 	infoAndServer := strings.Split(nodeAndName[0], "@")
 	addressAndPort := strings.Split(infoAndServer[1], ":")
 	ss.address = addressAndPort[0]
