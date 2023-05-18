@@ -93,9 +93,8 @@ func DownloadFile(filepath string, url string) error {
 	return nil
 }
 
-// GetRowData get row data from a url
-func GetRowData(url string) ([]byte, error) {
-	// get row from url
+// GetRawData get raw data from a url
+func GetRawData(url string) ([]byte, error) {
 	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
 		return nil, errors.New("cannot get url "+url+", ", err).WithPrefix("net")
@@ -106,9 +105,9 @@ func GetRowData(url string) ([]byte, error) {
 	if response.StatusCode != http.StatusOK {
 		return nil, errors.New("bad http status "+response.Status+", ", err).WithPrefix("net")
 	}
-	row, err := io.ReadAll(response.Body)
+	raw, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, errors.New("read row data failed, ", err).WithPrefix("net")
+		return nil, errors.New("read data failed, ", err).WithPrefix("net")
 	}
-	return row, nil
+	return raw, nil
 }

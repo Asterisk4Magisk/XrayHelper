@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-const ssPrefix = "ss://"
-
 type Shadowsocks struct {
 	nodeName string
 	address  string
@@ -24,16 +22,12 @@ func (this *Shadowsocks) GetNodeInfo() string {
 }
 
 func (this *Shadowsocks) ToOutoundJsonWithTag(tag string) string {
-	//TODO
+	// TODO
 	return ""
 }
 
-func NewShadowsocksShareLink(ssUrl string) (ShareLink, error) {
+func newShadowsocksShareLink(ssUrl string) (ShareLink, error) {
 	ss := new(Shadowsocks)
-	if !strings.HasPrefix(ssUrl, ssPrefix) {
-		return nil, errors.New(ssUrl + " is not a shadowsocks share link").WithPrefix("shadowsocks")
-	}
-	ssUrl = strings.TrimPrefix(ssUrl, ssPrefix)
 	nodeAndName := strings.Split(ssUrl, "#")
 	nodeName, err := url.QueryUnescape(nodeAndName[1])
 	if err != nil {

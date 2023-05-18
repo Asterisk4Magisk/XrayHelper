@@ -28,7 +28,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify operation, available operation [core|geodata]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("not specify operation, available operation [core|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("update").WithPathObj(*this)
@@ -46,8 +46,14 @@ func (this *UpdateCommand) Execute(args []string) error {
 			return err
 		}
 		log.HandleInfo("update: update success")
+	case "subscribe":
+		log.HandleInfo("update: updating subscribe")
+		if err := updateSubscribe(); err != nil {
+			return err
+		}
+		log.HandleInfo("update: update success")
 	default:
-		return errors.New("unknown operation " + args[0] + ", available operation [core|geodata]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("unknown operation " + args[0] + ", available operation [core|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
 	}
 	return nil
 }
@@ -102,7 +108,7 @@ func updateCore() error {
 			}
 			_, err = io.Copy(saveFile, fileReader)
 			if err != nil {
-				return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("net")
+				return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
 			}
 			_ = saveFile.Close()
 			_ = fileReader.Close()
@@ -123,6 +129,28 @@ func updateGeodata() error {
 	}
 	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.GeodataDir, "geosite.dat"), geositeUrl); err != nil {
 		return err
+	}
+	return nil
+}
+
+// updateSubscribe update subscribe
+func updateSubscribe() error {
+	builder := strings.Builder{}
+	for _, subUrl := range builds.Config.XrayHelper.SubList {
+		rawData, err := utils.GetRawData(subUrl)
+		if err != nil {
+			return err
+		}
+		subData, err := utils.DecodeBase64(string(rawData))
+		if err != nil {
+			return err
+		}
+		builder.WriteString(strings.TrimSpace(subData) + "\n")
+	}
+	if builder.Len() > 0 {
+		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
+			return errors.New("write subscribe txt failed, ", err).WithPrefix("update")
+		}
 	}
 	return nil
 }
