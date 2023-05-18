@@ -9,7 +9,7 @@ func (this *Trojan) GetNodeInfo() string {
 	return ""
 }
 
-func (this *Trojan) ToOutoundJsonWithTag(tag string) string {
+func (this *Trojan) ToOutoundWithTag(tag string) interface{} {
 	// TODO
 	return ""
 }

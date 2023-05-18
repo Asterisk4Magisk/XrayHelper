@@ -13,12 +13,13 @@ const (
 	trojanPrefix = "trojan://"
 )
 
-// ShareLink implement this interface, that node can be converted to xray OutoundJsonObject
+// ShareLink implement this interface, that node can be converted to xray OutoundObject
 type ShareLink interface {
 	GetNodeInfo() string
-	ToOutoundJsonWithTag(tag string) string
+	ToOutoundWithTag(tag string) interface{}
 }
 
+// NewShareLink parse the url, return a ShareLink
 func NewShareLink(link string) (ShareLink, error) {
 	if strings.HasPrefix(link, socksPrefix) {
 		return newSocksShareLink(strings.TrimPrefix(link, socksPrefix))

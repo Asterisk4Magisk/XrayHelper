@@ -9,7 +9,7 @@ func (this *VLESS) GetNodeInfo() string {
 	return ""
 }
 
-func (this *VLESS) ToOutoundJsonWithTag(tag string) string {
+func (this *VLESS) ToOutoundWithTag(tag string) interface{} {
 	// TODO
 	return ""
 }

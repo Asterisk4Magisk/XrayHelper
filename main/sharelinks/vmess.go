@@ -9,7 +9,7 @@ func (this *Vmess) GetNodeInfo() string {
 	return ""
 }
 
-func (this *Vmess) ToOutoundJsonWithTag(tag string) string {
+func (this *Vmess) ToOutoundWithTag(tag string) interface{} {
 	// TODO
 	return ""
 }

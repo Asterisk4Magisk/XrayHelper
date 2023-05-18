@@ -21,9 +21,14 @@ func (this *Shadowsocks) GetNodeInfo() string {
 	return serial.Concat("Node Name: ", this.nodeName, ", Type: Shadowsocks, Address: ", this.address, ", Port: ", this.port, ", Method: ", this.method, ", Password: ", this.password)
 }
 
-func (this *Shadowsocks) ToOutoundJsonWithTag(tag string) string {
-	// TODO
-	return ""
+func (this *Shadowsocks) ToOutoundWithTag(tag string) interface{} {
+	outboundObject := make(map[string]interface{})
+	outboundObject["mux"] = getMuxObject(false)
+	outboundObject["protocol"] = "shadowsocks"
+	outboundObject["settings"] = getShadowsocksSettingsObject(this)
+	outboundObject["streamSettings"] = getStreamSettingsObject("tcp")
+	outboundObject["tag"] = tag
+	return outboundObject
 }
 
 func newShadowsocksShareLink(ssUrl string) (ShareLink, error) {

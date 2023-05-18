@@ -11,7 +11,7 @@ func (this *Socks) GetNodeInfo() string {
 	return ""
 }
 
-func (this *Socks) ToOutoundJsonWithTag(tag string) string {
+func (this *Socks) ToOutoundWithTag(tag string) interface{} {
 	// TODO
 	return ""
 }
