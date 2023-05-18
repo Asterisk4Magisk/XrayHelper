@@ -65,7 +65,10 @@ func updateCore() error {
 	}
 	serviceRunFlag := false
 	if err := os.MkdirAll(builds.Config.XrayHelper.RunDir, 0644); err != nil {
-		return errors.New("create RunDir failed ,", err).WithPrefix("update")
+		return errors.New("create run dir failed ,", err).WithPrefix("update")
+	}
+	if err := os.MkdirAll(path.Dir(builds.Config.XrayHelper.CorePath), 0644); err != nil {
+		return errors.New("create core path dir failed ,", err).WithPrefix("update")
 	}
 	coreZipPath := path.Join(builds.Config.XrayHelper.RunDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
