@@ -78,7 +78,7 @@ func startService() error {
 			service = utils.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
 		}
 	}
-	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.GeodataDir)
+	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 	if err := service.SetUidGid(0, coreGid); err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	timeout = 5000
+	timeout = 3000
 	dns     = "223.5.5.5:53"
 )
 

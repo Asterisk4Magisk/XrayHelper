@@ -124,10 +124,10 @@ func updateCore() error {
 
 // updateGeodata update geodata
 func updateGeodata() error {
-	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.GeodataDir, "geoip.dat"), geoipUrl); err != nil {
+	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipUrl); err != nil {
 		return err
 	}
-	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.GeodataDir, "geosite.dat"), geositeUrl); err != nil {
+	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeUrl); err != nil {
 		return err
 	}
 	return nil
@@ -148,8 +148,8 @@ func updateSubscribe() error {
 		builder.WriteString(strings.TrimSpace(subData) + "\n")
 	}
 	if builder.Len() > 0 {
-		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
-			return errors.New("write subscribe txt failed, ", err).WithPrefix("update")
+		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
+			return errors.New("write subscribe file failed, ", err).WithPrefix("update")
 		}
 	}
 	return nil

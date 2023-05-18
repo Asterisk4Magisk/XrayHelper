@@ -2,8 +2,10 @@ xrayHelper:
     coreType: xray
     corePath: /data/adb/xray/bin/xray
     coreConfig: /data/adb/xray/confs/
-    geodataDir: /data/adb/xray/
+    dataDir: /data/adb/xray/data/
     runDir: /data/adb/xray/run/
+    subList:
+        - https://testsuburl.com
 proxy:
     method: tproxy
     tproxyPort: 65535
@@ -15,3 +17,5 @@ proxy:
     apList:
         - wlan2
         - rndis0
+    IgnoreList:
+        - ignore

@@ -21,7 +21,7 @@ var Config struct {
 		CoreType   string   `default:"xray" yaml:"coreType"`
 		CorePath   string   `yaml:"corePath"`
 		CoreConfig string   `yaml:"coreConfig"`
-		GeodataDir string   `yaml:"geodataDir"`
+		DataDir    string   `yaml:"dataDir"`
 		RunDir     string   `yaml:"runDir"`
 		SubList    []string `yaml:"subList"`
 	} `yaml:"xrayHelper"`
