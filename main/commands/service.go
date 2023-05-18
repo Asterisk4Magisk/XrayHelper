@@ -97,8 +97,7 @@ func startService() error {
 		}
 	} else {
 		_ = service.Kill()
-		log.HandleDebug(service.Err())
-		return errors.New("start core service failed").WithPrefix("service")
+		return errors.New("start core service failed, ", service.Err()).WithPrefix("service")
 	}
 	return nil
 }

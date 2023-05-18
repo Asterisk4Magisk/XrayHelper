@@ -81,6 +81,14 @@ func (this *SwitchCommand) Execute(args []string) error {
 	} else {
 		return errors.New("switch proxy node failed").WithPrefix("service").WithPathObj(*this)
 	}
+	// if core is running, restart it
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("switch: detect core is running, restart it")
+		stopService()
+		if err := startService(); err != nil {
+			log.HandleError("restart service failed, " + err.Error())
+		}
+	}
 	return nil
 }
 
