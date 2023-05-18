@@ -36,6 +36,9 @@ func (this *SwitchCommand) Execute(args []string) error {
 	if err != nil {
 		return errors.New("invalid input, ", err).WithPrefix("switch").WithPathObj(*this)
 	}
+	if index < 0 || index >= len(shareUrls) {
+		return errors.New("invalid node number").WithPrefix("switch").WithPathObj(*this)
+	}
 	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
 		return errors.New("open core config file failed, ", err).WithPrefix("switch").WithPathObj(*this)
 	} else {
