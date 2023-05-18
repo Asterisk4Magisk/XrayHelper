@@ -70,7 +70,7 @@ func (this *SwitchCommand) Execute(args []string) error {
 			if err != nil {
 				return err
 			}
-			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, confInfo.Name()), newConfByte, 0644); err != nil {
+			if err := os.WriteFile(builds.Config.XrayHelper.CoreConfig, newConfByte, 0644); err != nil {
 				return errors.New("write new config failed, ", err).WithPrefix("service").WithPathObj(*this)
 			}
 			successFlag = true
