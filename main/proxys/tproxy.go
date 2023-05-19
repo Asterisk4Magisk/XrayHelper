@@ -11,7 +11,7 @@ import (
 
 const (
 	tableId = "233"
-	coreGid = "3003"
+	coreGid = "3005"
 	markId  = "1111"
 )
 

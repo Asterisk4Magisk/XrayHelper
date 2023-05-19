@@ -13,7 +13,7 @@ import (
 
 var service utils.External
 
-const coreGid = 3003
+const coreGid = 3005
 
 type ServiceCommand struct{}
 
