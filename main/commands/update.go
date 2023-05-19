@@ -151,11 +151,13 @@ func updateSubscribe() error {
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
 		rawData, err := utils.GetRawData(subUrl)
 		if err != nil {
-			return err
+			log.HandleError(err)
+			continue
 		}
 		subData, err := utils.DecodeBase64(string(rawData))
 		if err != nil {
-			return err
+			log.HandleError(err)
+			continue
 		}
 		builder.WriteString(strings.TrimSpace(subData) + "\n")
 	}
