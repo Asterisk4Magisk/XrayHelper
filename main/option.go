@@ -10,7 +10,7 @@ import (
 )
 
 var Option struct {
-	ConfigFilePath string                  `short:"c" long:"config" default:"./config.yml" description:"specify configuration file"`
+	ConfigFilePath string                  `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
 	VerboseFlag    bool                    `short:"v" long:"verbose" description:"show verbose debug information"`
 	VersionFlag    bool                    `short:"V" long:"version" description:"show current version"`
 	Service        commands.ServiceCommand `command:"service" description:"control xray service"`
