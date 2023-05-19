@@ -137,7 +137,7 @@ func CreateProxyChainTproxy(ipv6 bool) error {
 		// bypass PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
 			if uid, ok := builds.PackageMap[pkg]; ok {
-				if err := currentIpt.Insert("mangle", "PROXY", 0, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
+				if err := currentIpt.Insert("mangle", "PROXY", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
 					return errors.New("bypass package "+pkg+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 				}
 			}
