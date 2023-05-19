@@ -165,7 +165,10 @@ func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
 		}
 		if tag == "proxy" {
 			// replace
-			outbound = shareUrls[index].ToOutoundWithTag(builds.Config.XrayHelper.ProxyTag)
+			outbound, err = shareUrls[index].ToOutoundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
+			if err != nil {
+				return nil, err
+			}
 			outboundsMap[i] = outbound
 			jsonMap["outbounds"] = outboundsMap
 			// marshal

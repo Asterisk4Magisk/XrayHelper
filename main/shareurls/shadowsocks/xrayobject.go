@@ -1,14 +1,14 @@
-package shareurls
+package shadowsocks
 
-// getMuxObject get xray MuxObject
-func getMuxObject(enabled bool) map[string]interface{} {
+// getMuxObjectXray get xray MuxObject
+func getMuxObjectXray(enabled bool) map[string]interface{} {
 	mux := make(map[string]interface{})
 	mux["enabled"] = enabled
 	return mux
 }
 
-// getStreamSettingsObject get xray StreamSettingsObject
-func getStreamSettingsObject(network string) map[string]interface{} {
+// getStreamSettingsObjectXray get xray StreamSettingsObject
+func getStreamSettingsObjectXray(network string) map[string]interface{} {
 	sockoptObject := make(map[string]interface{})
 	sockoptObject["domainStrategy"] = "UseIP"
 
@@ -18,14 +18,14 @@ func getStreamSettingsObject(network string) map[string]interface{} {
 	return streamSettingsObject
 }
 
-// getShadowsocksSettingsObject get xray Shadowsocks SettingsObject
-func getShadowsocksSettingsObject(ss *Shadowsocks) map[string]interface{} {
+// getShadowsocksSettingsObjectXray get xray Shadowsocks SettingsObject
+func getShadowsocksSettingsObjectXray(ss *Shadowsocks) map[string]interface{} {
 	var serversObject []interface{}
 	server := make(map[string]interface{})
-	server["address"] = ss.address
-	server["port"] = ss.port
-	server["method"] = ss.method
-	server["password"] = ss.password
+	server["Address"] = ss.Address
+	server["Port"] = ss.Port
+	server["Method"] = ss.Method
+	server["Password"] = ss.Password
 	server["level"] = 0
 	serversObject = append(serversObject, server)
 

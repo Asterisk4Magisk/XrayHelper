@@ -1,4 +1,4 @@
-package shareurls_test
+package shadowsocks_test
 
 import (
 	"XrayHelper/main/log"
@@ -60,7 +60,10 @@ func TestShadowsocks(t *testing.T) {
 			}
 			log.HandleInfo(shareUrl.GetNodeInfo())
 			// replace
-			outbound = shareUrl.ToOutoundWithTag("proxy")
+			outbound, err = shareUrl.ToOutoundWithTag("xray", "proxy")
+			if err != nil {
+				t.Error(err)
+			}
 			outboundsMap[i] = outbound
 			jsonMap["outbounds"] = outboundsMap
 			// marshal
