@@ -64,13 +64,13 @@ func updateCore() error {
 		return errors.New("this feature only support arm64 device").WithPrefix("update")
 	}
 	serviceRunFlag := false
-	if err := os.MkdirAll(builds.Config.XrayHelper.RunDir, 0644); err != nil {
+	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return errors.New("create run dir failed, ", err).WithPrefix("update")
 	}
 	if err := os.MkdirAll(path.Dir(builds.Config.XrayHelper.CorePath), 0644); err != nil {
 		return errors.New("create core path dir failed, ", err).WithPrefix("update")
 	}
-	coreZipPath := path.Join(builds.Config.XrayHelper.RunDir, "core.zip")
+	coreZipPath := path.Join(builds.Config.XrayHelper.DataDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
 		if err := utils.DownloadFile(coreZipPath, xrayCoreUrl); err != nil {
