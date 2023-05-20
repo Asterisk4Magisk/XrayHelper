@@ -3,7 +3,9 @@ package shareurls
 import (
 	"XrayHelper/main/errors"
 	"XrayHelper/main/shareurls/shadowsocks"
+	"XrayHelper/main/shareurls/vmess"
 	"XrayHelper/main/utils"
+	"encoding/json"
 	"net/url"
 	"strconv"
 	"strings"
@@ -90,6 +92,14 @@ func newVLESSShareUrl(vlessUrl string) (ShareUrl, error) {
 
 // newVmessShareUrl parse Vmess url
 func newVmessShareUrl(vmessUrl string) (ShareUrl, error) {
-	// TODO
-	return nil, errors.New("vmess TODO").WithPrefix("shareurls")
+	v2 := new(vmess.Vmess)
+	originJson, err := utils.DecodeBase64(vmessUrl)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(originJson), v2)
+	if err != nil {
+		return nil, errors.New("unmarshal origin json failed, ", err).WithPrefix("shareurls")
+	}
+	return v2, nil
 }

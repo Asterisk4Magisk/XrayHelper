@@ -53,7 +53,7 @@ func GetIPv6Addr() ([]string, error) {
 	var ipv6Addrs []string
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return nil, errors.New("cannot get ip address from local interface, ", err).WithPrefix("net")
+		return nil, errors.New("cannot get ip address from local interface, ", err).WithPrefix("network")
 	}
 	for _, address := range addrs {
 		if ipnet, ok := address.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
@@ -70,7 +70,7 @@ func DownloadFile(filepath string, url string) error {
 	// open saveFile
 	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
 	if err != nil {
-		return errors.New("cannot open file "+filepath+", ", err).WithPrefix("net")
+		return errors.New("cannot open file "+filepath+", ", err).WithPrefix("network")
 	}
 	defer func(saveFile *os.File) {
 		_ = saveFile.Close()
@@ -78,17 +78,17 @@ func DownloadFile(filepath string, url string) error {
 	// get file from url
 	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
-		return errors.New("cannot get file "+url+", ", err).WithPrefix("net")
+		return errors.New("cannot get file "+url+", ", err).WithPrefix("network")
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(response.Body)
 	if response.StatusCode != http.StatusOK {
-		return errors.New("bad http status "+response.Status+", ", err).WithPrefix("net")
+		return errors.New("bad http status "+response.Status+", ", err).WithPrefix("network")
 	}
 	_, err = io.Copy(saveFile, response.Body)
 	if err != nil {
-		return errors.New("save file "+filepath+" failed, ", err).WithPrefix("net")
+		return errors.New("save file "+filepath+" failed, ", err).WithPrefix("network")
 	}
 	return nil
 }
@@ -97,17 +97,17 @@ func DownloadFile(filepath string, url string) error {
 func GetRawData(url string) ([]byte, error) {
 	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
-		return nil, errors.New("cannot get url "+url+", ", err).WithPrefix("net")
+		return nil, errors.New("cannot get url "+url+", ", err).WithPrefix("network")
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(response.Body)
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("bad http status "+response.Status+", ", err).WithPrefix("net")
+		return nil, errors.New("bad http status "+response.Status+", ", err).WithPrefix("network")
 	}
 	raw, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, errors.New("read data failed, ", err).WithPrefix("net")
+		return nil, errors.New("read data failed, ", err).WithPrefix("network")
 	}
 	return raw, nil
 }
