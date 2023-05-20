@@ -108,10 +108,10 @@ func CreateProxyChainTproxy(ipv6 bool) error {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 			}
 		}
-		if externalIPv6, err := utils.GetIPv6Addr(); err != nil {
+		if externalIPv6, err := utils.GetIPv6Addr(); err == nil {
 			if len(externalIPv6) > 0 {
 				for _, external := range externalIPv6 {
-					if err := currentIpt.Append("mangle", "PROXY", "-d", external, "-j", "RETURN"); err != nil {
+					if err := currentIpt.Append("mangle", "PROXY", "-d", external+"/32", "-j", "RETURN"); err != nil {
 						return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 					}
 				}
@@ -210,10 +210,10 @@ func CreateMangleChainTproxy(ipv6 bool) error {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 			}
 		}
-		if externalIPv6, err := utils.GetIPv6Addr(); err != nil {
+		if externalIPv6, err := utils.GetIPv6Addr(); err == nil {
 			if len(externalIPv6) > 0 {
 				for _, external := range externalIPv6 {
-					if err := currentIpt.Append("mangle", "XRAY", "-d", external, "-j", "RETURN"); err != nil {
+					if err := currentIpt.Append("mangle", "XRAY", "-d", external+"/32", "-j", "RETURN"); err != nil {
 						return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 					}
 				}
