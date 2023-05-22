@@ -79,7 +79,7 @@ func newTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 		return nil, errors.New("url parse err, ", err).WithPrefix("shareurls")
 	}
 	tj.Name = tjParse.Fragment
-	tj.Id = tjParse.User.Username()
+	tj.Password = tjParse.User.Username()
 	tj.Address = tjParse.Hostname()
 	tj.Port = tjParse.Port()
 	tjQuery, err := url.ParseQuery(tjParse.RawQuery)

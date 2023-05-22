@@ -8,7 +8,7 @@ import (
 type Trojan struct {
 	//basic
 	Name     string
-	Id       string
+	Password string
 	Address  string
 	Port     string
 	Network  string
@@ -33,10 +33,24 @@ type Trojan struct {
 }
 
 func (this *Trojan) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: Trojan, Address: %+v, Port: %+v, Network: %+v, Id: %+v", this.Name, this.Address, this.Port, this.Network, this.Id)
+	return fmt.Sprintf("Name: %+v, Type: Trojan, Address: %+v, Port: %+v, Network: %+v, Password: %+v", this.Name, this.Address, this.Port, this.Network, this.Password)
 }
 
 func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
-	// TODO
-	return nil, errors.New("TODO").WithPrefix("trojan").WithPathObj(*this)
+	switch coreType {
+	case "xray":
+		outboundObject := make(map[string]interface{})
+		outboundObject["mux"] = getMuxObjectXray(false)
+		outboundObject["protocol"] = "trojan"
+		outboundObject["settings"] = getTrojanSettingsObjectXray(this)
+		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
+		outboundObject["tag"] = tag
+		return outboundObject, nil
+	case "v2fly":
+		return nil, errors.New("v2fly TODO").WithPrefix("vmess").WithPathObj(*this)
+	case "sagernet":
+		return nil, errors.New("sagernet TODO").WithPrefix("vmess").WithPathObj(*this)
+	default:
+		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
+	}
 }

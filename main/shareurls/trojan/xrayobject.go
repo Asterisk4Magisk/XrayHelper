@@ -1,4 +1,4 @@
-package vmess
+package trojan
 
 import (
 	"strconv"
@@ -12,44 +12,37 @@ func getMuxObjectXray(enabled bool) map[string]interface{} {
 	return mux
 }
 
-// getVmessSettingsObjectXray get xray Vmess SettingsObject
-func getVmessSettingsObjectXray(vmess *Vmess) map[string]interface{} {
-	var vnextsObject []interface{}
-	vnext := make(map[string]interface{})
-	vnext["address"] = vmess.Address
-	vnext["port"], _ = strconv.Atoi(vmess.Port)
+// getTrojanSettingsObjectXray get xray Trojan SettingsObject
+func getTrojanSettingsObjectXray(trojan *Trojan) map[string]interface{} {
+	var serversObject []interface{}
+	server := make(map[string]interface{})
+	server["address"] = trojan.Address
+	server["port"], _ = strconv.Atoi(trojan.Port)
+	server["password"] = trojan.Password
+	server["level"] = 0
+	serversObject = append(serversObject, server)
 
-	var usersObject []interface{}
-	user := make(map[string]interface{})
-	user["id"] = vmess.Id
-	user["alterId"], _ = strconv.Atoi(vmess.AlterId)
-	user["security"] = vmess.Security
-	user["level"] = 0
-	usersObject = append(usersObject, user)
-
-	vnext["users"] = usersObject
-	vnextsObject = append(vnextsObject, vnext)
 	settingsObject := make(map[string]interface{})
-	settingsObject["vnext"] = vnextsObject
+	settingsObject["servers"] = serversObject
 	return settingsObject
 }
 
 // getStreamSettingsObjectXray get xray StreamSettingsObject
-func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
+func getStreamSettingsObjectXray(trojan *Trojan) map[string]interface{} {
 	streamSettingsObject := make(map[string]interface{})
-	streamSettingsObject["network"] = vmess.Network
-	switch vmess.Network {
+	streamSettingsObject["network"] = trojan.Network
+	switch trojan.Network {
 	case "tcp":
 		tcpSettingsObject := make(map[string]interface{})
 		headerObject := make(map[string]interface{})
-		switch vmess.Type {
+		switch trojan.Type {
 		case "http":
 			requestObject := make(map[string]interface{})
 			headers := make(map[string]interface{})
 			var connection []interface{}
 			connection = append(connection, "keep-alive")
 			var host []interface{}
-			host = append(host, vmess.Host)
+			host = append(host, trojan.Host)
 			var acceptEncoding []interface{}
 			acceptEncoding = append(acceptEncoding, "gzip, deflate")
 			var userAgent []interface{}
@@ -68,13 +61,13 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 	case "kcp":
 		kcpSettingsObject := make(map[string]interface{})
 		headerObject := make(map[string]interface{})
-		headerObject["type"] = vmess.Type
+		headerObject["type"] = trojan.Type
 		kcpSettingsObject["congestion"] = false
 		kcpSettingsObject["downlinkCapacity"] = 100
 		kcpSettingsObject["header"] = headerObject
 		kcpSettingsObject["mtu"] = 1350
 		kcpSettingsObject["readBufferSize"] = 1
-		kcpSettingsObject["seed"] = vmess.Path
+		kcpSettingsObject["seed"] = trojan.Path
 		kcpSettingsObject["tti"] = 50
 		kcpSettingsObject["uplinkCapacity"] = 12
 		kcpSettingsObject["writeBufferSize"] = 1
@@ -82,40 +75,41 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 	case "ws":
 		wsSettingsObject := make(map[string]interface{})
 		headersObject := make(map[string]interface{})
-		headersObject["Host"] = vmess.Host
+		headersObject["Host"] = trojan.Host
 		wsSettingsObject["headers"] = headersObject
-		wsSettingsObject["path"] = vmess.Path
+		wsSettingsObject["path"] = trojan.Path
 		streamSettingsObject["wsSettings"] = wsSettingsObject
 	case "h2":
 		httpSettingsObject := make(map[string]interface{})
 		var host []interface{}
-		host = append(host, vmess.Host)
+		host = append(host, trojan.Host)
 		httpSettingsObject["host"] = host
-		httpSettingsObject["path"] = vmess.Path
+		httpSettingsObject["path"] = trojan.Path
 		streamSettingsObject["httpSettings"] = httpSettingsObject
 	case "quic":
 		quicSettingsObject := make(map[string]interface{})
 		headerObject := make(map[string]interface{})
-		headerObject["type"] = vmess.Type
+		headerObject["type"] = trojan.Type
 		quicSettingsObject["header"] = headerObject
-		quicSettingsObject["key"] = vmess.Path
-		quicSettingsObject["security"] = vmess.Host
+		quicSettingsObject["key"] = trojan.Path
+		quicSettingsObject["security"] = trojan.Host
 		streamSettingsObject["quicSettings"] = quicSettingsObject
 	case "grpc":
 		grpcSettingsObject := make(map[string]interface{})
-		if vmess.Type == "multi" {
+		if trojan.Type == "multi" {
 			grpcSettingsObject["multiMode"] = true
 		} else {
 			grpcSettingsObject["multiMode"] = false
 		}
-		grpcSettingsObject["serviceName"] = vmess.Path
+		grpcSettingsObject["serviceName"] = trojan.Path
 		streamSettingsObject["grpcSettings"] = grpcSettingsObject
 	}
-	streamSettingsObject["security"] = vmess.Tls
-	if len(vmess.Tls) > 0 {
+	streamSettingsObject["security"] = trojan.Security
+	switch trojan.Security {
+	case "tls":
 		tlsSettingsObject := make(map[string]interface{})
 		var alpn []interface{}
-		alpnSlice := strings.Split(vmess.Alpn, ",")
+		alpnSlice := strings.Split(trojan.Alpn, ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
@@ -123,9 +117,18 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 			}
 		}
 		tlsSettingsObject["allowInsecure"] = false
-		tlsSettingsObject["fingerprint"] = vmess.FingerPrint
-		tlsSettingsObject["serverName"] = vmess.Sni
+		tlsSettingsObject["fingerprint"] = trojan.FingerPrint
+		tlsSettingsObject["serverName"] = trojan.Sni
 		streamSettingsObject["tlsSettings"] = tlsSettingsObject
+	case "reality":
+		realitySettingsObject := make(map[string]interface{})
+		realitySettingsObject["allowInsecure"] = false
+		realitySettingsObject["fingerprint"] = trojan.FingerPrint
+		realitySettingsObject["serverName"] = trojan.Sni
+		realitySettingsObject["publicKey"] = trojan.PublicKey
+		realitySettingsObject["shortId"] = trojan.ShortId
+		realitySettingsObject["spiderX"] = trojan.SpiderX
+		streamSettingsObject["realitySettings"] = realitySettingsObject
 	}
 	sockoptObject := make(map[string]interface{})
 	sockoptObject["domainStrategy"] = "UseIP"
