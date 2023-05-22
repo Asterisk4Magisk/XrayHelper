@@ -6,7 +6,7 @@ XrayHelper for Android, some scripts in [Xray4Magisk](https://github.com/Asteris
 `xrayhelper service stop`, stop core service  
 `xrayhelper service restart`, restart core service
 
-## Control System Service
+## Control System Proyx
 Support application package proxy list run with blacklist and whitelist, bypass specific network interface, and proxy ap interface, should configure **proxy**
 ```yaml
 proxy:
