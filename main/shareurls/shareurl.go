@@ -88,7 +88,7 @@ func newTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 	}
 	//parse trojan network
 	if types, ok := tjQuery["type"]; !ok {
-		return nil, errors.New("cannot get trojan transport type").WithPrefix("shareurls")
+		tj.Network = "tcp"
 	} else if len(types) > 1 {
 		return nil, errors.New("multiple trojan transport type").WithPrefix("shareurls")
 	} else if tj.Network = types[0]; tj.Network == "" {
@@ -96,7 +96,7 @@ func newTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 	}
 	//parse trojan security
 	if security, ok := tjQuery["security"]; !ok {
-		return nil, errors.New("cannot get trojan security type").WithPrefix("shareurls")
+		tj.Security = "tls"
 	} else if len(security) > 1 {
 		return nil, errors.New("multiple trojan security type").WithPrefix("shareurls")
 	} else if tj.Security = security[0]; tj.Security == "" {
