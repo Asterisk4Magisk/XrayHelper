@@ -60,10 +60,13 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 			headers["Pragma"] = "no-cache"
 			headers["Accept-Encoding"] = acceptEncoding
 			headers["User-Agent"] = userAgent
+			requestObject["headers"] = headers
+			headerObject["type"] = vmess.Type
 			headerObject["request"] = requestObject
 		default:
 			headerObject["type"] = "none"
 		}
+		tcpSettingsObject["header"] = headerObject
 		streamSettingsObject["tcpSettings"] = tcpSettingsObject
 	case "kcp":
 		kcpSettingsObject := make(map[string]interface{})

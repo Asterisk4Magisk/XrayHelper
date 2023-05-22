@@ -173,6 +173,8 @@ func newTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 		//parse trojan tls fingerprint
 		if fps, ok := tjQuery["fp"]; ok && len(fps) == 1 {
 			tj.FingerPrint = fps[0]
+		} else {
+			tj.FingerPrint = "firefox"
 		}
 		//parse trojan tls Alpn
 		if alpns, ok := tjQuery["alpn"]; ok && len(alpns) == 1 {
@@ -186,6 +188,8 @@ func newTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 		//parse trojan reality fingerprint
 		if fps, ok := tjQuery["fp"]; ok && len(fps) == 1 {
 			tj.FingerPrint = fps[0]
+		} else {
+			tj.FingerPrint = "firefox"
 		}
 		//parse trojan reality PublicKey
 		if publicKeys, ok := tjQuery["pbx"]; ok && len(publicKeys) == 1 {
