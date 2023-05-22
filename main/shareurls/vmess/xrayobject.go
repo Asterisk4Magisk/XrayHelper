@@ -116,9 +116,11 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 		tlsSettingsObject := make(map[string]interface{})
 		var alpn []interface{}
 		alpnSlice := strings.Split(vmess.Alpn, ",")
-		if len(alpnSlice) > 0 {
-			alpn = append(alpn, alpnSlice)
-			tlsSettingsObject["alpn"] = alpn
+		for _, v := range alpnSlice {
+			if len(v) > 0 {
+				alpn = append(alpn, v)
+				tlsSettingsObject["alpn"] = alpn
+			}
 		}
 		tlsSettingsObject["allowInsecure"] = false
 		tlsSettingsObject["fingerprint"] = vmess.FingerPrint
