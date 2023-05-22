@@ -8,7 +8,7 @@ import (
 type Shadowsocks struct {
 	Name     string
 	Address  string
-	Port     uint16
+	Port     string
 	Method   string
 	Password string
 }

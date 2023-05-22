@@ -1,5 +1,7 @@
 package shadowsocks
 
+import "strconv"
+
 // getMuxObjectXray get xray MuxObject
 func getMuxObjectXray(enabled bool) map[string]interface{} {
 	mux := make(map[string]interface{})
@@ -23,7 +25,7 @@ func getShadowsocksSettingsObjectXray(ss *Shadowsocks) map[string]interface{} {
 	var serversObject []interface{}
 	server := make(map[string]interface{})
 	server["address"] = ss.Address
-	server["port"] = ss.Port
+	server["port"], _ = strconv.Atoi(ss.Port)
 	server["method"] = ss.Method
 	server["password"] = ss.Password
 	server["level"] = 0
