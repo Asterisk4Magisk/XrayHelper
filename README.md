@@ -1,4 +1,4 @@
-[English](README.md) | 简体中文
+English | [简体中文](README_zh_CN.md)
 
 # XrayHelper
 XrayHelper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.

@@ -1,4 +1,4 @@
-English | [简体中文](README_zh_CN.md)
+[English](README.md) | 简体中文
 
 # XrayHelper  
 一个安卓专属的Xray助手，使用golang实现[Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)的部分脚本，提供arm64和amd64二进制文件.
