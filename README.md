@@ -33,10 +33,13 @@ proxy:
 - update geodata  
   `xrayhelper update geodata`, update geodata from [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)  
 - update subscribe nodes  
-  `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard
+  `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, fully compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard
 
 ## Switch Proxy Node(Currently only compatible with xray-core)  
-`xrayhelper swtich`, should configure **xrayHelper.proxyTag** and update subscribe first, **warning: it will replace your outbounds configuration which has the same proxy tag**
+- switch subscribe nodes  
+  `xrayhelper swtich`, should configure **xrayHelper.proxyTag** and update subscribe first, **warning: it will replace your outbounds configuration which has the same proxy tag**
+- switch custom nodes  
+  `xrayhelper swtich custom`, put custom node share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find it use this command
 
 ## Credits
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)

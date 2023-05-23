@@ -22,11 +22,17 @@ func (this *SwitchCommand) Execute(args []string) error {
 	if err := builds.LoadConfig(); err != nil {
 		return err
 	}
-	if len(args) != 0 {
+	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("switch").WithPathObj(*this)
 	}
-	if err := loadShareUrl(); err != nil {
-		return err
+	if len(args) == 1 && args[0] == "custom" {
+		if err := loadShareUrl(true); err != nil {
+			return err
+		}
+	} else {
+		if err := loadShareUrl(false); err != nil {
+			return err
+		}
 	}
 	index := 0
 	successFlag := false
@@ -95,10 +101,16 @@ func (this *SwitchCommand) Execute(args []string) error {
 	return nil
 }
 
-func loadShareUrl() error {
-	subFile, err := os.Open(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"))
+func loadShareUrl(custom bool) error {
+	var nodeTxt string
+	if custom {
+		nodeTxt = path.Join(builds.Config.XrayHelper.DataDir, "custom.txt")
+	} else {
+		nodeTxt = path.Join(builds.Config.XrayHelper.DataDir, "sub.txt")
+	}
+	subFile, err := os.Open(nodeTxt)
 	if err != nil {
-		return errors.New("open subscribe file failed, ", err).WithPrefix("switch")
+		return errors.New("open proxy node file failed, ", err).WithPrefix("switch")
 	}
 	defer func(subFile *os.File) {
 		_ = subFile.Close()
