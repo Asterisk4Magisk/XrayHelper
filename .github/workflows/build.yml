@@ -62,6 +62,7 @@ jobs:
       - name: Copy Files
         run: |
           cp ${GITHUB_WORKSPACE}/README.md ./build_assets/README.md
+          cp ${GITHUB_WORKSPACE}/README_zh_CN.md ./build_assets/README_zh_CN.md
           cp ${GITHUB_WORKSPACE}/LICENSE ./build_assets/LICENSE
           cp ${GITHUB_WORKSPACE}/config.yml ./build_assets/config.yml
 
