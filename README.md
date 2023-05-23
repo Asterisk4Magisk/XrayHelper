@@ -39,7 +39,7 @@ proxy:
 - switch subscribe nodes  
   `xrayhelper swtich`, should configure **xrayHelper.proxyTag** and update subscribe first, **warning: it will replace your outbounds configuration which has the same proxy tag**
 - switch custom nodes  
-  `xrayhelper swtich custom`, put custom node share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find it use this command
+  `xrayhelper swtich custom`, put custom nodes share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find them use this command
 
 ## Credits
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
