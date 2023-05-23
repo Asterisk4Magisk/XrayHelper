@@ -1,3 +1,5 @@
+[English](README.md) | 简体中文
+
 # XrayHelper
 XrayHelper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.
 
@@ -37,9 +39,9 @@ proxy:
 
 ## Switch Proxy Node(Currently only compatible with xray-core)  
 - switch subscribe nodes  
-  `xrayhelper swtich`, should configure **xrayHelper.proxyTag** and update subscribe first, **warning: it will replace your outbounds configuration which has the same proxy tag**
+  `xrayhelper switch`, should configure **xrayHelper.proxyTag** and update subscribe first, **warning: it will replace your outbounds configuration which has the same proxy tag**
 - switch custom nodes  
-  `xrayhelper swtich custom`, put custom nodes share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find them use this command
+  `xrayhelper switch custom`, put custom nodes share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find them use this command
 
 ## Credits
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
