@@ -108,7 +108,7 @@ func loadShareUrl() error {
 	for subScanner.Scan() {
 		url := strings.TrimSpace(subScanner.Text())
 		if len(url) > 0 {
-			shareUrl, err := shareurls.NewShareUrl(url)
+			shareUrl, err := shareurls.ParseShareUrl(url)
 			if err != nil {
 				log.HandleInfo("switch: " + err.Error() + ", drop it")
 				continue

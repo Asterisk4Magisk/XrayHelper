@@ -54,7 +54,7 @@ func TestShadowsocks(t *testing.T) {
 		if tag == "proxy" {
 			log.HandleInfo(outbound)
 			// new a shareUrl with shadowsocks url
-			shareUrl, err := shareurls.NewShareUrl(testSS)
+			shareUrl, err := shareurls.ParseShareUrl(testSS)
 			if err != nil {
 				t.Error(err)
 			}
