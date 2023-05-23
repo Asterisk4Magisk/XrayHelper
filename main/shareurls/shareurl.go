@@ -22,7 +22,7 @@ type ShareUrl interface {
 // ParseShareUrl parse the url, return a ShareUrl
 func ParseShareUrl(link string) (ShareUrl, error) {
 	if strings.HasPrefix(link, socksPrefix) {
-		return parseSocksShareUrl(strings.TrimPrefix(link, socksPrefix))
+		return parseSocksShareUrl(link)
 	}
 	if strings.HasPrefix(link, ssPrefix) {
 		return parseShadowsocksShareUrl(link)

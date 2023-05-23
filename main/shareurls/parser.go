@@ -3,6 +3,7 @@ package shareurls
 import (
 	"XrayHelper/main/errors"
 	"XrayHelper/main/shareurls/shadowsocks"
+	"XrayHelper/main/shareurls/socks"
 	"XrayHelper/main/shareurls/trojan"
 	"XrayHelper/main/shareurls/vless"
 	"XrayHelper/main/shareurls/vmess"
@@ -17,7 +18,7 @@ func parseShadowsocksShareUrl(ssUrl string) (ShareUrl, error) {
 	ss := new(shadowsocks.Shadowsocks)
 	ssParse, err := url.Parse(ssUrl)
 	if err != nil {
-		return nil, errors.New("url parse err, ", err).WithPrefix("shareurls")
+		return nil, errors.New("shadowsocks url parse err, ", err).WithPrefix("shareurls")
 	}
 	ss.Name = ssParse.Fragment
 	ss.Address = ssParse.Hostname()
@@ -34,8 +35,22 @@ func parseShadowsocksShareUrl(ssUrl string) (ShareUrl, error) {
 
 // parseSocksShareUrl parse socks url
 func parseSocksShareUrl(socksUrl string) (ShareUrl, error) {
-	// TODO
-	return nil, errors.New("socks TODO").WithPrefix("shareurls")
+	so := new(socks.Socks)
+	soParse, err := url.Parse(socksUrl)
+	if err != nil {
+		return nil, errors.New("socks url parse err, ", err).WithPrefix("shareurls")
+	}
+	so.Name = soParse.Fragment
+	so.Address = soParse.Hostname()
+	so.Port = soParse.Port()
+	info, err := utils.DecodeBase64(soParse.User.Username())
+	if err != nil {
+		return nil, err
+	}
+	userAndPassword := strings.Split(info, ":")
+	so.User = userAndPassword[0]
+	so.Password = userAndPassword[1]
+	return so, nil
 }
 
 // parseTrojanShareUrl parse trojan url

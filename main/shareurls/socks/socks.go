@@ -2,13 +2,19 @@ package socks
 
 import (
 	"XrayHelper/main/errors"
+	"fmt"
 )
 
-type Socks struct{}
+type Socks struct {
+	Name     string
+	Address  string
+	Port     string
+	User     string
+	Password string
+}
 
 func (this *Socks) GetNodeInfo() string {
-	// TODO
-	return ""
+	return fmt.Sprintf("Name: %+v, Type: Socks, Address: %+v, Port: %+v", this.Name, this.Address, this.Port)
 }
 
 func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {

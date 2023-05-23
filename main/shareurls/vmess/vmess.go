@@ -7,7 +7,7 @@ import (
 )
 
 type Vmess struct {
-	Remarks     string `json:"ps"`
+	Name        string `json:"ps"`
 	Address     string `json:"add"`
 	Port        string `json:"port"`
 	Id          string `json:"id"`
@@ -25,7 +25,7 @@ type Vmess struct {
 }
 
 func (this *Vmess) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: Vmess, Address: %+v, Port: %+v, Network: %+v, Id: %+v", this.Remarks, this.Address, this.Port, this.Network, this.Id)
+	return fmt.Sprintf("Name: %+v, Type: Vmess, Address: %+v, Port: %+v, Network: %+v, Id: %+v", this.Name, this.Address, this.Port, this.Network, this.Id)
 }
 
 func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
