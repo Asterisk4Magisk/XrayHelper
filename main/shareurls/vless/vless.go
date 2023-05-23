@@ -39,6 +39,20 @@ func (this *VLESS) GetNodeInfo() string {
 }
 
 func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
-	// TODO
-	return nil, errors.New("TODO").WithPrefix("vless").WithPathObj(*this)
+	switch coreType {
+	case "xray":
+		outboundObject := make(map[string]interface{})
+		outboundObject["mux"] = getMuxObjectXray(false)
+		outboundObject["protocol"] = "vless"
+		outboundObject["settings"] = getVLESSSettingsObjectXray(this)
+		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
+		outboundObject["tag"] = tag
+		return outboundObject, nil
+	case "v2fly":
+		return nil, errors.New("v2fly TODO").WithPrefix("VLESS").WithPathObj(*this)
+	case "sagernet":
+		return nil, errors.New("sagernet TODO").WithPrefix("VLESS").WithPathObj(*this)
+	default:
+		return nil, errors.New("not supported core type " + coreType).WithPrefix("VLESS").WithPathObj(*this)
+	}
 }
