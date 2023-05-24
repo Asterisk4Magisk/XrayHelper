@@ -16,61 +16,61 @@ const (
 )
 
 func createDummyDevice() error {
-	var outMsg bytes.Buffer
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "link", "add", dummyDevice, "type", "dummy").Run()
-	if outMsg.Len() > 0 {
-		return errors.New("add dummy device failed, ", outMsg.String()).WithPrefix("dummy")
+	var errMsg bytes.Buffer
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "link", "add", dummyDevice, "type", "dummy").Run()
+	if errMsg.Len() > 0 {
+		return errors.New("add dummy device failed, ", errMsg.String()).WithPrefix("dummy")
 	}
-	outMsg.Reset()
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "addr", "add", dummyIp, "dev", dummyDevice).Run()
-	if outMsg.Len() > 0 {
-		return errors.New("add dummy ip failed, ", outMsg.String()).WithPrefix("dummy")
+	errMsg.Reset()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "addr", "add", dummyIp, "dev", dummyDevice).Run()
+	if errMsg.Len() > 0 {
+		return errors.New("add dummy ip failed, ", errMsg.String()).WithPrefix("dummy")
 	}
-	outMsg.Reset()
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "link", "set", dummyDevice, "up").Run()
-	if outMsg.Len() > 0 {
-		return errors.New("set dummy up failed, ", outMsg.String()).WithPrefix("dummy")
+	errMsg.Reset()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "link", "set", dummyDevice, "up").Run()
+	if errMsg.Len() > 0 {
+		return errors.New("set dummy up failed, ", errMsg.String()).WithPrefix("dummy")
 	}
 	return nil
 }
 
 func removeDummyDevice() {
-	var outMsg bytes.Buffer
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "link", "set", dummyDevice, "down").Run()
-	if outMsg.Len() > 0 {
-		log.HandleDebug("set dummy up down: " + outMsg.String())
+	var errMsg bytes.Buffer
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "link", "set", dummyDevice, "down").Run()
+	if errMsg.Len() > 0 {
+		log.HandleDebug("set dummy up down: " + errMsg.String())
 	}
-	outMsg.Reset()
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "link", "del", dummyDevice, "type", "dummy").Run()
-	if outMsg.Len() > 0 {
-		log.HandleDebug("delete dummy device: " + outMsg.String())
+	errMsg.Reset()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "link", "del", dummyDevice, "type", "dummy").Run()
+	if errMsg.Len() > 0 {
+		log.HandleDebug("delete dummy device: " + errMsg.String())
 	}
 }
 
 func addDummyRoute() error {
-	var outMsg bytes.Buffer
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "add", "not", "from", "all", "fwmark", dummyMarkId, "table", dummyTableId).Run()
-	if outMsg.Len() > 0 {
-		return errors.New("add dummy rule failed, ", outMsg.String()).WithPrefix("dummy")
+	var errMsg bytes.Buffer
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "add", "not", "from", "all", "fwmark", dummyMarkId, "table", dummyTableId).Run()
+	if errMsg.Len() > 0 {
+		return errors.New("add dummy rule failed, ", errMsg.String()).WithPrefix("dummy")
 	}
-	outMsg.Reset()
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "add", "default", "dev", dummyDevice, "table", dummyTableId).Run()
-	if outMsg.Len() > 0 {
-		return errors.New("add dummy route failed, ", outMsg.String()).WithPrefix("dummy")
+	errMsg.Reset()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "default", "dev", dummyDevice, "table", dummyTableId).Run()
+	if errMsg.Len() > 0 {
+		return errors.New("add dummy route failed, ", errMsg.String()).WithPrefix("dummy")
 	}
 	return nil
 }
 
 func deleteDummyRoute() {
-	var outMsg bytes.Buffer
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "del", "not", "from", "all", "fwmark", dummyMarkId, "table", dummyTableId).Run()
-	if outMsg.Len() > 0 {
-		log.HandleDebug("delete dummy rule: " + outMsg.String())
+	var errMsg bytes.Buffer
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "del", "not", "from", "all", "fwmark", dummyMarkId, "table", dummyTableId).Run()
+	if errMsg.Len() > 0 {
+		log.HandleDebug("delete dummy rule: " + errMsg.String())
 	}
-	outMsg.Reset()
-	utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "del", "default", "dev", dummyDevice, "table", dummyTableId).Run()
-	if outMsg.Len() > 0 {
-		log.HandleDebug("delete dummy route: " + outMsg.String())
+	errMsg.Reset()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "del", "default", "dev", dummyDevice, "table", dummyTableId).Run()
+	if errMsg.Len() > 0 {
+		log.HandleDebug("delete dummy route: " + errMsg.String())
 	}
 }
 

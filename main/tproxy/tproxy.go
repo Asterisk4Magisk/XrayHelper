@@ -38,27 +38,27 @@ func init() {
 
 // AddRoute Add ip route to proxy
 func AddRoute(ipv6 bool) error {
-	var outMsg bytes.Buffer
+	var errMsg bytes.Buffer
 	if !ipv6 {
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "add", "fwmark", markId, "table", tableId).Run()
-		if outMsg.Len() > 0 {
-			return errors.New("add ip rule failed, ", outMsg.String()).WithPrefix("tproxy")
+		utils.NewExternal(0, nil, &errMsg, "ip", "rule", "add", "fwmark", markId, "table", tableId).Run()
+		if errMsg.Len() > 0 {
+			return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tproxy")
 		}
-		outMsg.Reset()
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
-		if outMsg.Len() > 0 {
-			return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
+		errMsg.Reset()
+		utils.NewExternal(0, nil, &errMsg, "ip", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
+		if errMsg.Len() > 0 {
+			return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tproxy")
 		}
 	} else {
 		if !useDummy {
-			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "add", "fwmark", markId, "table", tableId).Run()
-			if outMsg.Len() > 0 {
-				return errors.New("add ip rule failed, ", outMsg.String()).WithPrefix("tproxy")
+			utils.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "add", "fwmark", markId, "table", tableId).Run()
+			if errMsg.Len() > 0 {
+				return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tproxy")
 			}
-			outMsg.Reset()
-			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
-			if outMsg.Len() > 0 {
-				return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
+			errMsg.Reset()
+			utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
+			if errMsg.Len() > 0 {
+				return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tproxy")
 			}
 		} else {
 			if err := enableDummy(); err != nil {
@@ -71,27 +71,27 @@ func AddRoute(ipv6 bool) error {
 
 // DeleteRoute Delete ip route to proxy
 func DeleteRoute(ipv6 bool) {
-	var outMsg bytes.Buffer
+	var errMsg bytes.Buffer
 	if !ipv6 {
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "del", "fwmark", markId, "table", tableId).Run()
-		if outMsg.Len() > 0 {
-			log.HandleDebug("delete ip rule: " + outMsg.String())
+		utils.NewExternal(0, nil, &errMsg, "ip", "rule", "del", "fwmark", markId, "table", tableId).Run()
+		if errMsg.Len() > 0 {
+			log.HandleDebug("delete ip rule: " + errMsg.String())
 		}
-		outMsg.Reset()
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "route", "flush", "table", tableId).Run()
-		if outMsg.Len() > 0 {
-			log.HandleDebug("delete ip route: " + outMsg.String())
+		errMsg.Reset()
+		utils.NewExternal(0, nil, &errMsg, "ip", "route", "flush", "table", tableId).Run()
+		if errMsg.Len() > 0 {
+			log.HandleDebug("delete ip route: " + errMsg.String())
 		}
 	} else {
 		if !useDummy {
-			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "del", "fwmark", markId, "table", tableId).Run()
-			if outMsg.Len() > 0 {
-				log.HandleDebug("delete ip rule: " + outMsg.String())
+			utils.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "del", "fwmark", markId, "table", tableId).Run()
+			if errMsg.Len() > 0 {
+				log.HandleDebug("delete ip rule: " + errMsg.String())
 			}
-			outMsg.Reset()
-			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
-			if outMsg.Len() > 0 {
-				log.HandleDebug("delete ip route: " + outMsg.String())
+			errMsg.Reset()
+			utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
+			if errMsg.Len() > 0 {
+				log.HandleDebug("delete ip route: " + errMsg.String())
 			}
 		} else {
 			disableDummy()

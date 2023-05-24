@@ -2,6 +2,8 @@ package utils
 
 import (
 	"XrayHelper/main/errors"
+	"XrayHelper/main/log"
+	"bytes"
 	"context"
 	"io"
 	"net"
@@ -11,9 +13,9 @@ import (
 )
 
 const (
-	timeout      = 3000
-	dns          = "223.5.5.5:53"
-	ipv6CheckUrl = "6.ipw.cn"
+	timeout = 3000
+	dns     = "223.5.5.5:53"
+	dns6    = "2400:3200:1"
 )
 
 // getHttpClient get a http client with custom dns
@@ -50,11 +52,13 @@ func CheckPort(protocol string, host string, port string) bool {
 }
 
 func CheckIPv6() bool {
-	rawData, err := GetRawData(ipv6CheckUrl)
-	if err != nil && len(rawData) > 0 {
-		return true
+	var errMsg bytes.Buffer
+	NewExternal(0, nil, &errMsg, "ping6", "-c", "1", dns6).Run()
+	if errMsg.Len() > 0 {
+		log.HandleDebug("ping6 error:" + errMsg.String())
+		return false
 	}
-	return false
+	return true
 }
 
 // GetExternalIPv6Addr get external ipv6 address, which should bypass
