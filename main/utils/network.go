@@ -13,7 +13,7 @@ import (
 const (
 	timeout = 3000
 	dns     = "223.5.5.5:53"
-	dns6    = "2400:3200:1"
+	dns6    = "2400:3200::1"
 )
 
 // getHttpClient get a http client with custom dns

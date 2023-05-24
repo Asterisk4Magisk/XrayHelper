@@ -54,7 +54,7 @@ func addDummyRoute() error {
 		return errors.New("add dummy rule failed, ", errMsg.String()).WithPrefix("dummy")
 	}
 	errMsg.Reset()
-	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "default", "dev", dummyDevice, "table", dummyTableId).Run()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "local", "default", "dev", dummyDevice, "table", dummyTableId).Run()
 	if errMsg.Len() > 0 {
 		return errors.New("add dummy route failed, ", errMsg.String()).WithPrefix("dummy")
 	}
@@ -68,7 +68,7 @@ func deleteDummyRoute() {
 		log.HandleDebug("delete dummy rule: " + errMsg.String())
 	}
 	errMsg.Reset()
-	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "del", "default", "dev", dummyDevice, "table", dummyTableId).Run()
+	utils.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "del", "local", "default", "dev", dummyDevice, "table", dummyTableId).Run()
 	if errMsg.Len() > 0 {
 		log.HandleDebug("delete dummy route: " + errMsg.String())
 	}
@@ -94,10 +94,10 @@ func createDummyPreroutingChain() error {
 	if err := ipt6.NewChain("mangle", "XD"); err != nil {
 		return errors.New("create ipv6 mangle chain XD failed, ", err).WithPrefix("dummy")
 	}
-	if err := ipt6.Append("mangle", "XD", "-i", dummyDevice, "-p", "tcp", "-j", "TPROXY", "--on-ip", "::1", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", dummyMarkId); err != nil {
+	if err := ipt6.Append("mangle", "XD", "-i", dummyDevice, "-p", "tcp", "-j", "TPROXY", "--on-ip", "::", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", dummyMarkId); err != nil {
 		return errors.New("set mark on tcp mangle chain XD failed, ", err).WithPrefix("dummy")
 	}
-	if err := ipt6.Append("mangle", "XD", "-i", dummyDevice, "-p", "udp", "-j", "TPROXY", "--on-ip", "::1", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", dummyMarkId); err != nil {
+	if err := ipt6.Append("mangle", "XD", "-i", dummyDevice, "-p", "udp", "-j", "TPROXY", "--on-ip", "::", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", dummyMarkId); err != nil {
 		return errors.New("set mark on udp mangle chain XD failed, ", err).WithPrefix("dummy")
 	}
 	if err := ipt6.Append("mangle", "PREROUTING", "-j", "XD"); err != nil {

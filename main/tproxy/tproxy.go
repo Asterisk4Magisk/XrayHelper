@@ -83,6 +83,7 @@ func DeleteRoute(ipv6 bool) {
 			log.HandleDebug("delete ip route: " + errMsg.String())
 		}
 	} else {
+		disableDummy()
 		if !useDummy {
 			utils.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "del", "fwmark", markId, "table", tableId).Run()
 			if errMsg.Len() > 0 {
@@ -93,8 +94,6 @@ func DeleteRoute(ipv6 bool) {
 			if errMsg.Len() > 0 {
 				log.HandleDebug("delete ip route: " + errMsg.String())
 			}
-		} else {
-			disableDummy()
 		}
 	}
 }
@@ -147,10 +146,6 @@ func CreateProxyChain(ipv6 bool) error {
 				if err := currentIpt.Append("mangle", "PROXY", "-d", external+"/32", "-j", "RETURN"); err != nil {
 					return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 				}
-			}
-		} else {
-			if err := currentIpt.Append("mangle", "PROXY", "-d", dummyIp, "-j", "RETURN"); err != nil {
-				return errors.New("bypass dummy ip "+dummyIp+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 			}
 		}
 	}
@@ -248,10 +243,6 @@ func CreateMangleChain(ipv6 bool) error {
 				if err := currentIpt.Append("mangle", "XRAY", "-d", external+"/32", "-j", "RETURN"); err != nil {
 					return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 				}
-			}
-		} else {
-			if err := currentIpt.Append("mangle", "XRAY", "-d", dummyIp, "-j", "RETURN"); err != nil {
-				return errors.New("bypass dummy ip "+dummyIp+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 			}
 		}
 	}
