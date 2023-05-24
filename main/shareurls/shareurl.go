@@ -19,22 +19,22 @@ type ShareUrl interface {
 	ToOutoundWithTag(coreType string, tag string) (interface{}, error)
 }
 
-// ParseShareUrl parse the url, return a ShareUrl
-func ParseShareUrl(link string) (ShareUrl, error) {
+// Parse return a ShareUrl
+func Parse(link string) (ShareUrl, error) {
 	if strings.HasPrefix(link, socksPrefix) {
-		return parseSocksShareUrl(link)
+		return parseSocks(link)
 	}
 	if strings.HasPrefix(link, ssPrefix) {
-		return parseShadowsocksShareUrl(link)
+		return parseShadowsocks(link)
 	}
 	if strings.HasPrefix(link, vmessPrefix) {
-		return parseVmessShareUrl(strings.TrimPrefix(link, vmessPrefix))
+		return parseVmess(strings.TrimPrefix(link, vmessPrefix))
 	}
 	if strings.HasPrefix(link, vlessPrefix) {
-		return parseVLESSShareUrl(link)
+		return parseVLESS(link)
 	}
 	if strings.HasPrefix(link, trojanPrefix) {
-		return parseTrojanShareUrl(link)
+		return parseTrojan(link)
 	}
 	return nil, errors.New("not a supported share link").WithPrefix("shareurls")
 }

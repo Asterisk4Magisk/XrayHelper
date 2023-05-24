@@ -9,7 +9,7 @@ import (
 const testSocks = "socks://cXdlOmFzZA==@socks5.com:443#%E6%B5%8B%E8%AF%95SOCKS"
 
 func TestSocks(t *testing.T) {
-	socksShareUrl, err := shareurls.ParseShareUrl(testSocks)
+	socksShareUrl, err := shareurls.Parse(testSocks)
 	if err != nil {
 		t.Error(err)
 	}

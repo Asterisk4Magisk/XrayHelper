@@ -9,8 +9,8 @@ import (
 const (
 	VersionX byte = 0
 	VersionY byte = 0
-	VersionZ byte = 1
-	Build         = "-release"
+	VersionZ byte = 2
+	Build         = "-dev"
 	Intro         = "An xray helper for Android to control system proxy."
 )
 

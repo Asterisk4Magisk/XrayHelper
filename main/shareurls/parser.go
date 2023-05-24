@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// parseShadowsocksShareUrl parse shadowsocks url
-func parseShadowsocksShareUrl(ssUrl string) (ShareUrl, error) {
+// parseShadowsocks parse shadowsocks url
+func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 	ss := new(shadowsocks.Shadowsocks)
 	ssParse, err := url.Parse(ssUrl)
 	if err != nil {
@@ -33,8 +33,8 @@ func parseShadowsocksShareUrl(ssUrl string) (ShareUrl, error) {
 	return ss, nil
 }
 
-// parseSocksShareUrl parse socks url
-func parseSocksShareUrl(socksUrl string) (ShareUrl, error) {
+// parseSocks parse socks url
+func parseSocks(socksUrl string) (ShareUrl, error) {
 	so := new(socks.Socks)
 	soParse, err := url.Parse(socksUrl)
 	if err != nil {
@@ -53,8 +53,8 @@ func parseSocksShareUrl(socksUrl string) (ShareUrl, error) {
 	return so, nil
 }
 
-// parseTrojanShareUrl parse trojan url
-func parseTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
+// parseTrojan parse trojan url
+func parseTrojan(trojanUrl string) (ShareUrl, error) {
 	tj := new(trojan.Trojan)
 	tjParse, err := url.Parse(trojanUrl)
 	if err != nil {
@@ -191,8 +191,8 @@ func parseTrojanShareUrl(trojanUrl string) (ShareUrl, error) {
 	return tj, nil
 }
 
-// parseVLESSShareUrl parse VLESS url
-func parseVLESSShareUrl(vlessUrl string) (ShareUrl, error) {
+// parseVLESS parse VLESS url
+func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	vl := new(vless.VLESS)
 	vlParse, err := url.Parse(vlessUrl)
 	if err != nil {
@@ -345,8 +345,8 @@ func parseVLESSShareUrl(vlessUrl string) (ShareUrl, error) {
 	return vl, nil
 }
 
-// parseVmessShareUrl parse Vmess url
-func parseVmessShareUrl(vmessUrl string) (ShareUrl, error) {
+// parseVmess parse Vmess url
+func parseVmess(vmessUrl string) (ShareUrl, error) {
 	v2 := new(vmess.Vmess)
 	originJson, err := utils.DecodeBase64(vmessUrl)
 	if err != nil {

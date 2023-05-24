@@ -1,4 +1,4 @@
-package proxys
+package tproxy
 
 import (
 	"XrayHelper/main/builds"
@@ -23,10 +23,21 @@ var (
 		"203.0.113.0/24", "224.0.0.0/4", "240.0.0.0/4", "255.255.255.255/32"}
 	intraNet6 = []string{"::/128", "::1/128", "::ffff:0:0/96", "100::/64", "64:ff9b::/96", "2001::/32",
 		"2001:10::/28", "2001:20::/28", "2001:db8::/32", "2002::/16", "fc00::/7", "fe80::/10", "ff00::/8"}
+	externalIPv6 []string
+	useDummy     bool
 )
 
-// AddRouteTproxy Add ip route to proxy, tproxy
-func AddRouteTproxy(ipv6 bool) error {
+func init() {
+	externalIPv6, _ = utils.GetExternalIPv6Addr()
+	if externalIPv6 != nil && len(externalIPv6) > 0 {
+		useDummy = false
+	} else {
+		useDummy = true
+	}
+}
+
+// AddRoute Add ip route to proxy
+func AddRoute(ipv6 bool) error {
 	var outMsg bytes.Buffer
 	if !ipv6 {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "add", "fwmark", markId, "table", tableId).Run()
@@ -39,39 +50,57 @@ func AddRouteTproxy(ipv6 bool) error {
 			return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
 		}
 	} else {
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "add", "fwmark", markId, "table", tableId).Run()
-		if outMsg.Len() > 0 {
-			return errors.New("add ip rule failed, ", outMsg.String()).WithPrefix("tproxy")
-		}
-		outMsg.Reset()
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
-		if outMsg.Len() > 0 {
-			return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
+		if !useDummy {
+			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "add", "fwmark", markId, "table", tableId).Run()
+			if outMsg.Len() > 0 {
+				return errors.New("add ip rule failed, ", outMsg.String()).WithPrefix("tproxy")
+			}
+			outMsg.Reset()
+			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", tableId).Run()
+			if outMsg.Len() > 0 {
+				return errors.New("add ip route failed, ", outMsg.String()).WithPrefix("tproxy")
+			}
+		} else {
+			if err := enableDummy(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-// DeleteRouteTproxy Delete ip route to proxy, tproxy
-func DeleteRouteTproxy(ipv6 bool) {
+// DeleteRoute Delete ip route to proxy
+func DeleteRoute(ipv6 bool) {
 	var outMsg bytes.Buffer
 	if !ipv6 {
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "rule", "del", "fwmark", markId, "table", tableId).Run()
-		log.HandleDebug("delete ip rule: " + outMsg.String())
+		if outMsg.Len() > 0 {
+			log.HandleDebug("delete ip rule: " + outMsg.String())
+		}
 		outMsg.Reset()
 		utils.NewExternal(0, &outMsg, &outMsg, "ip", "route", "flush", "table", tableId).Run()
-		log.HandleDebug("delete ip route: " + outMsg.String())
+		if outMsg.Len() > 0 {
+			log.HandleDebug("delete ip route: " + outMsg.String())
+		}
 	} else {
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "del", "fwmark", markId, "table", tableId).Run()
-		log.HandleDebug("delete ip rule: " + outMsg.String())
-		outMsg.Reset()
-		utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
-		log.HandleDebug("delete ip route: " + outMsg.String())
+		if !useDummy {
+			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "rule", "del", "fwmark", markId, "table", tableId).Run()
+			if outMsg.Len() > 0 {
+				log.HandleDebug("delete ip rule: " + outMsg.String())
+			}
+			outMsg.Reset()
+			utils.NewExternal(0, &outMsg, &outMsg, "ip", "-6", "route", "flush", "table", tableId).Run()
+			if outMsg.Len() > 0 {
+				log.HandleDebug("delete ip route: " + outMsg.String())
+			}
+		} else {
+			disableDummy()
+		}
 	}
 }
 
-// CreateProxyChainTproxy Create PROXY chain for local applications, tproxy
-func CreateProxyChainTproxy(ipv6 bool) error {
+// CreateProxyChain Create PROXY chain for local applications
+func CreateProxyChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := ipt
 	if ipv6 {
@@ -86,8 +115,13 @@ func CreateProxyChainTproxy(ipv6 bool) error {
 		currentProto = "ipv6"
 	}
 	if err := currentIpt.NewChain("mangle", "PROXY"); err != nil {
-		currentIpt.Proto()
 		return errors.New("create "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+	}
+	// bypass dummy
+	if currentProto == "ipv6" && useDummy {
+		if err := currentIpt.Append("mangle", "PROXY", "-o", dummyDevice, "-j", "RETURN"); err != nil {
+			return errors.New("apply ignore interface "+dummyDevice+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+		}
 	}
 	// bypass ignore list
 	for _, ignore := range builds.Config.Proxy.IgnoreList {
@@ -108,16 +142,16 @@ func CreateProxyChainTproxy(ipv6 bool) error {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 			}
 		}
-		if externalIPv6, err := utils.GetIPv6Addr(); err == nil {
-			if len(externalIPv6) > 0 {
-				for _, external := range externalIPv6 {
-					if err := currentIpt.Append("mangle", "PROXY", "-d", external+"/32", "-j", "RETURN"); err != nil {
-						return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
-					}
+		if !useDummy {
+			for _, external := range externalIPv6 {
+				if err := currentIpt.Append("mangle", "PROXY", "-d", external+"/32", "-j", "RETURN"); err != nil {
+					return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 				}
 			}
 		} else {
-			return err
+			if err := currentIpt.Append("mangle", "PROXY", "-d", dummyIp, "-j", "RETURN"); err != nil {
+				return errors.New("bypass dummy ip "+dummyIp+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+			}
 		}
 	}
 	// bypass Core itself
@@ -178,8 +212,8 @@ func CreateProxyChainTproxy(ipv6 bool) error {
 	return nil
 }
 
-// CreateMangleChainTproxy Create XRAY chain for AP interface, tproxy
-func CreateMangleChainTproxy(ipv6 bool) error {
+// CreateMangleChain Create XRAY chain for AP interface
+func CreateMangleChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := ipt
 	if ipv6 {
@@ -194,7 +228,6 @@ func CreateMangleChainTproxy(ipv6 bool) error {
 		currentProto = "ipv6"
 	}
 	if err := currentIpt.NewChain("mangle", "XRAY"); err != nil {
-		currentIpt.Proto()
 		return errors.New("create "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 	}
 	// bypass intraNet list
@@ -210,16 +243,16 @@ func CreateMangleChainTproxy(ipv6 bool) error {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 			}
 		}
-		if externalIPv6, err := utils.GetIPv6Addr(); err == nil {
-			if len(externalIPv6) > 0 {
-				for _, external := range externalIPv6 {
-					if err := currentIpt.Append("mangle", "XRAY", "-d", external+"/32", "-j", "RETURN"); err != nil {
-						return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
-					}
+		if !useDummy {
+			for _, external := range externalIPv6 {
+				if err := currentIpt.Append("mangle", "XRAY", "-d", external+"/32", "-j", "RETURN"); err != nil {
+					return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 				}
 			}
 		} else {
-			return err
+			if err := currentIpt.Append("mangle", "XRAY", "-d", dummyIp, "-j", "RETURN"); err != nil {
+				return errors.New("bypass dummy ip "+dummyIp+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix("tproxy")
+			}
 		}
 	}
 	// mark all traffic
@@ -245,8 +278,8 @@ func CreateMangleChainTproxy(ipv6 bool) error {
 	return nil
 }
 
-// CleanIptablesChainTproxy Clean all changed iptables rules by XrayHelper, tproxy
-func CleanIptablesChainTproxy(ipv6 bool) {
+// CleanIptablesChain Clean all changed iptables rules by XrayHelper
+func CleanIptablesChain(ipv6 bool) {
 	currentIpt := ipt
 	if ipv6 {
 		currentIpt = ipt6
