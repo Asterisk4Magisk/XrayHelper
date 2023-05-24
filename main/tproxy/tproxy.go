@@ -29,7 +29,7 @@ var (
 
 func init() {
 	externalIPv6, _ = utils.GetExternalIPv6Addr()
-	if externalIPv6 != nil && len(externalIPv6) > 0 {
+	if externalIPv6 != nil && utils.CheckIPv6() {
 		useDummy = false
 	} else {
 		useDummy = true

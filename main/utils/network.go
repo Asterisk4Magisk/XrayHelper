@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	timeout = 3000
-	dns     = "223.5.5.5:53"
+	timeout      = 3000
+	dns          = "223.5.5.5:53"
+	ipv6CheckUrl = "6.ipw.cn"
 )
 
 // getHttpClient get a http client with custom dns
@@ -46,6 +47,14 @@ func CheckPort(protocol string, host string, port string) bool {
 		}
 	}(conn)
 	return true
+}
+
+func CheckIPv6() bool {
+	rawData, err := GetRawData(ipv6CheckUrl)
+	if err != nil && len(rawData) > 0 {
+		return true
+	}
+	return false
 }
 
 // GetExternalIPv6Addr get external ipv6 address, which should bypass
