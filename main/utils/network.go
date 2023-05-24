@@ -2,8 +2,6 @@ package utils
 
 import (
 	"XrayHelper/main/errors"
-	"XrayHelper/main/log"
-	"bytes"
 	"context"
 	"io"
 	"net"
@@ -52,13 +50,7 @@ func CheckPort(protocol string, host string, port string) bool {
 }
 
 func CheckIPv6() bool {
-	var errMsg bytes.Buffer
-	NewExternal(0, nil, &errMsg, "ping6", "-c", "1", dns6).Run()
-	if errMsg.Len() > 0 {
-		log.HandleDebug("ping6 error:" + errMsg.String())
-		return false
-	}
-	return true
+	return CheckPort("udp", dns6, "53")
 }
 
 // GetExternalIPv6Addr get external ipv6 address, which should bypass
