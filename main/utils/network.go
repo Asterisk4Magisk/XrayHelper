@@ -49,6 +49,14 @@ func CheckPort(protocol string, host string, port string) bool {
 	return true
 }
 
+func IsIPv6(cidr string) bool {
+	ip, _, _ := net.ParseCIDR(cidr)
+	if ip != nil && ip.To4() == nil {
+		return true
+	}
+	return false
+}
+
 func CheckIPv6() bool {
 	return CheckPort("udp", dns6, "53")
 }

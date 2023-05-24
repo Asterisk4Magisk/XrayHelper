@@ -34,6 +34,7 @@ var Config struct {
 		PkgList    []string `yaml:"pkgList"`
 		ApList     []string `yaml:"apList"`
 		IgnoreList []string `yaml:"ignoreList"`
+		IntraList  []string `yaml:"intraList"`
 	} `yaml:"proxy"`
 }
 

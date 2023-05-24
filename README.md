@@ -24,6 +24,8 @@ proxy:
         - rndis0
     ignoreList:
         - ignore
+    intraList:
+        - 192.168.123.0/24
 ```
 `xrayhelper proxy enable`, enable system proxy  
 `xrayhelper proxy disable`, disable system proxy    

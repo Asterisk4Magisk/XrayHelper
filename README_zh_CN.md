@@ -21,7 +21,7 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
     - `pkgList`，可选，数组，代理应用名单，apk包名
     - `apList`，可选，数组，需代理的ap接口名，例如`wlan+`可代理wlan热点，`rndis+`可代理usb网络共享
     - `ignoreList`，可选，数组，需要忽略的接口名，例如可以实现连上wifi不走代理
-
+    - `intraList`，可选，数组，CIDR，默认情况下，内网地址不会被标记，若需要将部分内网地址标记，可配置此项
 ## 命令
 - service
     - `start`启动核心服务
