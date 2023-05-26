@@ -19,13 +19,13 @@ func StartTun() error {
 	var tunConfig struct {
 		Tunnel struct {
 			Name       string `yaml:"name"`
-			Mtu        uint16 `yaml:"mtu"`
+			Mtu        int    `yaml:"mtu"`
 			MultiQueue bool   `yaml:"multi-queue"`
 			IPv4       string `yaml:"ipv4"`
 			IPv6       string `yaml:"ipv6"`
 		} `yaml:"tunnel"`
 		Socks5 struct {
-			Port    string `yaml:"port"`
+			Port    int    `yaml:"port"`
 			Address string `yaml:"address"`
 			Udp     string `yaml:"udp"`
 		} `yaml:"socks5"`
@@ -35,7 +35,7 @@ func StartTun() error {
 	tunConfig.Tunnel.MultiQueue = common.TunMultiQueue
 	tunConfig.Tunnel.IPv4 = common.TunIPv4
 	tunConfig.Tunnel.IPv6 = common.TunIPv6
-	tunConfig.Socks5.Port = builds.Config.Proxy.SocksPort
+	tunConfig.Socks5.Port, _ = strconv.Atoi(builds.Config.Proxy.SocksPort)
 	tunConfig.Socks5.Address = "127.0.0.1"
 	tunConfig.Socks5.Udp = common.TunUdpMode
 	configByte, err := yaml.Marshal(&tunConfig)
