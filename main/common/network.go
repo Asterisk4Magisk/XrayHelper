@@ -57,16 +57,23 @@ func IsIPv6(cidr string) bool {
 	return false
 }
 
-func CheckIPv6() bool {
+func CheckIPv6Connection() bool {
 	return CheckPort("udp", dns6, "53")
 }
 
-func CheckDevice(device string) bool {
-	if _, err := net.InterfaceByName(device); err != nil {
+func CheckLocalIP(addr string) bool {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
 		return false
-	} else {
-		return true
 	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok {
+			if addr == ipnet.IP.String() {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // getExternalIPv6Addr get external ipv6 address, which should bypass

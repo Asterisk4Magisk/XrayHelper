@@ -11,7 +11,7 @@ import (
 var useDummy bool
 
 func init() {
-	if common.ExternalIPv6 != nil && common.CheckIPv6() {
+	if common.ExternalIPv6 != nil && common.CheckIPv6Connection() {
 		useDummy = false
 	} else {
 		useDummy = true

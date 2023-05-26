@@ -50,7 +50,7 @@ func StartTun() error {
 	deviceReady := false
 	for i := 0; i < 3; i++ {
 		time.Sleep(1 * time.Second)
-		if common.CheckDevice(common.TunDevice) {
+		if common.CheckLocalIP(common.TunIPv4) {
 			deviceReady = true
 			break
 		}
