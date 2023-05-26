@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"time"
 )
 
 type tunConfig struct {
@@ -48,9 +49,22 @@ func StartTun() error {
 	}
 	service := common.NewExternal(0, nil, nil, tun2socksPath, tun2socksConfigPath)
 	service.Start()
-	if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.pid"), []byte(strconv.Itoa(service.Pid())), 0644); err != nil {
+	deviceReady := false
+	for i := 0; i < 3; i++ {
+		time.Sleep(1 * time.Second)
+		if common.CheckDevice(common.TunDevice) {
+			deviceReady = true
+			break
+		}
+	}
+	if deviceReady {
+		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.pid"), []byte(strconv.Itoa(service.Pid())), 0644); err != nil {
+			_ = service.Kill()
+			return errors.New("write tun2socks pid failed, ", err).WithPrefix("tun")
+		}
+	} else {
 		_ = service.Kill()
-		return errors.New("write tun2socks pid failed, ", err).WithPrefix("tun")
+		return errors.New("start tun2socks service failed, ", service.Err()).WithPrefix("tun")
 	}
 	return nil
 }

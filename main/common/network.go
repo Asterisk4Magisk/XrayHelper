@@ -61,6 +61,14 @@ func CheckIPv6() bool {
 	return CheckPort("udp", dns6, "53")
 }
 
+func CheckDevice(device string) bool {
+	if _, err := net.InterfaceByName(device); err != nil {
+		return true
+	} else {
+		return false
+	}
+}
+
 // getExternalIPv6Addr get external ipv6 address, which should bypass
 func getExternalIPv6Addr() ([]string, error) {
 	var ipv6Addrs []string
