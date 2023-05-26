@@ -108,6 +108,12 @@ func AddRoute(ipv6 bool) error {
 			return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tun")
 		}
 		errMsg.Reset()
+		// when device do not have ipv6 address, route all ipv6 traffic to tun
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "add", "from", "all", "lookup", common.TunTableId, "prio", "31999").Run()
+		if errMsg.Len() > 0 {
+			return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tun")
+		}
+		errMsg.Reset()
 		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "default", "dev", common.TunDevice, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tun")
@@ -135,6 +141,11 @@ func DeleteRoute(ipv6 bool) {
 			log.HandleDebug("delete ip rule: " + errMsg.String())
 		}
 		errMsg.Reset()
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "del", "from", "all", "lookup", common.TunTableId, "prio", "31999").Run()
+		if errMsg.Len() > 0 {
+			log.HandleDebug("delete ip rule: " + errMsg.String())
+		}
+		errMsg.Reset()
 		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "flush", "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			log.HandleDebug("delete ip route: " + errMsg.String())
@@ -156,6 +167,10 @@ func CreateProxyChain(ipv6 bool) error {
 	}
 	if err := currentIpt.NewChain("mangle", "XT"); err != nil {
 		return errors.New("create "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
+	}
+	// bypass tun2socks
+	if err := currentIpt.Append("mangle", "XT", "-o", common.TunDevice, "-j", "RETURN"); err != nil {
+		return errors.New("ignore tun2socks interface "+common.TunDevice+" on "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
 	}
 	// bypass ignore list
 	for _, ignore := range builds.Config.Proxy.IgnoreList {
