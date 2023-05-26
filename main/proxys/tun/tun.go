@@ -48,7 +48,7 @@ func StartTun() error {
 	service := common.NewExternal(0, nil, nil, tun2socksPath, tun2socksConfigPath)
 	service.Start()
 	deviceReady := false
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 15; i++ {
 		time.Sleep(1 * time.Second)
 		if common.CheckLocalIP(common.TunIPv4) {
 			deviceReady = true
@@ -156,10 +156,6 @@ func CreateProxyChain(ipv6 bool) error {
 	}
 	if err := currentIpt.NewChain("mangle", "XT"); err != nil {
 		return errors.New("create "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
-	}
-	// bypass tun2socks
-	if err := currentIpt.Append("mangle", "XT", "-o", common.TunDevice, "-j", "RETURN"); err != nil {
-		return errors.New("ignore tun2socks interface "+common.TunDevice+" on "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
 	}
 	// bypass ignore list
 	for _, ignore := range builds.Config.Proxy.IgnoreList {

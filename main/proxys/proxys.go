@@ -66,15 +66,15 @@ func EnableTun() error {
 		return err
 	}
 	if builds.Config.Proxy.EnableIPv6 {
-		if err := tproxy.AddRoute(true); err != nil {
+		if err := tun.AddRoute(true); err != nil {
 			DisableTun()
 			return err
 		}
-		if err := tproxy.CreateMangleChain(true); err != nil {
+		if err := tun.CreateMangleChain(true); err != nil {
 			DisableTun()
 			return err
 		}
-		if err := tproxy.CreateProxyChain(true); err != nil {
+		if err := tun.CreateProxyChain(true); err != nil {
 			DisableTun()
 			return err
 		}

@@ -81,7 +81,7 @@ func startService() error {
 		return err
 	}
 	service.Start()
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 15; i++ {
 		time.Sleep(1 * time.Second)
 		if builds.Config.Proxy.Method == "tproxy" {
 			if common.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.TproxyPort) {
