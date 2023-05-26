@@ -63,9 +63,9 @@ func CheckIPv6() bool {
 
 func CheckDevice(device string) bool {
 	if _, err := net.InterfaceByName(device); err != nil {
-		return true
-	} else {
 		return false
+	} else {
+		return true
 	}
 }
 
