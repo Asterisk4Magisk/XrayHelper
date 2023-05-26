@@ -48,7 +48,7 @@ func StartTun() error {
 	service := common.NewExternal(0, nil, nil, tun2socksPath, tun2socksConfigPath)
 	service.Start()
 	deviceReady := false
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		time.Sleep(1 * time.Second)
 		if common.CheckLocalIP(common.TunIPv4) {
 			deviceReady = true

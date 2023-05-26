@@ -81,7 +81,7 @@ func startService() error {
 		return err
 	}
 	service.Start()
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		time.Sleep(1 * time.Second)
 		switch builds.Config.Proxy.Method {
 		case "tproxy":
