@@ -36,10 +36,12 @@ proxy:
 ## Update Components
 - update core  
   `xrayhelper update core`, should configure **xrayHelper.coreType** first, support xray, v2fly, sagernet  
+- update tun2socks  
+  `xrayhelper update tun2socks`, update tun2socks from [heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)  
 - update geodata  
   `xrayhelper update geodata`, update geodata from [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)  
 - update subscribe nodes  
-  `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, fully compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard
+  `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, fully compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard  
 
 ## Switch Proxy Node(Currently only compatible with xray-core)  
 - switch subscribe nodes  

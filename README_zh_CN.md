@@ -14,7 +14,7 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
     - `proxyTag`默认值`proxy`，使用XrayHelper进行节点切换时，将进行替换的出站代理Tag
     - `subList`可选，数组，与 [v2rayNg](https://github.com/2dust/v2rayNG) 兼容的节点订阅链接
 - proxy  
-    - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`，使用tun模式时，需要提前下载 [tun2socks](https://github.com/heiher/hev-socks5-tunnel) 二进制文件（`xrayhelper update tun2socks`）
+    - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`，使用tun模式时，需要提前下载 tun2socks 二进制文件（`xrayhelper update tun2socks`）
     - `tproxyPort`默认值`65535`，透明代理端口，该值需要与核心的`Dokodemo-Door`入站代理端口相对应，`tproxy`模式需要
     - `socksPort`默认值`65534`，socks5代理端口，该值需要与核心的`socks`入站代理端口相对应，`tun`模式需要
     - `enableIPv6`默认值`false`，是否启用ipv6代理，需要代理节点支持
