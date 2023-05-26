@@ -1,4 +1,4 @@
-package utils
+package common
 
 import (
 	"XrayHelper/main/errors"
@@ -61,8 +61,8 @@ func CheckIPv6() bool {
 	return CheckPort("udp", dns6, "53")
 }
 
-// GetExternalIPv6Addr get external ipv6 address, which should bypass
-func GetExternalIPv6Addr() ([]string, error) {
+// getExternalIPv6Addr get external ipv6 address, which should bypass
+func getExternalIPv6Addr() ([]string, error) {
 	var ipv6Addrs []string
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
@@ -81,7 +81,7 @@ func GetExternalIPv6Addr() ([]string, error) {
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
 	// open saveFile
-	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
+	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 	if err != nil {
 		return errors.New("cannot open file "+filepath+", ", err).WithPrefix("network")
 	}

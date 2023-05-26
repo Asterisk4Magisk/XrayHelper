@@ -2,9 +2,9 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
-	"XrayHelper/main/utils"
 	"archive/zip"
 	"io"
 	"os"
@@ -19,6 +19,7 @@ const (
 	sagernetCoreUrl = "https://github.com/SagerNet/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
 	geoipUrl        = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
 	geositeUrl      = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
+	tun2socksUrl    = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
 )
 
 type UpdateCommand struct{}
@@ -28,7 +29,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify operation, available operation [core|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("not specify operation, available operation [core|tun2socks|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("update").WithPathObj(*this)
@@ -37,6 +38,12 @@ func (this *UpdateCommand) Execute(args []string) error {
 	case "core":
 		log.HandleInfo("update: updating core")
 		if err := updateCore(); err != nil {
+			return err
+		}
+		log.HandleInfo("update: update success")
+	case "tun2socks":
+		log.HandleInfo("update: updating tun2socks")
+		if err := updateTun2socks(); err != nil {
 			return err
 		}
 		log.HandleInfo("update: update success")
@@ -53,7 +60,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		}
 		log.HandleInfo("update: update success")
 	default:
-		return errors.New("unknown operation " + args[0] + ", available operation [core|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
 	}
 	return nil
 }
@@ -73,15 +80,15 @@ func updateCore() error {
 	coreZipPath := path.Join(builds.Config.XrayHelper.DataDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
-		if err := utils.DownloadFile(coreZipPath, xrayCoreUrl); err != nil {
+		if err := common.DownloadFile(coreZipPath, xrayCoreUrl); err != nil {
 			return err
 		}
 	case "v2fly":
-		if err := utils.DownloadFile(coreZipPath, v2flyCoreUrl); err != nil {
+		if err := common.DownloadFile(coreZipPath, v2flyCoreUrl); err != nil {
 			return err
 		}
 	case "sagernet":
-		if err := utils.DownloadFile(coreZipPath, sagernetCoreUrl); err != nil {
+		if err := common.DownloadFile(coreZipPath, sagernetCoreUrl); err != nil {
 			return err
 		}
 	default:
@@ -128,15 +135,27 @@ func updateCore() error {
 	return nil
 }
 
+// updateTun2socks update tun2socks
+func updateTun2socks() error {
+	if runtime.GOARCH != "arm64" {
+		return errors.New("this feature only support arm64 device").WithPrefix("update")
+	}
+	savePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "tun2socks")
+	if err := common.DownloadFile(savePath, tun2socksUrl); err != nil {
+		return err
+	}
+	return nil
+}
+
 // updateGeodata update geodata
 func updateGeodata() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
-	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipUrl); err != nil {
+	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipUrl); err != nil {
 		return err
 	}
-	if err := utils.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeUrl); err != nil {
+	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeUrl); err != nil {
 		return err
 	}
 	return nil
@@ -149,12 +168,12 @@ func updateSubscribe() error {
 	}
 	builder := strings.Builder{}
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
-		rawData, err := utils.GetRawData(subUrl)
+		rawData, err := common.GetRawData(subUrl)
 		if err != nil {
 			log.HandleError(err)
 			continue
 		}
-		subData, err := utils.DecodeBase64(string(rawData))
+		subData, err := common.DecodeBase64(string(rawData))
 		if err != nil {
 			log.HandleError(err)
 			continue

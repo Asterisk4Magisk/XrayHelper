@@ -6,7 +6,8 @@ XrayHelper for Android, some scripts in [Xray4Magisk](https://github.com/Asteris
 ## Control Core Service
 `xrayhelper service start`, start core service  
 `xrayhelper service stop`, stop core service  
-`xrayhelper service restart`, restart core service
+`xrayhelper service restart`, restart core service  
+`xrayhelper service status`, show core status
 
 ## Control System Proxy
 Support application package proxy list run with blacklist and whitelist, bypass specific network interface, and proxy ap interface, should configure **proxy**
@@ -14,6 +15,7 @@ Support application package proxy list run with blacklist and whitelist, bypass 
 proxy:
     method: tproxy
     tproxyPort: 65535
+    socksPort: 65534
     enableIPv6: false
     mode: whitelist
     pkgList:
@@ -49,3 +51,4 @@ proxy:
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - [@Asterisk4Magisk/Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)
 - [@2dust/v2rayNG](https://github.com/2dust/v2rayNG)
+- [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)

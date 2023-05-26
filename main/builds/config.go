@@ -29,6 +29,7 @@ var Config struct {
 	Proxy struct {
 		Method     string   `default:"tproxy" yaml:"method"`
 		TproxyPort string   `default:"65535" yaml:"tproxyPort"`
+		SocksPort  string   `default:"65534" yaml:"socksPort"`
 		EnableIPv6 bool     `default:"false" yaml:"enableIPv6"`
 		Mode       string   `default:"blacklist" yaml:"mode"`
 		PkgList    []string `yaml:"pkgList"`

@@ -2,18 +2,16 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
-	"XrayHelper/main/utils"
 	"os"
 	"path"
 	"strconv"
 	"time"
 )
 
-var service utils.External
-
-const coreGid = 3005
+var service common.External
 
 type ServiceCommand struct{}
 
@@ -73,20 +71,31 @@ func startService() error {
 		return errors.New("open core config file failed, ", err).WithPrefix("service")
 	} else {
 		if confInfo.IsDir() {
-			service = utils.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
+			service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
 		} else {
-			service = utils.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
+			service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
 		}
 	}
 	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
-	if err := service.SetUidGid(0, coreGid); err != nil {
+	if err := service.SetUidGid("0", common.CoreGid); err != nil {
 		return err
 	}
 	service.Start()
 	for i := 0; i < 3; i++ {
 		time.Sleep(1 * time.Second)
-		if utils.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.TproxyPort) {
-			listenFlag = true
+		switch builds.Config.Proxy.Method {
+		case "tproxy":
+			if common.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.TproxyPort) {
+				listenFlag = true
+				break
+			}
+		case "tun":
+			if common.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.SocksPort) {
+				listenFlag = true
+				break
+			}
+		default:
+			listenFlag = false
 			break
 		}
 	}

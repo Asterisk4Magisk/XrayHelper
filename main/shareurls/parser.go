@@ -1,13 +1,13 @@
 package shareurls
 
 import (
+	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/shareurls/shadowsocks"
 	"XrayHelper/main/shareurls/socks"
 	"XrayHelper/main/shareurls/trojan"
 	"XrayHelper/main/shareurls/vless"
 	"XrayHelper/main/shareurls/vmess"
-	"XrayHelper/main/utils"
 	"encoding/json"
 	"net/url"
 	"strings"
@@ -23,7 +23,7 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 	ss.Name = ssParse.Fragment
 	ss.Address = ssParse.Hostname()
 	ss.Port = ssParse.Port()
-	info, err := utils.DecodeBase64(ssParse.User.Username())
+	info, err := common.DecodeBase64(ssParse.User.Username())
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func parseSocks(socksUrl string) (ShareUrl, error) {
 	so.Name = soParse.Fragment
 	so.Address = soParse.Hostname()
 	so.Port = soParse.Port()
-	info, err := utils.DecodeBase64(soParse.User.Username())
+	info, err := common.DecodeBase64(soParse.User.Username())
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +348,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 // parseVmess parse Vmess url
 func parseVmess(vmessUrl string) (ShareUrl, error) {
 	v2 := new(vmess.Vmess)
-	originJson, err := utils.DecodeBase64(vmessUrl)
+	originJson, err := common.DecodeBase64(vmessUrl)
 	if err != nil {
 		return nil, err
 	}

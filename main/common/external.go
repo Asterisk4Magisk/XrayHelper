@@ -1,4 +1,4 @@
-package utils
+package common
 
 import (
 	"XrayHelper/main/errors"
@@ -10,7 +10,7 @@ import (
 
 type External interface {
 	Err() error
-	SetUidGid(uid uint32, gid uint32) error
+	SetUidGid(uid string, gid string) error
 	AppendEnv(env string)
 	Run()
 	Start()
