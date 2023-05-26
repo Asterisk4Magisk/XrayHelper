@@ -13,34 +13,32 @@ import (
 	"time"
 )
 
-type tunConfig struct {
-	tunnel struct {
-		name       string `yaml:"name"`
-		mtu        uint16 `yaml:"mtu"`
-		multiQueue bool   `yaml:"multi-queue"`
-		ipv4       string `yaml:"ipv4"`
-		ipv6       string `yaml:"ipv6"`
-	} `yaml:"tunnel"`
-	socks5 struct {
-		port    string `yaml:"port"`
-		address string `yaml:"address"`
-		udp     string `yaml:"udp"`
-	} `yaml:"socks5"`
-}
-
 func StartTun() error {
 	tun2socksPath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "tun2socks")
 	tun2socksConfigPath := path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.yml")
-	var config tunConfig
-	config.tunnel.name = common.TunDevice
-	config.tunnel.mtu = common.TunMTU
-	config.tunnel.multiQueue = common.TunMultiQueue
-	config.tunnel.ipv4 = common.TunIPv4
-	config.tunnel.ipv6 = common.TunIPv6
-	config.socks5.port = builds.Config.Proxy.SocksPort
-	config.socks5.address = "127.0.0.1"
-	config.socks5.udp = common.TunUdpMode
-	configByte, err := yaml.Marshal(&config)
+	var tunConfig struct {
+		Tunnel struct {
+			Name       string `yaml:"name"`
+			Mtu        uint16 `yaml:"mtu"`
+			MultiQueue bool   `yaml:"multi-queue"`
+			IPv4       string `yaml:"ipv4"`
+			IPv6       string `yaml:"ipv6"`
+		} `yaml:"tunnel"`
+		Socks5 struct {
+			Port    string `yaml:"port"`
+			Address string `yaml:"address"`
+			Udp     string `yaml:"udp"`
+		} `yaml:"socks5"`
+	}
+	tunConfig.Tunnel.Name = common.TunDevice
+	tunConfig.Tunnel.Mtu = common.TunMTU
+	tunConfig.Tunnel.MultiQueue = common.TunMultiQueue
+	tunConfig.Tunnel.IPv4 = common.TunIPv4
+	tunConfig.Tunnel.IPv6 = common.TunIPv6
+	tunConfig.Socks5.Port = builds.Config.Proxy.SocksPort
+	tunConfig.Socks5.Address = "127.0.0.1"
+	tunConfig.Socks5.Udp = common.TunUdpMode
+	configByte, err := yaml.Marshal(&tunConfig)
 	if err != nil {
 		return errors.New("generate tun2socks config failed, ", err).WithPrefix("tun")
 	}
