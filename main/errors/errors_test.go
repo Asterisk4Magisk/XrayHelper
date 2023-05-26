@@ -1,6 +1,7 @@
 package errors_test
 
 import (
+	"XrayHelper/main/common"
 	"XrayHelper/main/log"
 	"os"
 	"testing"
