@@ -274,11 +274,6 @@ func CreateMangleChain(ipv6 bool) error {
 				return errors.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain TUN2SOCKS failed, ", err).WithPrefix("tun")
 			}
 		}
-		for _, external := range common.ExternalIPv6 {
-			if err := currentIpt.Append("mangle", "TUN2SOCKS", "-d", external+"/32", "-j", "RETURN"); err != nil {
-				return errors.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain TUN2SOCKS failed, ", err).WithPrefix("tun")
-			}
-		}
 	}
 	// allow IntraList
 	for _, intra := range builds.Config.Proxy.IntraList {
