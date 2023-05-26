@@ -103,12 +103,12 @@ func AddRoute(ipv6 bool) error {
 			return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tun")
 		}
 	} else {
-		common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "add", "fwmark", common.TunMarkId, "lookup", common.TunTableId).Run()
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "add", "not", "from", "all", "fwmark", common.TunMarkId, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tun")
 		}
 		errMsg.Reset()
-		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "default", "dev", common.TunDevice, "table", common.TunTableId).Run()
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "local", "default", "dev", common.TunDevice, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tun")
 		}
@@ -130,12 +130,12 @@ func DeleteRoute(ipv6 bool) {
 			log.HandleDebug("delete ip route: " + errMsg.String())
 		}
 	} else {
-		common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "del", "fwmark", common.TunMarkId, "lookup", common.TunTableId).Run()
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "del", "not", "from", "all", "fwmark", common.TunMarkId, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			log.HandleDebug("delete ip rule: " + errMsg.String())
 		}
 		errMsg.Reset()
-		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "flush", "table", common.TunTableId).Run()
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "del", "local", "default", "dev", common.TunDevice, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			log.HandleDebug("delete ip route: " + errMsg.String())
 		}
