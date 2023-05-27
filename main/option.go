@@ -13,9 +13,9 @@ var Option struct {
 	ConfigFilePath string                  `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
 	VerboseFlag    bool                    `short:"v" long:"verbose" description:"show verbose debug information"`
 	VersionFlag    bool                    `short:"V" long:"version" description:"show current version"`
-	Service        commands.ServiceCommand `command:"service" description:"control xray service"`
+	Service        commands.ServiceCommand `command:"service" description:"control core service"`
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
-	Update         commands.UpdateCommand  `command:"update" description:"update core, geodata or subscribe nodes"`
+	Update         commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata or subscribe nodes"`
 	Switch         commands.SwitchCommand  `command:"switch" description:"switch proxy node in subscribe, need specify proxyTag"`
 }
 
