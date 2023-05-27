@@ -175,7 +175,7 @@ func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
 		if !ok {
 			continue
 		}
-		if tag == "proxy" {
+		if tag == builds.Config.XrayHelper.ProxyTag {
 			// replace
 			outbound, err = shareUrls[index].ToOutoundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
 			if err != nil {
