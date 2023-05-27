@@ -77,6 +77,7 @@ func startService() error {
 		}
 	}
 	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
+	service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 	if err := service.SetUidGid("0", common.CoreGid); err != nil {
 		return err
 	}
