@@ -46,8 +46,8 @@ func getStreamSettingsObjectXray(trojan *Trojan) map[string]interface{} {
 			var acceptEncoding []interface{}
 			acceptEncoding = append(acceptEncoding, "gzip, deflate")
 			var userAgent []interface{}
-			userAgent = append(userAgent, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36",
-				"Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46")
+			userAgent = append(userAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+				"Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Mobile/15E148 Safari/604.1")
 			headers["Connection"] = connection
 			headers["Host"] = host
 			headers["Pragma"] = "no-cache"
