@@ -71,13 +71,26 @@ func startService() error {
 		return errors.New("open core config file failed, ", err).WithPrefix("service")
 	} else {
 		if confInfo.IsDir() {
-			service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
+			case "sing-box":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir)
+			default:
+				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
+			}
 		} else {
-			service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
+			case "sing-box":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir)
+			default:
+				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
+			}
 		}
 	}
 	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
-	service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 	if err := service.SetUidGid("0", common.CoreGid); err != nil {
 		return err
 	}

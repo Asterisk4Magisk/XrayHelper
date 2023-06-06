@@ -159,12 +159,12 @@ func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
 	}
 	outbounds, ok := jsonMap["outbounds"]
 	if !ok {
-		return nil, errors.New("cannot find outbounds ").WithPrefix("switch")
+		return nil, errors.New("cannot find outbounds").WithPrefix("switch")
 	}
 	// assert outbounds
 	outboundsMap, ok := outbounds.([]interface{})
 	if !ok {
-		return nil, errors.New("assert outbounds to []interface failed, ").WithPrefix("switch")
+		return nil, errors.New("assert outbounds to []interface failed").WithPrefix("switch")
 	}
 	for i, outbound := range outboundsMap {
 		outboundMap, ok := outbound.(map[string]interface{})
