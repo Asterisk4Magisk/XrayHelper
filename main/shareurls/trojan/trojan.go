@@ -46,10 +46,8 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "v2fly":
-		return nil, errors.New("v2fly TODO").WithPrefix("vmess").WithPathObj(*this)
-	case "sagernet":
-		return nil, errors.New("sagernet TODO").WithPrefix("vmess").WithPathObj(*this)
+	case "singbox":
+		return nil, errors.New("singbox TODO").WithPrefix("vmess").WithPathObj(*this)
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
 	}

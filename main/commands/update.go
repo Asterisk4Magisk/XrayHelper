@@ -14,12 +14,10 @@ import (
 )
 
 const (
-	xrayCoreUrl     = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
-	v2flyCoreUrl    = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
-	sagernetCoreUrl = "https://github.com/SagerNet/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
-	geoipUrl        = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
-	geositeUrl      = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
-	tun2socksUrl    = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
+	xrayCoreDownloadUrl  = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
+	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
+	geositeDownloadUrl   = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
+	tun2socksDownloadUrl = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
 )
 
 type UpdateCommand struct{}
@@ -80,15 +78,7 @@ func updateCore() error {
 	coreZipPath := path.Join(builds.Config.XrayHelper.DataDir, "core.zip")
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
-		if err := common.DownloadFile(coreZipPath, xrayCoreUrl); err != nil {
-			return err
-		}
-	case "v2fly":
-		if err := common.DownloadFile(coreZipPath, v2flyCoreUrl); err != nil {
-			return err
-		}
-	case "sagernet":
-		if err := common.DownloadFile(coreZipPath, sagernetCoreUrl); err != nil {
+		if err := common.DownloadFile(coreZipPath, xrayCoreDownloadUrl); err != nil {
 			return err
 		}
 	default:
@@ -141,7 +131,7 @@ func updateTun2socks() error {
 		return errors.New("this feature only support arm64 device").WithPrefix("update")
 	}
 	savePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "tun2socks")
-	if err := common.DownloadFile(savePath, tun2socksUrl); err != nil {
+	if err := common.DownloadFile(savePath, tun2socksDownloadUrl); err != nil {
 		return err
 	}
 	return nil
@@ -152,10 +142,10 @@ func updateGeodata() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
-	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipUrl); err != nil {
+	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipDownloadUrl); err != nil {
 		return err
 	}
-	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeUrl); err != nil {
+	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeDownloadUrl); err != nil {
 		return err
 	}
 	return nil
