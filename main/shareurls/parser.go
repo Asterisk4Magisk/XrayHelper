@@ -23,13 +23,27 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 	ss.Name = ssParse.Fragment
 	ss.Address = ssParse.Hostname()
 	ss.Port = ssParse.Port()
-	info, err := common.DecodeBase64(ssParse.User.Username())
-	if err != nil {
-		return nil, err
+	if ss.Port == "" {
+		full, err := common.DecodeBase64(ssParse.Hostname())
+		if err != nil {
+			return nil, err
+		}
+		infoAndServer := strings.Split(full, "@")
+		methodAndPassword := strings.Split(infoAndServer[0], ":")
+		ss.Method = methodAndPassword[0]
+		ss.Password = methodAndPassword[1]
+		addressAndPort := strings.Split(infoAndServer[1], ":")
+		ss.Address = addressAndPort[0]
+		ss.Port = addressAndPort[1]
+	} else {
+		info, err := common.DecodeBase64(ssParse.User.Username())
+		if err != nil {
+			return nil, err
+		}
+		methodAndPassword := strings.Split(info, ":")
+		ss.Method = methodAndPassword[0]
+		ss.Password = methodAndPassword[1]
 	}
-	methodAndPassword := strings.Split(info, ":")
-	ss.Method = methodAndPassword[0]
-	ss.Password = methodAndPassword[1]
 	return ss, nil
 }
 
