@@ -36,3 +36,29 @@ func getVLESSTlsObjectSingbox(vless *VLESS) map[string]interface{} {
 	}
 	return tlsObject
 }
+
+// getVLESSTransportObjectSingbox get sing-box VLESS transport Object
+func getVLESSTransportObjectSingbox(vless *VLESS) map[string]interface{} {
+	transportObject := make(map[string]interface{})
+	switch vless.Network {
+	case "tcp", "h2":
+		transportObject["type"] = "http"
+		var host []interface{}
+		host = append(host, vless.Host)
+		transportObject["host"] = host
+		transportObject["path"] = vless.Path
+	case "ws":
+		transportObject["type"] = "ws"
+		transportObject["path"] = vless.Path
+		headersObject := make(map[string]interface{})
+		headersObject["Host"] = vless.Host
+		transportObject["headers"] = headersObject
+		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
+	case "quic":
+		transportObject["type"] = "quic"
+	case "grpc":
+		transportObject["type"] = "grpc"
+		transportObject["service_name"] = vless.Path
+	}
+	return transportObject
+}

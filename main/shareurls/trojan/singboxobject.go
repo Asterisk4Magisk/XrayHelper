@@ -36,3 +36,29 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) map[string]interface{} {
 	}
 	return tlsObject
 }
+
+// getTrojanTransportObjectSingbox get sing-box Trojan transport Object
+func getTrojanTransportObjectSingbox(trojan *Trojan) map[string]interface{} {
+	transportObject := make(map[string]interface{})
+	switch trojan.Network {
+	case "tcp", "h2":
+		transportObject["type"] = "http"
+		var host []interface{}
+		host = append(host, trojan.Host)
+		transportObject["host"] = host
+		transportObject["path"] = trojan.Path
+	case "ws":
+		transportObject["type"] = "ws"
+		transportObject["path"] = trojan.Path
+		headersObject := make(map[string]interface{})
+		headersObject["Host"] = trojan.Host
+		transportObject["headers"] = headersObject
+		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
+	case "quic":
+		transportObject["type"] = "quic"
+	case "grpc":
+		transportObject["type"] = "grpc"
+		transportObject["service_name"] = trojan.Path
+	}
+	return transportObject
+}

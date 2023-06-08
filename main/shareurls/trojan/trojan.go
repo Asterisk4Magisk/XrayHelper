@@ -54,6 +54,7 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["server_port"] = this.Port
 		outboundObject["password"] = this.Password
 		outboundObject["tls"] = getTrojanTlsObjectSingbox(this)
+		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)

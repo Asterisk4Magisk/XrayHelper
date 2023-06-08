@@ -41,8 +41,18 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "singbox":
-		return nil, errors.New("singbox TODO").WithPrefix("vmess").WithPathObj(*this)
+	case "sing-box":
+		outboundObject := make(map[string]interface{})
+		outboundObject["type"] = "vmess"
+		outboundObject["tag"] = tag
+		outboundObject["server"] = this.Address
+		outboundObject["server_port"] = this.Port
+		outboundObject["uuid"] = this.Id
+		outboundObject["security"] = "auto"
+		outboundObject["alter_id"], _ = strconv.Atoi(this.AlterId)
+		outboundObject["tls"] = getVmessTlsObjectSingbox(this)
+		outboundObject["transport"] = getVmessTransportObjectSingbox(this)
+		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
 	}

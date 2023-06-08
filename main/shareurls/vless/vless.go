@@ -57,6 +57,7 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["uuid"] = this.Id
 		outboundObject["flow"] = this.Flow
 		outboundObject["tls"] = getVLESSTlsObjectSingbox(this)
+		outboundObject["transport"] = getVLESSTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("VLESS").WithPathObj(*this)
