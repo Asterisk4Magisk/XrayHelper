@@ -19,9 +19,9 @@ func getVLESSTlsObjectSingbox(vless *VLESS) map[string]interface{} {
 			}
 		}
 		//utlsObject := make(map[string]interface{})
-		//if len(trojan.FingerPrint) > 0 {
+		//if len(vless.FingerPrint) > 0 {
 		//	utlsObject["enabled"] = true
-		//	utlsObject["fingerprint"] = trojan.FingerPrint
+		//	utlsObject["fingerprint"] = vless.FingerPrint
 		//	tlsObject["utls"] = utlsObject
 		//}
 		if vless.Security == "reality" {
