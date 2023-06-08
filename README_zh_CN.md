@@ -8,7 +8,7 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
 - xrayHelper  
     - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`sing-box`
     - `corePath`必填，指定核心路径
-    - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令（`-c`或`-confdir`）
+    - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令
     - `dataDir`必填，指定XrayHelper的数据目录，用于存储GEO数据文件、自定义节点和订阅节点信息等
     - `runDir`必填，用于存储运行时所产生的文件，例如核心的pid值，核心日志，inotify的监控日志等
     - `proxyTag`默认值`proxy`，使用XrayHelper进行节点切换时，将进行替换的出站代理Tag
@@ -38,7 +38,7 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
     - `geodata`从 [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) 更新geo数据库
     - `subscribe`更新订阅节点
     - `tun2socks`更新 tun2socks
-- switch（仅支持xray核心）
+- switch
     - 不带任何参数时，从订阅`${xrayHelper.dataDir}/sub.txt`获取节点信息并选择
     - `custom`从`${xrayHelper.dataDir}/custom.txt`获取节点信息并选择，因此，可将自定义节点的分享链接放置于此方便选择
 
