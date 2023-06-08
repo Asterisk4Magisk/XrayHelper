@@ -27,8 +27,15 @@ func (this *Shadowsocks) ToOutoundWithTag(coreType string, tag string) (interfac
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray("tcp")
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "singbox":
-		return nil, errors.New("singbox TODO").WithPrefix("shadowsocks").WithPathObj(*this)
+	case "sing-box":
+		outboundObject := make(map[string]interface{})
+		outboundObject["type"] = "shadowsocks"
+		outboundObject["tag"] = tag
+		outboundObject["server"] = this.Address
+		outboundObject["server_port"] = this.Port
+		outboundObject["method"] = this.Method
+		outboundObject["password"] = this.Password
+		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("shadowsocks").WithPathObj(*this)
 	}
