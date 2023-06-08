@@ -48,8 +48,16 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "singbox":
-		return nil, errors.New("singbox TODO").WithPrefix("VLESS").WithPathObj(*this)
+	case "sing-box":
+		outboundObject := make(map[string]interface{})
+		outboundObject["type"] = "vless"
+		outboundObject["tag"] = tag
+		outboundObject["server"] = this.Address
+		outboundObject["server_port"] = this.Port
+		outboundObject["uuid"] = this.Id
+		outboundObject["flow"] = this.Flow
+		outboundObject["tls"] = getVLESSTlsObjectSingbox(this)
+		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("VLESS").WithPathObj(*this)
 	}
