@@ -27,8 +27,17 @@ func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray("tcp")
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "singbox":
-		return nil, errors.New("singbox TODO").WithPrefix("socks").WithPathObj(*this)
+	case "sing-box":
+		outboundObject := make(map[string]interface{})
+		outboundObject["type"] = "socks"
+		outboundObject["tag"] = tag
+		outboundObject["server"] = this.Address
+		outboundObject["server_port"] = this.Port
+		if this.User != "null" {
+			outboundObject["username"] = this.User
+			outboundObject["password"] = this.Password
+		}
+		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("socks").WithPathObj(*this)
 	}
