@@ -46,8 +46,15 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "singbox":
-		return nil, errors.New("singbox TODO").WithPrefix("vmess").WithPathObj(*this)
+	case "sing-box":
+		outboundObject := make(map[string]interface{})
+		outboundObject["type"] = "trojan"
+		outboundObject["tag"] = tag
+		outboundObject["server"] = this.Address
+		outboundObject["server_port"] = this.Port
+		outboundObject["password"] = this.Password
+		outboundObject["tls"] = getTrojanTlsObjectSingbox(this)
+		return outboundObject, nil
 	default:
 		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
 	}
