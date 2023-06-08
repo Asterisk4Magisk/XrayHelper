@@ -4,6 +4,7 @@ import (
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/shareurls/shadowsocks"
+	"XrayHelper/main/shareurls/shadowsocksr"
 	"XrayHelper/main/shareurls/socks"
 	"XrayHelper/main/shareurls/trojan"
 	"XrayHelper/main/shareurls/vless"
@@ -45,6 +46,38 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 		ss.Password = methodAndPassword[1]
 	}
 	return ss, nil
+}
+
+// parseShadowsocksR parse shadowsocksr url
+func parseShadowsocksR(ssrUrl string) (ShareUrl, error) {
+	ssr := new(shadowsocksr.ShadowsocksR)
+	originUrl, err := common.DecodeBase64(ssrUrl)
+	if err != nil {
+		return nil, err
+	}
+	infoAndParam := strings.Split(originUrl, "/?")
+	info := strings.Split(infoAndParam[0], ":")
+	ssr.Server = info[0]
+	ssr.Port = info[1]
+	ssr.Protocol = info[2]
+	ssr.Method = info[3]
+	ssr.Obfs = info[4]
+	ssr.Password, _ = common.DecodeBase64(info[5])
+	ssrQuery, err := url.ParseQuery(infoAndParam[1])
+	if err != nil {
+		return nil, errors.New("shadowsocksr url parse query err, ", err).WithPrefix("shareurls")
+	}
+	if obfsParam, ok := ssrQuery["obfsparam"]; ok {
+		ssr.ObfsParam, _ = common.DecodeBase64(obfsParam[0])
+	}
+	if protoParam, ok := ssrQuery["protoparam"]; ok {
+		ssr.ProtoParam, _ = common.DecodeBase64(protoParam[0])
+	}
+	// drop group param
+	if remarks, ok := ssrQuery["remarks"]; ok {
+		ssr.Remarks, _ = common.DecodeBase64(remarks[0])
+	}
+	return ssr, nil
 }
 
 // parseSocks parse socks url
