@@ -18,13 +18,13 @@ type ShadowsocksR struct {
 }
 
 func (this *ShadowsocksR) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: ShadowsocksR, Address: %+v, Port: %+v, Method: %+v, Protocol: %+v, Obfs: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Method, this.Protocol, this.Obfs, this.Password)
+	return fmt.Sprintf("Remarks: %+v, Type: ShadowsocksR, Server: %+v, Port: %+v, Method: %+v, Protocol: %+v, Obfs: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Method, this.Protocol, this.Obfs, this.Password)
 }
 
 func (this *ShadowsocksR) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
-		return nil, errors.New("xray core not support ShadowsocksR").WithPrefix("ShadowsocksR").WithPathObj(*this)
+		return nil, errors.New("xray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "shadowsocksr"
@@ -39,6 +39,6 @@ func (this *ShadowsocksR) ToOutoundWithTag(coreType string, tag string) (interfa
 		outboundObject["protocol_param"] = this.ProtoParam
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("ShadowsocksR").WithPathObj(*this)
+		return nil, errors.New("not supported core type " + coreType).WithPrefix("shadowsocksr").WithPathObj(*this)
 	}
 }

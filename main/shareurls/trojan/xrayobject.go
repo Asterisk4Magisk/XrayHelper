@@ -16,7 +16,7 @@ func getMuxObjectXray(enabled bool) map[string]interface{} {
 func getTrojanSettingsObjectXray(trojan *Trojan) map[string]interface{} {
 	var serversObject []interface{}
 	server := make(map[string]interface{})
-	server["address"] = trojan.Address
+	server["address"] = trojan.Server
 	server["port"], _ = strconv.Atoi(trojan.Port)
 	server["password"] = trojan.Password
 	server["level"] = 0

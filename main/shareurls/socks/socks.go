@@ -6,15 +6,15 @@ import (
 )
 
 type Socks struct {
-	Name     string
-	Address  string
+	Remarks  string
+	Server   string
 	Port     string
 	User     string
 	Password string
 }
 
 func (this *Socks) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: Socks, Address: %+v, Port: %+v, User: %+v, Password: %+v", this.Name, this.Address, this.Port, this.User, this.Password)
+	return fmt.Sprintf("Remarks: %+v, Type: Socks, Server: %+v, Port: %+v, User: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.User, this.Password)
 }
 
 func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
@@ -31,7 +31,7 @@ func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "socks"
 		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Address
+		outboundObject["server"] = this.Server
 		outboundObject["server_port"] = this.Port
 		if this.User != "null" {
 			outboundObject["username"] = this.User

@@ -6,12 +6,13 @@ import (
 )
 
 const (
-	socksPrefix  = "socks://"
-	ssPrefix     = "ss://"
-	ssrPrefix    = "ssr://"
-	vmessPrefix  = "vmess://"
-	vlessPrefix  = "vless://"
-	trojanPrefix = "trojan://"
+	socksPrefix    = "socks://"
+	ssPrefix       = "ss://"
+	ssrPrefix      = "ssr://"
+	vmessPrefix    = "vmess://"
+	vlessPrefix    = "vless://"
+	trojanPrefix   = "trojan://"
+	hysteriaPrefix = "hysteria://"
 )
 
 // ShareUrl implement this interface, that node can be converted to xray OutoundObject
@@ -39,6 +40,9 @@ func Parse(link string) (ShareUrl, error) {
 	}
 	if strings.HasPrefix(link, trojanPrefix) {
 		return parseTrojan(link)
+	}
+	if strings.HasPrefix(link, hysteriaPrefix) {
+		return parseHysteria(link)
 	}
 	return nil, errors.New("not a supported share link").WithPrefix("shareurls")
 }

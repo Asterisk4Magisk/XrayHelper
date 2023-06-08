@@ -34,7 +34,7 @@ func getSocksSettingsObjectXray(socks *Socks) map[string]interface{} {
 		usersObject = append(usersObject, user)
 		server["users"] = usersObject
 	}
-	server["address"] = socks.Address
+	server["address"] = socks.Server
 	server["port"], _ = strconv.Atoi(socks.Port)
 	serversObject = append(serversObject, server)
 	settingsObject := make(map[string]interface{})

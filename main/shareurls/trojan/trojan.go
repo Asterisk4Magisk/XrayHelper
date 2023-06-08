@@ -7,9 +7,9 @@ import (
 
 type Trojan struct {
 	//basic
-	Name     string
+	Remarks  string
 	Password string
-	Address  string
+	Server   string
 	Port     string
 	Network  string
 	Security string
@@ -33,7 +33,7 @@ type Trojan struct {
 }
 
 func (this *Trojan) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: Trojan, Address: %+v, Port: %+v, Network: %+v, Password: %+v", this.Name, this.Address, this.Port, this.Network, this.Password)
+	return fmt.Sprintf("Remarks: %+v, Type: Trojan, Server: %+v, Port: %+v, Network: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Password)
 }
 
 func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
@@ -50,13 +50,13 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "trojan"
 		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Address
+		outboundObject["server"] = this.Server
 		outboundObject["server_port"] = this.Port
 		outboundObject["password"] = this.Password
 		outboundObject["tls"] = getTrojanTlsObjectSingbox(this)
 		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
+		return nil, errors.New("not supported core type " + coreType).WithPrefix("trojan").WithPathObj(*this)
 	}
 }

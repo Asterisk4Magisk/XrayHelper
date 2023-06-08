@@ -24,7 +24,7 @@ func getStreamSettingsObjectXray(network string) map[string]interface{} {
 func getShadowsocksSettingsObjectXray(ss *Shadowsocks) map[string]interface{} {
 	var serversObject []interface{}
 	server := make(map[string]interface{})
-	server["address"] = ss.Address
+	server["address"] = ss.Server
 	server["port"], _ = strconv.Atoi(ss.Port)
 	server["method"] = ss.Method
 	server["password"] = ss.Password

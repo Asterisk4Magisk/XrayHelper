@@ -7,9 +7,9 @@ import (
 
 type VLESS struct {
 	//basic
-	Name       string
+	Remarks    string
 	Id         string
-	Address    string
+	Server     string
 	Port       string
 	Encryption string
 	Flow       string
@@ -35,7 +35,7 @@ type VLESS struct {
 }
 
 func (this *VLESS) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: VLESS, Address: %+v, Port: %+v, Flow: %+v, Network: %+v, Id: %+v", this.Name, this.Address, this.Port, this.Flow, this.Network, this.Id)
+	return fmt.Sprintf("Remarks: %+v, Type: VLESS, Server: %+v, Port: %+v, Flow: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Flow, this.Network, this.Id)
 }
 
 func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
@@ -52,7 +52,7 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "vless"
 		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Address
+		outboundObject["server"] = this.Server
 		outboundObject["server_port"] = this.Port
 		outboundObject["uuid"] = this.Id
 		outboundObject["flow"] = this.Flow
@@ -60,6 +60,6 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["transport"] = getVLESSTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("VLESS").WithPathObj(*this)
+		return nil, errors.New("not supported core type " + coreType).WithPrefix("vless").WithPathObj(*this)
 	}
 }

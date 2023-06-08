@@ -7,8 +7,8 @@ import (
 )
 
 type Vmess struct {
-	Name        string `json:"ps"`
-	Address     string `json:"add"`
+	Remarks     string `json:"ps"`
+	Server      string `json:"add"`
 	Port        string `json:"port"`
 	Id          string `json:"id"`
 	AlterId     string `json:"aid"`
@@ -25,7 +25,7 @@ type Vmess struct {
 }
 
 func (this *Vmess) GetNodeInfo() string {
-	return fmt.Sprintf("Name: %+v, Type: Vmess, Address: %+v, Port: %+v, Network: %+v, Id: %+v", this.Name, this.Address, this.Port, this.Network, this.Id)
+	return fmt.Sprintf("Remarks: %+v, Type: Vmess, Server: %+v, Port: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
 }
 
 func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
@@ -45,7 +45,7 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "vmess"
 		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Address
+		outboundObject["server"] = this.Server
 		outboundObject["server_port"] = this.Port
 		outboundObject["uuid"] = this.Id
 		outboundObject["security"] = "auto"

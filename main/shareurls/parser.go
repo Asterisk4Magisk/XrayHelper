@@ -3,6 +3,7 @@ package shareurls
 import (
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
+	"XrayHelper/main/shareurls/hysteria"
 	"XrayHelper/main/shareurls/shadowsocks"
 	"XrayHelper/main/shareurls/shadowsocksr"
 	"XrayHelper/main/shareurls/socks"
@@ -21,8 +22,8 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 	if err != nil {
 		return nil, errors.New("shadowsocks url parse err, ", err).WithPrefix("shareurls")
 	}
-	ss.Name = ssParse.Fragment
-	ss.Address = ssParse.Hostname()
+	ss.Remarks = ssParse.Fragment
+	ss.Server = ssParse.Hostname()
 	ss.Port = ssParse.Port()
 	if ss.Port == "" {
 		full, err := common.DecodeBase64(ssParse.Hostname())
@@ -34,7 +35,7 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 		ss.Method = methodAndPassword[0]
 		ss.Password = methodAndPassword[1]
 		addressAndPort := strings.Split(infoAndServer[1], ":")
-		ss.Address = addressAndPort[0]
+		ss.Server = addressAndPort[0]
 		ss.Port = addressAndPort[1]
 	} else {
 		info, err := common.DecodeBase64(ssParse.User.Username())
@@ -87,8 +88,8 @@ func parseSocks(socksUrl string) (ShareUrl, error) {
 	if err != nil {
 		return nil, errors.New("socks url parse err, ", err).WithPrefix("shareurls")
 	}
-	so.Name = soParse.Fragment
-	so.Address = soParse.Hostname()
+	so.Remarks = soParse.Fragment
+	so.Server = soParse.Hostname()
 	so.Port = soParse.Port()
 	info, err := common.DecodeBase64(soParse.User.Username())
 	if err != nil {
@@ -107,9 +108,9 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 	if err != nil {
 		return nil, errors.New("trojan url parse err, ", err).WithPrefix("shareurls")
 	}
-	tj.Name = tjParse.Fragment
+	tj.Remarks = tjParse.Fragment
 	tj.Password = tjParse.User.Username()
-	tj.Address = tjParse.Hostname()
+	tj.Server = tjParse.Hostname()
 	tj.Port = tjParse.Port()
 	tjQuery, err := url.ParseQuery(tjParse.RawQuery)
 	if err != nil {
@@ -245,9 +246,9 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	if err != nil {
 		return nil, errors.New("VLESS url parse err, ", err).WithPrefix("shareurls")
 	}
-	vl.Name = vlParse.Fragment
+	vl.Remarks = vlParse.Fragment
 	vl.Id = vlParse.User.Username()
-	vl.Address = vlParse.Hostname()
+	vl.Server = vlParse.Hostname()
 	vl.Port = vlParse.Port()
 	vlQuery, err := url.ParseQuery(vlParse.RawQuery)
 	if err != nil {
@@ -262,12 +263,12 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 		return nil, errors.New("empty VLESS encryption").WithPrefix("shareurls")
 	}
 	//parse VLESS flow
-	if flows, ok := vlQuery["flow"]; !ok {
-		vl.Flow = ""
-	} else if len(flows) > 1 {
-		return nil, errors.New("multiple VLESS flow").WithPrefix("shareurls")
-	} else {
-		vl.Flow = flows[0]
+	if flows, ok := vlQuery["flow"]; ok {
+		if len(flows) > 1 {
+			return nil, errors.New("multiple VLESS flow").WithPrefix("shareurls")
+		} else {
+			vl.Flow = flows[0]
+		}
 	}
 	//parse VLESS network
 	if types, ok := vlQuery["type"]; !ok {
@@ -404,4 +405,93 @@ func parseVmess(vmessUrl string) (ShareUrl, error) {
 		return nil, errors.New("unmarshal origin json failed, ", err).WithPrefix("shareurls")
 	}
 	return v2, nil
+}
+
+// parseHysteria parse hysteria url
+func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
+	ht := new(hysteria.Hysteria)
+	htParse, err := url.Parse(hysteriaUrl)
+	if err != nil {
+		return nil, errors.New("hysteria url parse err, ", err).WithPrefix("shareurls")
+	}
+	ht.Remarks = htParse.Fragment
+	ht.Host = htParse.Hostname()
+	ht.Port = htParse.Port()
+	htQuery, err := url.ParseQuery(htParse.RawQuery)
+	if err != nil {
+		return nil, errors.New("hysteria url parse query err, ", err).WithPrefix("shareurls")
+	}
+	//parse hysteria protocol
+	if protocols, ok := htQuery["protocol"]; ok {
+		if len(protocols) > 1 {
+			return nil, errors.New("multiple hysteria protocol").WithPrefix("shareurls")
+		} else {
+			ht.Protocol = protocols[0]
+		}
+	}
+	//parse hysteria auth
+	if auth, ok := htQuery["auth"]; ok {
+		if len(auth) > 1 {
+			return nil, errors.New("multiple hysteria auth").WithPrefix("shareurls")
+		} else {
+			ht.Auth = auth[0]
+		}
+	}
+	//parse hysteria peer
+	if peer, ok := htQuery["peer"]; ok {
+		if len(peer) > 1 {
+			return nil, errors.New("multiple hysteria peer").WithPrefix("shareurls")
+		} else {
+			ht.Peer = peer[0]
+		}
+	}
+	//parse hysteria insecure
+	if insecure, ok := htQuery["insecure"]; ok {
+		if len(insecure) > 1 {
+			return nil, errors.New("multiple hysteria insecure").WithPrefix("shareurls")
+		} else {
+			ht.Insecure = insecure[0]
+		}
+	}
+	//parse hysteria upmbps
+	if upmbps, ok := htQuery["upmbps"]; ok {
+		if len(upmbps) > 1 {
+			return nil, errors.New("multiple hysteria upmbps").WithPrefix("shareurls")
+		} else {
+			ht.UpMBPS = upmbps[0]
+		}
+	}
+	//parse hysteria downmbps
+	if downmbps, ok := htQuery["downmbps"]; ok {
+		if len(downmbps) > 1 {
+			return nil, errors.New("multiple hysteria downmbps").WithPrefix("shareurls")
+		} else {
+			ht.DownMBPS = downmbps[0]
+		}
+	}
+	//parse hysteria alpn
+	if alpn, ok := htQuery["alpn"]; ok {
+		if len(alpn) > 1 {
+			return nil, errors.New("multiple hysteria alpn").WithPrefix("shareurls")
+		} else {
+			ht.Alpn = alpn[0]
+		}
+	}
+	//parse hysteria obfs
+	if obfs, ok := htQuery["obfs"]; ok {
+		if len(obfs) > 1 {
+			return nil, errors.New("multiple hysteria obfs").WithPrefix("shareurls")
+		} else {
+			ht.Obfs = obfs[0]
+		}
+	}
+	//parse hysteria obfsParam
+	if obfsParam, ok := htQuery["obfsParam"]; ok {
+		if len(obfsParam) > 1 {
+			return nil, errors.New("multiple hysteria obfsParam").WithPrefix("shareurls")
+		} else {
+			ht.ObfsParam = obfsParam[0]
+		}
+	}
+	return ht, nil
 }

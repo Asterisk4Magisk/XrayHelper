@@ -16,7 +16,7 @@ func getMuxObjectXray(enabled bool) map[string]interface{} {
 func getVmessSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 	var vnextsObject []interface{}
 	vnext := make(map[string]interface{})
-	vnext["address"] = vmess.Address
+	vnext["address"] = vmess.Server
 	vnext["port"], _ = strconv.Atoi(vmess.Port)
 
 	var usersObject []interface{}
