@@ -12,7 +12,7 @@ const (
 	DummyTableId  = "164"
 	TunDevice     = "xtun"
 	TunMTU        = 8500
-	TunMultiQueue = true
+	TunMultiQueue = false
 	TunIPv4       = "10.10.12.1"
 	TunIPv6       = "fd02:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd"
 	TunUdpMode    = "udp"
