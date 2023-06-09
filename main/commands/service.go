@@ -5,6 +5,8 @@ import (
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"encoding/json"
+	"github.com/tailscale/hujson"
 	"os"
 	"path"
 	"strconv"
@@ -91,6 +93,9 @@ func startService() error {
 		}
 	}
 	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
+	if err := handleDns(builds.Config.Proxy.EnableIPv6); err != nil {
+		return err
+	}
 	if err := service.SetUidGid("0", common.CoreGid); err != nil {
 		return err
 	}
@@ -155,4 +160,98 @@ func getServicePid() string {
 		log.HandleDebug(err)
 	}
 	return ""
+}
+
+func handleDns(ipv6 bool) error {
+	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
+		return errors.New("open core config file failed, ", err).WithPrefix("service")
+	} else {
+		if confInfo.IsDir() {
+			confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig)
+			if err != nil {
+				return errors.New("open config dir failed, ", err).WithPrefix("service")
+			}
+			for _, conf := range confDir {
+				if !conf.IsDir() {
+					confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()))
+					if err != nil {
+						return errors.New("read config file failed, ", err).WithPrefix("service")
+					}
+					newConfByte, err := replaceDnsConfig(confByte, ipv6)
+					if err != nil {
+						log.HandleDebug(err)
+						continue
+					}
+					if err := os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), newConfByte, 0644); err != nil {
+						return errors.New("write new config failed, ", err).WithPrefix("service")
+					}
+				}
+			}
+		} else {
+			confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig)
+			if err != nil {
+				return errors.New("read config file failed, ", err).WithPrefix("service")
+			}
+			newConfByte, err := replaceDnsConfig(confByte, ipv6)
+			if err != nil {
+				return err
+			}
+			if err := os.WriteFile(builds.Config.XrayHelper.CoreConfig, newConfByte, 0644); err != nil {
+				return errors.New("write new config failed, ", err).WithPrefix("service")
+			}
+		}
+	}
+	return nil
+}
+
+func replaceDnsConfig(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
+	// standardize origin json (remove comment)
+	standardize, err := hujson.Standardize(conf)
+	if err != nil {
+		return nil, errors.New("standardize config json failed, ", err).WithPrefix("service")
+	}
+	// unmarshal
+	var jsonValue interface{}
+	err = json.Unmarshal(standardize, &jsonValue)
+	if err != nil {
+		return nil, errors.New("unmarshal config json failed, ", err).WithPrefix("service")
+	}
+	// assert json to map
+	jsonMap, ok := jsonValue.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("assert config json to map failed").WithPrefix("service")
+	}
+	dns, ok := jsonMap["dns"]
+	if !ok {
+		return nil, errors.New("cannot find dns").WithPrefix("service")
+	}
+	// assert dns
+	dnsMap, ok := dns.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("assert dns to map failed").WithPrefix("service")
+	}
+	switch builds.Config.XrayHelper.CoreType {
+	case "xray":
+		if ipv6 {
+			dnsMap["queryStrategy"] = "UseIP"
+		} else {
+			dnsMap["queryStrategy"] = "UseIPv4"
+		}
+	case "sing-box":
+		if ipv6 {
+			dnsMap["strategy"] = "prefer_ipv4"
+		} else {
+			dnsMap["strategy"] = "ipv4_only"
+		}
+	default:
+		return nil, errors.New("not supported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
+	}
+	// replace
+	jsonMap["dns"] = dnsMap
+	// marshal
+	marshal, err := json.MarshalIndent(jsonMap, "", "    ")
+	if err != nil {
+		return nil, errors.New("marshal config json failed, ", err).WithPrefix("service")
+	}
+	return marshal, nil
 }
