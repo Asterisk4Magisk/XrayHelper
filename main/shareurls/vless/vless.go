@@ -3,6 +3,7 @@ package vless
 import (
 	"XrayHelper/main/errors"
 	"fmt"
+	"strconv"
 )
 
 type VLESS struct {
@@ -53,7 +54,7 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["type"] = "vless"
 		outboundObject["tag"] = tag
 		outboundObject["server"] = this.Server
-		outboundObject["server_port"] = this.Port
+		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
 		outboundObject["uuid"] = this.Id
 		outboundObject["flow"] = this.Flow
 		outboundObject["tls"] = getVLESSTlsObjectSingbox(this)

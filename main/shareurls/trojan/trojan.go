@@ -3,6 +3,7 @@ package trojan
 import (
 	"XrayHelper/main/errors"
 	"fmt"
+	"strconv"
 )
 
 type Trojan struct {
@@ -51,7 +52,7 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["type"] = "trojan"
 		outboundObject["tag"] = tag
 		outboundObject["server"] = this.Server
-		outboundObject["server_port"] = this.Port
+		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
 		outboundObject["password"] = this.Password
 		outboundObject["tls"] = getTrojanTlsObjectSingbox(this)
 		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)

@@ -3,6 +3,7 @@ package hysteria
 import (
 	"XrayHelper/main/errors"
 	"fmt"
+	"strconv"
 )
 
 type Hysteria struct {
@@ -33,7 +34,7 @@ func (this *Hysteria) ToOutoundWithTag(coreType string, tag string) (interface{}
 		outboundObject["type"] = "hysteria"
 		outboundObject["tag"] = tag
 		outboundObject["server"] = this.Host
-		outboundObject["server_port"] = this.Port
+		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
 		outboundObject["up_mbps"] = this.UpMBPS
 		outboundObject["down_mbps"] = this.DownMBPS
 		outboundObject["obfs"] = this.ObfsParam

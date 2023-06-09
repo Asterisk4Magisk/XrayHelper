@@ -3,6 +3,7 @@ package shadowsocks
 import (
 	"XrayHelper/main/errors"
 	"fmt"
+	"strconv"
 )
 
 type Shadowsocks struct {
@@ -32,7 +33,7 @@ func (this *Shadowsocks) ToOutoundWithTag(coreType string, tag string) (interfac
 		outboundObject["type"] = "shadowsocks"
 		outboundObject["tag"] = tag
 		outboundObject["server"] = this.Server
-		outboundObject["server_port"] = this.Port
+		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
 		outboundObject["method"] = this.Method
 		outboundObject["password"] = this.Password
 		return outboundObject, nil

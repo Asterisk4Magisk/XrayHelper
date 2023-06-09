@@ -46,7 +46,7 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["type"] = "vmess"
 		outboundObject["tag"] = tag
 		outboundObject["server"] = this.Server
-		outboundObject["server_port"] = this.Port
+		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
 		outboundObject["uuid"] = this.Id
 		outboundObject["security"] = "auto"
 		outboundObject["alter_id"], _ = strconv.Atoi(this.AlterId)
