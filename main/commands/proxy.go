@@ -26,43 +26,17 @@ func (this *ProxyCommand) Execute(args []string) error {
 	switch args[0] {
 	case "enable":
 		log.HandleInfo("proxy: enabling rules")
-		switch builds.Config.Proxy.Method {
-		case "tproxy":
-			if err := proxys.EnableTproxy(); err != nil {
-				return err
-			}
-		case "tun":
-			if err := proxys.EnableTun(); err != nil {
-				return err
-			}
-		default:
-			return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxy").WithPathObj(*this)
+		if err := proxys.Enable(); err != nil {
+			return err
 		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
-		switch builds.Config.Proxy.Method {
-		case "tproxy":
-			proxys.DisableTproxy()
-		case "tun":
-			proxys.DisableTun()
-		default:
-			return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxy").WithPathObj(*this)
-		}
+		proxys.Disable()
 	case "refresh":
 		log.HandleInfo("proxy: refreshing rules")
-		switch builds.Config.Proxy.Method {
-		case "tproxy":
-			proxys.DisableTproxy()
-			if err := proxys.EnableTproxy(); err != nil {
-				return err
-			}
-		case "tun":
-			proxys.DisableTun()
-			if err := proxys.EnableTun(); err != nil {
-				return err
-			}
-		default:
-			return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxy").WithPathObj(*this)
+		proxys.Disable()
+		if err := proxys.Enable(); err != nil {
+			return err
 		}
 	default:
 		return errors.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)

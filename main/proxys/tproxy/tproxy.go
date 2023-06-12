@@ -167,12 +167,19 @@ func CreateProxyChain(ipv6 bool) error {
 				}
 			}
 		}
-		// allow root user(eg: magisk, netd, dnsmasq...)
+		// allow root user(eg: magisk, ksud, netd...)
 		if err := currentIpt.Append("mangle", "PROXY", "-p", "tcp", "-m", "owner", "--uid-owner", "0", "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
 			return errors.New("create root user proxy on "+currentProto+" tcp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 		}
 		if err := currentIpt.Append("mangle", "PROXY", "-p", "udp", "-m", "owner", "--uid-owner", "0", "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
 			return errors.New("create root user proxy on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+		}
+		// allow dns_tether user(eg: dnsmasq...)
+		if err := currentIpt.Append("mangle", "PROXY", "-p", "tcp", "-m", "owner", "--uid-owner", "1052", "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
+			return errors.New("create dns_tether user proxy on "+currentProto+" tcp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+		}
+		if err := currentIpt.Append("mangle", "PROXY", "-p", "udp", "-m", "owner", "--uid-owner", "1052", "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
+			return errors.New("create dns_tether user proxy on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 		}
 	} else {
 		return errors.New("invalid proxy mode " + builds.Config.Proxy.Mode).WithPrefix("tproxy")
