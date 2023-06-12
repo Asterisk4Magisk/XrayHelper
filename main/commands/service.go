@@ -74,7 +74,7 @@ func startService() error {
 	} else {
 		if confInfo.IsDir() {
 			switch builds.Config.XrayHelper.CoreType {
-			case "xray":
+			case "xray", "v2ray":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
@@ -83,7 +83,7 @@ func startService() error {
 			}
 		} else {
 			switch builds.Config.XrayHelper.CoreType {
-			case "xray":
+			case "xray", "v2ray":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
@@ -93,6 +93,7 @@ func startService() error {
 		}
 	}
 	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
+	service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 	if err := handleDns(builds.Config.Proxy.EnableIPv6); err != nil {
 		return err
 	}
@@ -237,6 +238,12 @@ func replaceDnsConfig(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
 		} else {
 			dnsMap["queryStrategy"] = "UseIPv4"
 		}
+	case "v2ray":
+		if ipv6 {
+			dnsMap["queryStrategy"] = "USE_IP"
+		} else {
+			dnsMap["queryStrategy"] = "USE_IP4"
+		}
 	case "sing-box":
 		if ipv6 {
 			dnsMap["strategy"] = "prefer_ipv4"
@@ -244,7 +251,7 @@ func replaceDnsConfig(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
 			dnsMap["strategy"] = "ipv4_only"
 		}
 	default:
-		return nil, errors.New("not supported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
+		return nil, errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
 	}
 	// replace
 	jsonMap["dns"] = dnsMap
