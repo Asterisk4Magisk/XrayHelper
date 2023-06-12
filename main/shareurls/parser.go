@@ -169,6 +169,11 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 		if paths, ok := tjQuery["path"]; ok && len(paths) == 1 {
 			tj.Path = paths[0]
 		}
+	case "meek":
+		//parse trojan path
+		if paths, ok := tjQuery["url"]; ok && len(paths) == 1 {
+			tj.Path = paths[0]
+		}
 	case "quic":
 		//parse trojan headerType
 		if headerTypes, ok := tjQuery["headerType"]; ok && len(headerTypes) == 1 {

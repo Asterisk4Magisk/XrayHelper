@@ -18,7 +18,7 @@ type Trojan struct {
 	//addon
 	//http/ws/h2->host quic->security
 	Host string
-	//ws/h2->path quic->key kcp->seed grpc->serviceName
+	//ws/h2->path quic->key kcp->seed grpc->serviceName meek->url
 	Path string
 	//tcp/kcp/quic->type grpc->mode
 	Type string
@@ -45,6 +45,14 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["protocol"] = "trojan"
 		outboundObject["settings"] = getTrojanSettingsObjectXray(this)
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
+		outboundObject["tag"] = tag
+		return outboundObject, nil
+	case "v2ray":
+		outboundObject := make(map[string]interface{})
+		outboundObject["mux"] = getMuxObjectV2ray(false)
+		outboundObject["protocol"] = "trojan"
+		outboundObject["settings"] = getTrojanSettingsObjectV2ray(this)
+		outboundObject["streamSettings"] = getStreamSettingsObjectV2ray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
 	case "sing-box":

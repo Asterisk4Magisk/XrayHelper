@@ -49,6 +49,8 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
+	case "v2ray":
+		return nil, errors.New("v2ray core not support VLESS").WithPrefix("vless").WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "vless"

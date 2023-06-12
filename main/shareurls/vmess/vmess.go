@@ -41,6 +41,14 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
 		outboundObject["tag"] = tag
 		return outboundObject, nil
+	case "v2ray":
+		outboundObject := make(map[string]interface{})
+		outboundObject["mux"] = getMuxObjectV2ray(false)
+		outboundObject["protocol"] = "vmess"
+		outboundObject["settings"] = getVmessSettingsObjectV2ray(this)
+		outboundObject["streamSettings"] = getStreamSettingsObjectV2ray(this)
+		outboundObject["tag"] = tag
+		return outboundObject, nil
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "vmess"

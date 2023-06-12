@@ -15,7 +15,7 @@ const (
 	hysteriaPrefix = "hysteria://"
 )
 
-// ShareUrl implement this interface, that node can be converted to xray OutoundObject
+// ShareUrl implement this interface, that node can be converted to core OutoundObject
 type ShareUrl interface {
 	GetNodeInfo() string
 	ToOutoundWithTag(coreType string, tag string) (interface{}, error)
