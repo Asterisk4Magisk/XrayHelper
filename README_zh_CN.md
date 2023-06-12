@@ -6,7 +6,7 @@
 ## 配置文件  
 XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径
 - xrayHelper  
-    - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`sing-box`
+    - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`
     - `corePath`必填，指定核心路径
     - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令
     - `dataDir`必填，指定XrayHelper的数据目录，用于存储GEO数据文件、自定义节点和订阅节点信息等

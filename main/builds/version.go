@@ -8,7 +8,7 @@ import (
 
 const (
 	VersionX byte = 1
-	VersionY byte = 0
+	VersionY byte = 1
 	VersionZ byte = 0
 	Build         = "-release"
 	Intro         = "An xray helper for Android to control system proxy."

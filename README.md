@@ -35,7 +35,7 @@ proxy:
 
 ## Update Components
 - update core  
-  `xrayhelper update core`, should configure **xrayHelper.coreType** first, support xray, sing-box  
+  `xrayhelper update core`, should configure **xrayHelper.coreType** first, support xray, v2ray, sing-box  
 - update tun2socks  
   `xrayhelper update tun2socks`, update tun2socks from [heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)  
 - update geodata  
