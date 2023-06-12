@@ -20,6 +20,7 @@ import (
 const (
 	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
 	xrayCoreDownloadUrl       = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
+	v2rayCoreDownloadUrl      = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
 	geoipDownloadUrl          = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
 	geoipDownloadUrlSingbox   = "https://github.com/lyc8503/sing-box-rules/releases/latest/download/geoip.db"
 	geositeDownloadUrl        = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
@@ -105,6 +106,45 @@ func updateCore() error {
 		}(zipReader)
 		for _, file := range zipReader.File {
 			if file.Name == "xray" {
+				fileReader, err := file.Open()
+				if err != nil {
+					return errors.New("cannot get file reader "+file.Name+", ", err).WithPrefix("update")
+				}
+				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+				if err != nil {
+					return errors.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix("update")
+				}
+				_, err = io.Copy(saveFile, fileReader)
+				if err != nil {
+					return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+				}
+				_ = saveFile.Close()
+				_ = fileReader.Close()
+				break
+			}
+		}
+	case "v2ray":
+		v2rayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "v2ray.zip")
+		if err := common.DownloadFile(v2rayZipPath, v2rayCoreDownloadUrl); err != nil {
+			return err
+		}
+		// update core need stop core service first
+		if len(getServicePid()) > 0 {
+			log.HandleInfo("update: detect core is running, stop it")
+			stopService()
+			serviceRunFlag = true
+			_ = os.Remove(builds.Config.XrayHelper.CorePath)
+		}
+		zipReader, err := zip.OpenReader(v2rayZipPath)
+		if err != nil {
+			return errors.New("open v2ray.zip failed, ", err).WithPrefix("update")
+		}
+		defer func(zipReader *zip.ReadCloser) {
+			_ = zipReader.Close()
+			_ = os.Remove(v2rayZipPath)
+		}(zipReader)
+		for _, file := range zipReader.File {
+			if file.Name == "v2ray" {
 				fileReader, err := file.Open()
 				if err != nil {
 					return errors.New("cannot get file reader "+file.Name+", ", err).WithPrefix("update")
