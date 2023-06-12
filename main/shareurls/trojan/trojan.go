@@ -58,6 +58,6 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("trojan").WithPathObj(*this)
+		return nil, errors.New("unsupported core type " + coreType).WithPrefix("trojan").WithPathObj(*this)
 	}
 }

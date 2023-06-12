@@ -40,6 +40,6 @@ func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		}
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("socks").WithPathObj(*this)
+		return nil, errors.New("unsupported core type " + coreType).WithPrefix("socks").WithPathObj(*this)
 	}
 }

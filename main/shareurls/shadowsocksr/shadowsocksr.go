@@ -26,6 +26,8 @@ func (this *ShadowsocksR) ToOutoundWithTag(coreType string, tag string) (interfa
 	switch coreType {
 	case "xray":
 		return nil, errors.New("xray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
+	case "v2ray":
+		return nil, errors.New("v2ray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "shadowsocksr"
@@ -40,6 +42,6 @@ func (this *ShadowsocksR) ToOutoundWithTag(coreType string, tag string) (interfa
 		outboundObject["protocol_param"] = this.ProtoParam
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, errors.New("unsupported core type " + coreType).WithPrefix("shadowsocksr").WithPathObj(*this)
 	}
 }

@@ -54,6 +54,6 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["transport"] = getVmessTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
+		return nil, errors.New("unsupported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
 	}
 }

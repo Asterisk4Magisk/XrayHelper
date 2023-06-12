@@ -38,6 +38,6 @@ func (this *Shadowsocks) ToOutoundWithTag(coreType string, tag string) (interfac
 		outboundObject["password"] = this.Password
 		return outboundObject, nil
 	default:
-		return nil, errors.New("not supported core type " + coreType).WithPrefix("shadowsocks").WithPathObj(*this)
+		return nil, errors.New("unsupported core type " + coreType).WithPrefix("shadowsocks").WithPathObj(*this)
 	}
 }
