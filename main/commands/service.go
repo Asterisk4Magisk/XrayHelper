@@ -74,8 +74,10 @@ func startService() error {
 	} else {
 		if confInfo.IsDir() {
 			switch builds.Config.XrayHelper.CoreType {
-			case "xray", "v2ray":
+			case "xray":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
+			case "v2ray":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
 			default:
@@ -83,8 +85,10 @@ func startService() error {
 			}
 		} else {
 			switch builds.Config.XrayHelper.CoreType {
-			case "xray", "v2ray":
+			case "xray":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
+			case "v2ray":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
 			default:
