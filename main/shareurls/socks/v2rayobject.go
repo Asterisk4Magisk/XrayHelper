@@ -1,4 +1,4 @@
-package shadowsocks
+package socks
 
 import "strconv"
 
@@ -16,12 +16,11 @@ func getStreamSettingsObjectV2ray(transport string) map[string]interface{} {
 	return streamSettingsObject
 }
 
-// getShadowsocksSettingsObjectV2ray get v2ray Shadowsocks SettingsObject
-func getShadowsocksSettingsObjectV2ray(ss *Shadowsocks) map[string]interface{} {
+// getSocksSettingsObjectV2ray get v2ray Socks SettingsObject
+func getSocksSettingsObjectV2ray(socks *Socks) map[string]interface{} {
+	// v2ray v5 not support auth
 	settingsObject := make(map[string]interface{})
-	settingsObject["address"] = ss.Server
-	settingsObject["port"], _ = strconv.Atoi(ss.Port)
-	settingsObject["method"] = ss.Method
-	settingsObject["password"] = ss.Password
+	settingsObject["address"] = socks.Server
+	settingsObject["port"], _ = strconv.Atoi(socks.Port)
 	return settingsObject
 }

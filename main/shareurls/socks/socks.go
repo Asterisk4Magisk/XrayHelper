@@ -28,6 +28,14 @@ func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray("tcp")
 		outboundObject["tag"] = tag
 		return outboundObject, nil
+	case "v2ray":
+		outboundObject := make(map[string]interface{})
+		outboundObject["mux"] = getMuxObjectXray(false)
+		outboundObject["protocol"] = "socks"
+		outboundObject["settings"] = getSocksSettingsObjectV2ray(this)
+		outboundObject["streamSettings"] = getStreamSettingsObjectV2ray("tcp")
+		outboundObject["tag"] = tag
+		return outboundObject, nil
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "socks"
