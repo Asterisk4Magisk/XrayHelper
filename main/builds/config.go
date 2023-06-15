@@ -38,6 +38,12 @@ var Config struct {
 		IgnoreList   []string `yaml:"ignoreList"`
 		IntraList    []string `yaml:"intraList"`
 	} `yaml:"proxy"`
+	Clash struct {
+		OverrideConfig string `yaml:"overrideConfig"`
+		DNSPort        string `default:"65533" yaml:"dnsPort"`
+		ApiListen      string `yaml:"apiListen"`
+		ExternalUIDir  string `yaml:"externalUIDir"`
+	} `yaml:"clash"`
 }
 
 // LoadConfig load program configuration file, should be called before any command Execute

@@ -4,7 +4,7 @@ import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
-	"XrayHelper/main/proxys"
+	"XrayHelper/main/proxies"
 )
 
 type ProxyCommand struct{}
@@ -26,16 +26,16 @@ func (this *ProxyCommand) Execute(args []string) error {
 	switch args[0] {
 	case "enable":
 		log.HandleInfo("proxy: enabling rules")
-		if err := proxys.Enable(); err != nil {
+		if err := proxies.Enable(); err != nil {
 			return err
 		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
-		proxys.Disable()
+		proxies.Disable()
 	case "refresh":
 		log.HandleInfo("proxy: refreshing rules")
-		proxys.Disable()
-		if err := proxys.Enable(); err != nil {
+		proxies.Disable()
+		if err := proxies.Enable(); err != nil {
 			return err
 		}
 	default:

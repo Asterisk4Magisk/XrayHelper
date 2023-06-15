@@ -1,11 +1,11 @@
-package proxys
+package proxies
 
 import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
-	"XrayHelper/main/proxys/tproxy"
-	"XrayHelper/main/proxys/tun"
+	"XrayHelper/main/proxies/tproxy"
+	"XrayHelper/main/proxies/tun"
 )
 
 func Enable() error {
@@ -69,7 +69,7 @@ func Enable() error {
 			}
 		}
 	default:
-		return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxys")
+		return errors.New("invalid proxy method " + builds.Config.Proxy.Method).WithPrefix("proxies")
 	}
 	if err := handleDns(); err != nil {
 		Disable()
@@ -102,7 +102,7 @@ func Disable() {
 func handleDns() error {
 	if !builds.Config.Proxy.EnableIPv6 {
 		if err := common.Ipt6.Insert("filter", "OUTPUT", 1, "-p", "udp", "--dport", "53", "-j", "REJECT"); err != nil {
-			return errors.New("disable dns request on ipv6 failed, ", err).WithPrefix("proxys")
+			return errors.New("disable dns request on ipv6 failed, ", err).WithPrefix("proxies")
 		}
 	}
 	return nil

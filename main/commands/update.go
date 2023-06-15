@@ -14,12 +14,14 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
 const (
 	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
 	clashUrl                  = "https://api.github.com/repos/Dreamacro/clash/releases/latest"
+	yacdDownloadUrl           = "https://github.com/haishanh/yacd/archive/gh-pages.zip"
 	xrayCoreDownloadUrl       = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl      = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
 	geoipDownloadUrl          = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
@@ -66,8 +68,14 @@ func (this *UpdateCommand) Execute(args []string) error {
 			return err
 		}
 		log.HandleInfo("update: update success")
+	case "yacd":
+		log.HandleInfo("update: updating yacd")
+		if err := updateYacd(); err != nil {
+			return err
+		}
+		log.HandleInfo("update: update success")
 	default:
-		return errors.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe|yacd]").WithPrefix("update").WithPathObj(*this)
 	}
 	return nil
 }
@@ -301,24 +309,84 @@ func updateSubscribe() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
-	builder := strings.Builder{}
-	for _, subUrl := range builds.Config.XrayHelper.SubList {
-		rawData, err := common.GetRawData(subUrl)
-		if err != nil {
-			log.HandleError(err)
-			continue
+	if builds.Config.XrayHelper.CoreType == "clash" {
+		for index, subUrl := range builds.Config.XrayHelper.SubList {
+			rawData, err := common.GetRawData(subUrl)
+			if err != nil {
+				log.HandleError(err)
+				continue
+			}
+			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
+				return errors.New("write subscribe file failed, ", err).WithPrefix("update")
+			}
 		}
-		subData, err := common.DecodeBase64(string(rawData))
-		if err != nil {
-			log.HandleError(err)
-			continue
+	} else {
+		builder := strings.Builder{}
+		for _, subUrl := range builds.Config.XrayHelper.SubList {
+			rawData, err := common.GetRawData(subUrl)
+			if err != nil {
+				log.HandleError(err)
+				continue
+			}
+			subData, err := common.DecodeBase64(string(rawData))
+			if err != nil {
+				log.HandleError(err)
+				continue
+			}
+			builder.WriteString(strings.TrimSpace(subData) + "\n")
 		}
-		builder.WriteString(strings.TrimSpace(subData) + "\n")
+		if builder.Len() > 0 {
+			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
+				return errors.New("write subscribe file failed, ", err).WithPrefix("update")
+			}
+		}
 	}
-	if builder.Len() > 0 {
-		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
-			return errors.New("write subscribe file failed, ", err).WithPrefix("update")
+	return nil
+}
+
+// updateYacd update yacd
+func updateYacd() error {
+	targetDir := path.Join(builds.Config.XrayHelper.DataDir, "yacd/")
+	yacdZipPath := path.Join(builds.Config.XrayHelper.DataDir, "yacd.zip")
+	if err := common.DownloadFile(yacdZipPath, yacdDownloadUrl); err != nil {
+		return err
+	}
+	zipReader, err := zip.OpenReader(yacdZipPath)
+	if err != nil {
+		return errors.New("open yacd.zip failed, ", err).WithPrefix("update")
+	}
+	defer func(zipReader *zip.ReadCloser) {
+		_ = zipReader.Close()
+		_ = os.Remove(yacdZipPath)
+	}(zipReader)
+	if err := os.RemoveAll(targetDir); err != nil {
+		return errors.New("remove old yacd files failed, ", err).WithPrefix("update")
+	}
+	for _, file := range zipReader.File {
+		t := filepath.Join(targetDir, file.Name)
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(t, 0644); err != nil {
+				return errors.New("create dir "+t+" failed, ", err).WithPrefix("update")
+			}
+			continue
 		}
+		fr, err := file.Open()
+		if err != nil {
+			return errors.New("open file "+file.Name+" failed, ", err)
+		}
+		fw, err := os.OpenFile(t, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
+		if err != nil {
+			_ = fr.Close()
+			return errors.New("open file "+t+" failed, ", err).WithPrefix("update")
+		}
+		_, err = io.Copy(fw, fr)
+		if err != nil {
+			_ = fw.Close()
+			_ = fr.Close()
+			return errors.New("copy file "+file.Name+" failed, ", err).WithPrefix("update")
+		}
+		_ = fw.Close()
+		_ = fr.Close()
 	}
 	return nil
 }
