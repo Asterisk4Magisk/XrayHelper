@@ -19,6 +19,7 @@ import (
 
 const (
 	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
+	clashUrl                  = "https://api.github.com/repos/Dreamacro/clash/releases/latest"
 	xrayCoreDownloadUrl       = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl      = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
 	geoipDownloadUrl          = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
@@ -163,7 +164,7 @@ func updateCore() error {
 			}
 		}
 	case "sing-box":
-		singboxDownloadUrl, err := getSingboxDownloadUrl()
+		singboxDownloadUrl, err := getDownloadUrl(singboxUrl, "android-arm64.tar.gz")
 		if err != nil {
 			return err
 		}
@@ -212,6 +213,43 @@ func updateCore() error {
 				break
 			}
 		}
+	case "clash":
+		clashDownloadUrl, err := getDownloadUrl(clashUrl, "clash-linux-arm64")
+		if err != nil {
+			return err
+		}
+		clashGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "clash.gz")
+		if err := common.DownloadFile(clashGzipPath, clashDownloadUrl); err != nil {
+			return err
+		}
+		// update core need stop core service first
+		if len(getServicePid()) > 0 {
+			log.HandleInfo("update: detect core is running, stop it")
+			stopService()
+			serviceRunFlag = true
+			_ = os.Remove(builds.Config.XrayHelper.CorePath)
+		}
+		clashGzip, err := os.Open(clashGzipPath)
+		if err != nil {
+			return errors.New("open gzip file failed, ", err).WithPrefix("update")
+		}
+		defer func(clashGzip *os.File) {
+			_ = clashGzip.Close()
+			_ = os.Remove(clashGzipPath)
+		}(clashGzip)
+		gzipReader, err := gzip.NewReader(clashGzip)
+		if err != nil {
+			return errors.New("open gzip file failed, ", err).WithPrefix("update")
+		}
+		defer func(gzipReader *gzip.Reader) {
+			_ = gzipReader.Close()
+		}(gzipReader)
+		saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+		_, err = io.Copy(saveFile, gzipReader)
+		if err != nil {
+			return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+		}
+		_ = saveFile.Close()
 	default:
 		return errors.New("unknown core type " + builds.Config.XrayHelper.CoreType).WithPrefix("update")
 	}
@@ -285,9 +323,9 @@ func updateSubscribe() error {
 	return nil
 }
 
-// getSingboxDownloadUrl use github api to get singbox download url
-func getSingboxDownloadUrl() (string, error) {
-	rawData, err := common.GetRawData(singboxUrl)
+// getDownloadUrl use github api to get download url
+func getDownloadUrl(githubApi string, nameContent string) (string, error) {
+	rawData, err := common.GetRawData(githubApi)
 	if err != nil {
 		return "", err
 	}
@@ -319,7 +357,7 @@ func getSingboxDownloadUrl() (string, error) {
 		if !ok {
 			continue
 		}
-		if strings.Contains(name, "android-arm64.tar.gz") {
+		if strings.Contains(name, nameContent) {
 			downloadUrl, ok := assetMap["browser_download_url"].(string)
 			if !ok {
 				return "", errors.New("assert browser_download_url to string failed").WithPrefix("update")
@@ -327,5 +365,5 @@ func getSingboxDownloadUrl() (string, error) {
 			return downloadUrl, nil
 		}
 	}
-	return "", errors.New("cannot get get singbox download url").WithPrefix("update")
+	return "", errors.New("cannot get download url from " + githubApi).WithPrefix("update")
 }

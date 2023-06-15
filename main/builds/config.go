@@ -27,15 +27,16 @@ var Config struct {
 		SubList    []string `yaml:"subList"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {
-		Method     string   `default:"tproxy" yaml:"method"`
-		TproxyPort string   `default:"65535" yaml:"tproxyPort"`
-		SocksPort  string   `default:"65534" yaml:"socksPort"`
-		EnableIPv6 bool     `default:"false" yaml:"enableIPv6"`
-		Mode       string   `default:"blacklist" yaml:"mode"`
-		PkgList    []string `yaml:"pkgList"`
-		ApList     []string `yaml:"apList"`
-		IgnoreList []string `yaml:"ignoreList"`
-		IntraList  []string `yaml:"intraList"`
+		Method       string   `default:"tproxy" yaml:"method"`
+		TproxyPort   string   `default:"65535" yaml:"tproxyPort"`
+		SocksPort    string   `default:"65534" yaml:"socksPort"`
+		ClashDNSPort string   `default:"65533" yaml:"clashDNSPort"`
+		EnableIPv6   bool     `default:"false" yaml:"enableIPv6"`
+		Mode         string   `default:"blacklist" yaml:"mode"`
+		PkgList      []string `yaml:"pkgList"`
+		ApList       []string `yaml:"apList"`
+		IgnoreList   []string `yaml:"ignoreList"`
+		IntraList    []string `yaml:"intraList"`
 	} `yaml:"proxy"`
 }
 
