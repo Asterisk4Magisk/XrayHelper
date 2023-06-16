@@ -348,7 +348,7 @@ func updateYacd() error {
 		_ = zipReader.Close()
 		_ = os.Remove(yacdZipPath)
 	}(zipReader)
-	if err := os.RemoveAll(builds.Config.XrayHelper.DataDir); err != nil {
+	if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "yacd-gh-pages/")); err != nil {
 		return errors.New("remove old yacd files failed, ", err).WithPrefix("update")
 	}
 	for _, file := range zipReader.File {
