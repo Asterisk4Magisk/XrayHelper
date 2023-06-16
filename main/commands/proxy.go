@@ -23,19 +23,23 @@ func (this *ProxyCommand) Execute(args []string) error {
 		return errors.New("too many arguments").WithPrefix("proxy").WithPathObj(*this)
 	}
 	log.HandleInfo("proxy: current method is " + builds.Config.Proxy.Method)
+	proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
+	if err != nil {
+		return err
+	}
 	switch args[0] {
 	case "enable":
 		log.HandleInfo("proxy: enabling rules")
-		if err := proxies.Enable(); err != nil {
+		if err := proxy.Enable(); err != nil {
 			return err
 		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
-		proxies.Disable()
+		proxy.Disable()
 	case "refresh":
 		log.HandleInfo("proxy: refreshing rules")
-		proxies.Disable()
-		if err := proxies.Enable(); err != nil {
+		proxy.Disable()
+		if err := proxy.Enable(); err != nil {
 			return err
 		}
 	default:

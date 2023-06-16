@@ -18,9 +18,7 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 		return false, errors.New("too many arguments").WithPrefix("clashswitch").WithPathObj(*this)
 	}
 	if len(args) == 1 && args[0] == "custom" {
-		if err := os.Remove(clashConfig); err != nil {
-			return false, errors.New("remove old clash config failed, ", err).WithPrefix("clashswitch").WithPathObj(*this)
-		}
+		_ = os.Remove(clashConfig)
 		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashCustom.yaml"), clashConfig); err != nil {
 			return false, err
 		}
@@ -37,9 +35,7 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 		if index < 0 || index >= len(builds.Config.XrayHelper.SubList) {
 			return false, errors.New("invalid node number").WithPrefix("clashswitch").WithPathObj(*this)
 		}
-		if err := os.Remove(clashConfig); err != nil {
-			return false, errors.New("remove old clash config failed, ", err).WithPrefix("clashswitch").WithPathObj(*this)
-		}
+		_ = os.Remove(clashConfig)
 		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), clashConfig); err != nil {
 			return false, err
 		}

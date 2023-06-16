@@ -5,6 +5,7 @@ import (
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"XrayHelper/main/proxies/dns"
 	"bytes"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -13,7 +14,76 @@ import (
 	"time"
 )
 
-func StartTun() error {
+type Tun struct{}
+
+func (this *Tun) Enable() error {
+	if err := startTun(); err != nil {
+		this.Disable()
+		return err
+	}
+	if err := addRoute(false); err != nil {
+		this.Disable()
+		return err
+	}
+	if err := createMangleChain(false); err != nil {
+		this.Disable()
+		return err
+	}
+	if err := createProxyChain(false); err != nil {
+		this.Disable()
+		return err
+	}
+	if builds.Config.Proxy.EnableIPv6 {
+		if err := addRoute(true); err != nil {
+			this.Disable()
+			return err
+		}
+		if err := createMangleChain(true); err != nil {
+			this.Disable()
+			return err
+		}
+		if err := createProxyChain(true); err != nil {
+			this.Disable()
+			return err
+		}
+	}
+	// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
+	switch builds.Config.XrayHelper.CoreType {
+	case "clash":
+		if err := dns.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
+			this.Disable()
+			return err
+		}
+	default:
+		if !builds.Config.Proxy.EnableIPv6 {
+			if err := dns.DisableIPV6DNS(); err != nil {
+				this.Disable()
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (this *Tun) Disable() {
+	deleteRoute(false)
+	cleanIptablesChain(false)
+	if builds.Config.Proxy.EnableIPv6 {
+		deleteRoute(true)
+		cleanIptablesChain(true)
+	}
+	stopTun()
+	switch builds.Config.XrayHelper.CoreType {
+	case "clash":
+		dns.CleanRedirectDNS(builds.Config.Clash.DNSPort)
+	default:
+		if !builds.Config.Proxy.EnableIPv6 {
+			dns.EnableIPV6DNS()
+		}
+	}
+}
+
+func startTun() error {
 	tun2socksPath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "tun2socks")
 	tun2socksConfigPath := path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.yml")
 	var tunConfig struct {
@@ -67,7 +137,7 @@ func StartTun() error {
 	return nil
 }
 
-func StopTun() {
+func stopTun() {
 	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.pid")); err == nil {
 		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.pid"))
 		if err != nil {
@@ -89,8 +159,8 @@ func StopTun() {
 	}
 }
 
-// AddRoute Add ip route to proxy
-func AddRoute(ipv6 bool) error {
+// addRoute Add ip route to proxy
+func addRoute(ipv6 bool) error {
 	var errMsg bytes.Buffer
 	if !ipv6 {
 		common.NewExternal(0, nil, &errMsg, "ip", "rule", "add", "fwmark", common.TunMarkId, "lookup", common.TunTableId).Run()
@@ -122,8 +192,8 @@ func AddRoute(ipv6 bool) error {
 	return nil
 }
 
-// DeleteRoute Delete ip route to proxy
-func DeleteRoute(ipv6 bool) {
+// deleteRoute Delete ip route to proxy
+func deleteRoute(ipv6 bool) {
 	var errMsg bytes.Buffer
 	if !ipv6 {
 		common.NewExternal(0, nil, &errMsg, "ip", "rule", "del", "fwmark", common.TunMarkId, "lookup", common.TunTableId).Run()
@@ -153,8 +223,8 @@ func DeleteRoute(ipv6 bool) {
 	}
 }
 
-// CreateProxyChain Create PROXY chain for local applications
-func CreateProxyChain(ipv6 bool) error {
+// createProxyChain Create PROXY chain for local applications
+func createProxyChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := common.Ipt
 	currentProto = "ipv4"
@@ -268,8 +338,8 @@ func CreateProxyChain(ipv6 bool) error {
 	return nil
 }
 
-// CreateMangleChain Create XRAY chain for AP interface
-func CreateMangleChain(ipv6 bool) error {
+// createMangleChain Create XRAY chain for AP interface
+func createMangleChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := common.Ipt
 	currentProto = "ipv4"
@@ -342,8 +412,8 @@ func CreateMangleChain(ipv6 bool) error {
 	return nil
 }
 
-// CleanIptablesChain Clean all changed iptables rules by XrayHelper
-func CleanIptablesChain(ipv6 bool) {
+// cleanIptablesChain Clean all changed iptables rules by XrayHelper
+func cleanIptablesChain(ipv6 bool) {
 	currentIpt := common.Ipt
 	if ipv6 {
 		currentIpt = common.Ipt6

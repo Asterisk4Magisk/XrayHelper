@@ -346,7 +346,6 @@ func updateSubscribe() error {
 
 // updateYacd update yacd
 func updateYacd() error {
-	targetDir := path.Join(builds.Config.XrayHelper.DataDir, "yacd/")
 	yacdZipPath := path.Join(builds.Config.XrayHelper.DataDir, "yacd.zip")
 	if err := common.DownloadFile(yacdZipPath, yacdDownloadUrl); err != nil {
 		return err
@@ -359,11 +358,11 @@ func updateYacd() error {
 		_ = zipReader.Close()
 		_ = os.Remove(yacdZipPath)
 	}(zipReader)
-	if err := os.RemoveAll(targetDir); err != nil {
+	if err := os.RemoveAll(builds.Config.XrayHelper.DataDir); err != nil {
 		return errors.New("remove old yacd files failed, ", err).WithPrefix("update")
 	}
 	for _, file := range zipReader.File {
-		t := filepath.Join(targetDir, file.Name)
+		t := filepath.Join(builds.Config.XrayHelper.DataDir, file.Name)
 		if file.FileInfo().IsDir() {
 			if err := os.MkdirAll(t, 0644); err != nil {
 				return errors.New("create dir "+t+" failed, ", err).WithPrefix("update")

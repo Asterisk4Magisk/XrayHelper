@@ -16,11 +16,11 @@ func (this *SwitchCommand) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-	successFlag, err := switcher.Execute(args)
+	success, err := switcher.Execute(args)
 	if err != nil {
 		return err
 	}
-	if successFlag {
+	if success {
 		log.HandleInfo("switch: switch success")
 		// if core is running, restart it
 		if len(getServicePid()) > 0 {

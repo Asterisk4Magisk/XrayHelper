@@ -44,5 +44,5 @@ func Parse(link string) (ShareUrl, error) {
 	if strings.HasPrefix(link, hysteriaPrefix) {
 		return parseHysteria(link)
 	}
-	return nil, errors.New("not a supported share link").WithPrefix("shareurls")
+	return nil, errors.New("not a supported share link").WithPrefix("shareurl")
 }
