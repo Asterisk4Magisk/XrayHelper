@@ -24,9 +24,9 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 	if len(args) > 1 {
 		return false, errors.New("too many arguments").WithPrefix("clashswitch").WithPathObj(*this)
 	}
-	if len(args) == 1 && args[0] == "custom" {
+	if len(args) == 1 {
 		_ = os.Remove(clashConfig)
-		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashCustom.yaml"), clashConfig); err != nil {
+		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, args[0]), clashConfig); err != nil {
 			return false, err
 		}
 	} else {

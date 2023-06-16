@@ -309,36 +309,26 @@ func updateSubscribe() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
-	if builds.Config.XrayHelper.CoreType == "clash" {
-		for index, subUrl := range builds.Config.XrayHelper.SubList {
-			rawData, err := common.GetRawData(subUrl)
-			if err != nil {
-				log.HandleError(err)
-				continue
-			}
+	builder := strings.Builder{}
+	for index, subUrl := range builds.Config.XrayHelper.SubList {
+		rawData, err := common.GetRawData(subUrl)
+		if err != nil {
+			log.HandleError(err)
+			continue
+		}
+		subData, err := common.DecodeBase64(string(rawData))
+		if err != nil {
+			log.HandleDebug(err)
 			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
 				return errors.New("write subscribe file failed, ", err).WithPrefix("update")
 			}
+			continue
 		}
-	} else {
-		builder := strings.Builder{}
-		for _, subUrl := range builds.Config.XrayHelper.SubList {
-			rawData, err := common.GetRawData(subUrl)
-			if err != nil {
-				log.HandleError(err)
-				continue
-			}
-			subData, err := common.DecodeBase64(string(rawData))
-			if err != nil {
-				log.HandleError(err)
-				continue
-			}
-			builder.WriteString(strings.TrimSpace(subData) + "\n")
-		}
-		if builder.Len() > 0 {
-			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
-				return errors.New("write subscribe file failed, ", err).WithPrefix("update")
-			}
+		builder.WriteString(strings.TrimSpace(subData) + "\n")
+	}
+	if builder.Len() > 0 {
+		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
+			return errors.New("write subscribe file failed, ", err).WithPrefix("update")
 		}
 	}
 	return nil

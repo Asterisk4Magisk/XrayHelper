@@ -15,7 +15,7 @@ proxy:
     mode: whitelist
     pkgList:
         - com.kiwibrowser.browser
-        - com.termux
+        - com.termux:20
     apList:
         - wlan2
         - rndis0
@@ -23,3 +23,7 @@ proxy:
         - ignore
     intraList:
         - 192.168.123.0/24
+        - fd12:3456:789a:bcde::/64
+clash:
+    dnsPort: 65533
+    template: /data/adb/xray/clashconfs/template.yaml
