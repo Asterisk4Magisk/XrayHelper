@@ -38,7 +38,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify operation, available operation [core|tun2socks|geodata|subscribe]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("not specify operation, available operation [core|tun2socks|geodata|subscribe|yacd]").WithPrefix("update").WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("update").WithPathObj(*this)

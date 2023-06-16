@@ -7,6 +7,7 @@ import (
 	"XrayHelper/main/log"
 	"encoding/json"
 	"github.com/tailscale/hujson"
+	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"strconv"
@@ -80,6 +81,8 @@ func startService() error {
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
+			case "clash":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig)
 			default:
 				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
 			}
@@ -91,15 +94,24 @@ func startService() error {
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
+			case "clash":
+				return errors.New("clash CoreConfig should be a directory").WithPrefix("service")
 			default:
 				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
 			}
 		}
 	}
-	service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
-	service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
-	if err := handleDns(builds.Config.Proxy.EnableIPv6); err != nil {
-		return err
+	switch builds.Config.XrayHelper.CoreType {
+	case "xray", "v2ray", "sing-box":
+		service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
+		service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
+		if err := handleRayDNS(builds.Config.Proxy.EnableIPv6); err != nil {
+			return err
+		}
+	case "clash":
+		if err := overrideClashConfig(builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
+			return err
+		}
 	}
 	if err := service.SetUidGid("0", common.CoreGid); err != nil {
 		return err
@@ -167,7 +179,7 @@ func getServicePid() string {
 	return ""
 }
 
-func handleDns(ipv6 bool) error {
+func handleRayDNS(ipv6 bool) error {
 	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
 		return errors.New("open core config file failed, ", err).WithPrefix("service")
 	} else {
@@ -182,7 +194,7 @@ func handleDns(ipv6 bool) error {
 					if err != nil {
 						return errors.New("read config file failed, ", err).WithPrefix("service")
 					}
-					newConfByte, err := replaceDnsConfig(confByte, ipv6)
+					newConfByte, err := replaceRayDNSStrategy(confByte, ipv6)
 					if err != nil {
 						log.HandleDebug(err)
 						continue
@@ -197,7 +209,7 @@ func handleDns(ipv6 bool) error {
 			if err != nil {
 				return errors.New("read config file failed, ", err).WithPrefix("service")
 			}
-			newConfByte, err := replaceDnsConfig(confByte, ipv6)
+			newConfByte, err := replaceRayDNSStrategy(confByte, ipv6)
 			if err != nil {
 				return err
 			}
@@ -209,7 +221,7 @@ func handleDns(ipv6 bool) error {
 	return nil
 }
 
-func replaceDnsConfig(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
+func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
 	// standardize origin json (remove comment)
 	standardize, err := hujson.Standardize(conf)
 	if err != nil {
@@ -265,4 +277,58 @@ func replaceDnsConfig(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
 		return nil, errors.New("marshal config json failed, ", err).WithPrefix("service")
 	}
 	return marshal, nil
+}
+
+func overrideClashConfig(template string, target string) error {
+	// open target config and replace with xrayhelper clash value
+	targetFile, err := os.ReadFile(target)
+	if err != nil {
+		return errors.New("load clash config failed, ", err).WithPrefix("service")
+	}
+	var targetYamlValue interface{}
+	if err := yaml.Unmarshal(targetFile, &targetYamlValue); err != nil {
+		return errors.New("unmarshal clash config failed, ", err).WithPrefix("service")
+	}
+	targetYamlMap, ok := targetYamlValue.(map[string]interface{})
+	if !ok {
+		return errors.New("assert clash config to map failed").WithPrefix("service")
+	}
+	// delete useless config
+	delete(targetYamlMap, "port")
+	delete(targetYamlMap, "redir-port")
+	delete(targetYamlMap, "mixed-port")
+	delete(targetYamlMap, "authentication")
+	delete(targetYamlMap, "external-controller")
+	delete(targetYamlMap, "external-ui")
+	delete(targetYamlMap, "secret")
+	// set xrayhelper necessary parameters value
+	targetYamlMap["tproxy-port"] = builds.Config.Proxy.TproxyPort
+	targetYamlMap["socks-port"] = builds.Config.Proxy.SocksPort
+	// open template config and replace target value with it
+	templateFile, err := os.ReadFile(template)
+	if err != nil {
+		return errors.New("load clash template config failed, ", err).WithPrefix("service")
+	}
+	var templateYamlValue interface{}
+	if err := yaml.Unmarshal(templateFile, &templateYamlValue); err != nil {
+		return errors.New("unmarshal clash template config failed, ", err).WithPrefix("service")
+	}
+	templateYamlMap, ok := templateYamlValue.(map[string]interface{})
+	if !ok {
+		return errors.New("assert clash template config to map failed").WithPrefix("service")
+	}
+	// replace
+	for key, value := range templateYamlMap {
+		targetYamlMap[key] = value
+	}
+	// marshal
+	marshal, err := yaml.Marshal(targetYamlMap)
+	if err != nil {
+		return errors.New("marshal clash config failed, ", err).WithPrefix("service")
+	}
+	// write new config
+	if err := os.WriteFile(target, marshal, 0644); err != nil {
+		return errors.New("write overridden clash config failed, ", err).WithPrefix("service")
+	}
+	return nil
 }
