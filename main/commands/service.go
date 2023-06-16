@@ -120,12 +120,12 @@ func startService() error {
 	for i := 0; i < 15; i++ {
 		time.Sleep(1 * time.Second)
 		if builds.Config.Proxy.Method == "tproxy" {
-			if common.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.TproxyPort) {
+			if common.CheckPortLocal(builds.Config.Proxy.TproxyPort) {
 				listenFlag = true
 				break
 			}
 		} else if builds.Config.Proxy.Method == "tun" {
-			if common.CheckPort("tcp", "127.0.0.1", builds.Config.Proxy.SocksPort) {
+			if common.CheckPortLocal(builds.Config.Proxy.SocksPort) {
 				listenFlag = true
 				break
 			}

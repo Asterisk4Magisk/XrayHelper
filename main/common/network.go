@@ -2,11 +2,13 @@ package common
 
 import (
 	"XrayHelper/main/errors"
+	"bytes"
 	"context"
 	"io"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -47,6 +49,13 @@ func CheckPort(protocol string, host string, port string) bool {
 		}
 	}(conn)
 	return true
+}
+
+// CheckPortLocal check whether the local port is listening
+func CheckPortLocal(port string) bool {
+	var msg bytes.Buffer
+	NewExternal(0, &msg, nil, "netstat", "-tnlp").Run()
+	return strings.Contains(msg.String(), port)
 }
 
 func IsIPv6(cidr string) bool {
