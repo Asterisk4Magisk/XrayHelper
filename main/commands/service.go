@@ -322,7 +322,7 @@ func overrideClashConfig(template string, target string) error {
 			dnsMap, ok := dns.(map[string]interface{})
 			if ok {
 				dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
-				dnsMap["listen"] = "0.0.0.0:" + builds.Config.Clash.DNSPort
+				dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
 			}
 			templateYamlMap["dns"] = dnsMap
 		}

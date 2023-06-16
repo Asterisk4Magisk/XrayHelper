@@ -36,7 +36,7 @@ func EnableIPV6DNS() {
 }
 
 func RedirectDNS(port string) error {
-	if err := common.Ipt.Insert("nat", "OUTPUT", 1, "-p", "udp", "--dport", "53", "-j", "DNAT", "--to-destination", "127.0.0.1:"+port); err != nil {
+	if err := common.Ipt.Insert("nat", "OUTPUT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "DNAT", "--to-destination", "127.0.0.1:"+port); err != nil {
 		return errors.New("redirect dns request failed, ", err).WithPrefix("tools")
 	}
 	if err := DisableIPV6DNS(); err != nil {
@@ -46,6 +46,6 @@ func RedirectDNS(port string) error {
 }
 
 func CleanRedirectDNS(port string) {
-	_ = common.Ipt.Delete("nat", "OUTPUT", "-p", "udp", "--dport", "53", "-j", "DNAT", "--to-destination", "127.0.0.1:"+port)
+	_ = common.Ipt.Delete("nat", "OUTPUT", "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "DNAT", "--to-destination", "127.0.0.1:"+port)
 	EnableIPV6DNS()
 }
