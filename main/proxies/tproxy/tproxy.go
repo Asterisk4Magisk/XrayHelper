@@ -5,7 +5,7 @@ import (
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
-	"XrayHelper/main/proxies/dns"
+	"XrayHelper/main/proxies/tools"
 	"bytes"
 )
 
@@ -51,13 +51,13 @@ func (this *Tproxy) Enable() error {
 	// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
 	switch builds.Config.XrayHelper.CoreType {
 	case "clash":
-		if err := dns.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
+		if err := tools.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
 			this.Disable()
 			return err
 		}
 	default:
 		if !builds.Config.Proxy.EnableIPv6 {
-			if err := dns.DisableIPV6DNS(); err != nil {
+			if err := tools.DisableIPV6DNS(); err != nil {
 				this.Disable()
 				return err
 			}
@@ -74,10 +74,10 @@ func (this *Tproxy) Disable() {
 	}
 	switch builds.Config.XrayHelper.CoreType {
 	case "clash":
-		dns.CleanRedirectDNS(builds.Config.Clash.DNSPort)
+		tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 	default:
 		if !builds.Config.Proxy.EnableIPv6 {
-			dns.EnableIPV6DNS()
+			tools.EnableIPV6DNS()
 		}
 	}
 }
@@ -206,10 +206,13 @@ func createProxyChain(ipv6 bool) error {
 	} else if builds.Config.Proxy.Mode == "blacklist" {
 		// bypass PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
-			if uid, ok := builds.PackageMap[pkg]; ok {
-				if err := currentIpt.Insert("mangle", "PROXY", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
-					return errors.New("bypass package "+pkg+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
-				}
+			uid, err := tools.GetUid(pkg)
+			if err != nil {
+				log.HandleDebug(err)
+				continue
+			}
+			if err := currentIpt.Insert("mangle", "PROXY", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
+				return errors.New("bypass package "+pkg+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 			}
 		}
 		// allow others
@@ -222,13 +225,16 @@ func createProxyChain(ipv6 bool) error {
 	} else if builds.Config.Proxy.Mode == "whitelist" {
 		// allow PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
-			if uid, ok := builds.PackageMap[pkg]; ok {
-				if err := currentIpt.Append("mangle", "PROXY", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
-					return errors.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
-				}
-				if err := currentIpt.Append("mangle", "PROXY", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
-					return errors.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
-				}
+			uid, err := tools.GetUid(pkg)
+			if err != nil {
+				log.HandleDebug(err)
+				continue
+			}
+			if err := currentIpt.Append("mangle", "PROXY", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
+				return errors.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
+			}
+			if err := currentIpt.Append("mangle", "PROXY", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
+				return errors.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 			}
 		}
 		// allow root user(eg: magisk, ksud, netd...)
