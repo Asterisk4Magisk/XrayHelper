@@ -50,7 +50,7 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
 ### clash
 - switch  
   - 不带任何参数时，使用`${xrayHelper.dataDir}/clashSub#{index}.yaml`作为配置文件
-  - `example.yaml`使用`${xrayHelper.dataDir}/example.yaml`作为配置文件
+  - `example.yaml`使用`${xrayHelper.coreConfig}/example.yaml`作为配置文件
 
 **注意：${clash.template}总是会覆盖你所使用的配置文件**  
 

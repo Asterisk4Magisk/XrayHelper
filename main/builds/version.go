@@ -10,7 +10,7 @@ const (
 	VersionX byte = 1
 	VersionY byte = 2
 	VersionZ byte = 0
-	Build         = "-debug"
+	Build         = "-release"
 	Intro         = "An xray helper for Android to control system proxy."
 )
 

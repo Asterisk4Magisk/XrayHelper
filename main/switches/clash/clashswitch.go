@@ -26,7 +26,7 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 	}
 	if len(args) == 1 {
 		_ = os.Remove(clashConfig)
-		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, args[0]), clashConfig); err != nil {
+		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.CoreConfig, args[0]), clashConfig); err != nil {
 			return false, err
 		}
 	} else {
