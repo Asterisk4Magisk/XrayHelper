@@ -6,11 +6,11 @@
 ## 配置文件  
 XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径
 - xrayHelper  
-    - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`
+    - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`、`clash`
     - `corePath`必填，指定核心路径
     - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令
     - `dataDir`必填，指定XrayHelper的数据目录，用于存储GEO数据文件、自定义节点和订阅节点信息等
-    - `runDir`必填，用于存储运行时所产生的文件，例如核心的pid值，核心日志，inotify的监控日志等
+    - `runDir`必填，用于存储运行时所产生的文件，例如核心的pid值，核心日志等
     - `proxyTag`默认值`proxy`，使用XrayHelper进行节点切换时，将进行替换的出站代理Tag
     - `subList`可选，数组，与 [v2rayNg](https://github.com/2dust/v2rayNG) 兼容的节点订阅链接(`xray`、`v2ray`、`sing-box`)，也支持`clash`配置文件链接
 - proxy  
