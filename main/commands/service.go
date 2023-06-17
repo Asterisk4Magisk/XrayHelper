@@ -280,6 +280,9 @@ func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err err
 }
 
 func overrideClashConfig(template string, target string) error {
+	if len(template) == 0 {
+		return nil
+	}
 	// open target config and replace with xrayhelper clash value
 	targetFile, err := os.ReadFile(target)
 	if err != nil {
@@ -293,55 +296,57 @@ func overrideClashConfig(template string, target string) error {
 	if !ok {
 		return errors.New("assert clash config to map failed").WithPrefix("service")
 	}
-	// delete useless config
+	// delete origin config
 	delete(targetYamlMap, "port")
+	delete(targetYamlMap, "socks-port")
 	delete(targetYamlMap, "redir-port")
+	delete(targetYamlMap, "tproxy-port")
 	delete(targetYamlMap, "mixed-port")
 	delete(targetYamlMap, "authentication")
 	delete(targetYamlMap, "external-controller")
 	delete(targetYamlMap, "external-ui")
 	delete(targetYamlMap, "secret")
+	delete(targetYamlMap, "allow-lan")
+	delete(targetYamlMap, "bind-address")
 	// open template config and replace target value with it
-	if len(template) > 0 {
-		templateFile, err := os.ReadFile(template)
-		if err != nil {
-			return errors.New("load clash template config failed, ", err).WithPrefix("service")
-		}
-		var templateYamlValue interface{}
-		if err := yaml.Unmarshal(templateFile, &templateYamlValue); err != nil {
-			return errors.New("unmarshal clash template config failed, ", err).WithPrefix("service")
-		}
-		templateYamlMap, ok := templateYamlValue.(map[string]interface{})
-		if !ok {
-			return errors.New("assert clash template config to map failed").WithPrefix("service")
-		}
-		templateYamlMap["ipv6"] = builds.Config.Proxy.EnableIPv6
-		dns, ok := templateYamlMap["dns"]
-		if ok {
-			// assert dns
-			dnsMap, ok := dns.(map[string]interface{})
-			if ok {
-				dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
-				dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
-			}
-			templateYamlMap["dns"] = dnsMap
-		}
-		// save template
-		marshal, err := yaml.Marshal(templateYamlMap)
-		if err != nil {
-			return errors.New("marshal clash template config failed, ", err).WithPrefix("service")
-		}
-		// write new template config
-		if err := os.WriteFile(template, marshal, 0644); err != nil {
-			return errors.New("write clash template config failed, ", err).WithPrefix("service")
-		}
-		// replace
-		for key, value := range templateYamlMap {
-			targetYamlMap[key] = value
-		}
+	templateFile, err := os.ReadFile(template)
+	if err != nil {
+		return errors.New("load clash template config failed, ", err).WithPrefix("service")
 	}
-	// marshal
-	marshal, err := yaml.Marshal(targetYamlMap)
+	var templateYamlValue interface{}
+	if err := yaml.Unmarshal(templateFile, &templateYamlValue); err != nil {
+		return errors.New("unmarshal clash template config failed, ", err).WithPrefix("service")
+	}
+	templateYamlMap, ok := templateYamlValue.(map[string]interface{})
+	if !ok {
+		return errors.New("assert clash template config to map failed").WithPrefix("service")
+	}
+	templateYamlMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+	dns, ok := templateYamlMap["dns"]
+	if ok {
+		// assert dns
+		dnsMap, ok := dns.(map[string]interface{})
+		if ok {
+			dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+			dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
+		}
+		templateYamlMap["dns"] = dnsMap
+	}
+	// save template
+	marshal, err := yaml.Marshal(templateYamlMap)
+	if err != nil {
+		return errors.New("marshal clash template config failed, ", err).WithPrefix("service")
+	}
+	// write new template config
+	if err := os.WriteFile(template, marshal, 0644); err != nil {
+		return errors.New("write clash template config failed, ", err).WithPrefix("service")
+	}
+	// replace target
+	for key, value := range templateYamlMap {
+		targetYamlMap[key] = value
+	}
+	// save target
+	marshal, err = yaml.Marshal(targetYamlMap)
 	if err != nil {
 		return errors.New("marshal clash config failed, ", err).WithPrefix("service")
 	}
