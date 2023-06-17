@@ -61,6 +61,9 @@ proxy:
 
 **notice: ${xrayHelper.clash.template} will overwrite selected config above**  
 
+## License
+[Mozilla Public License Version 2.0 (MPL)](https://raw.githubusercontent.com/Asterisk4Magisk/XrayHelper/master/LICENSE)
+
 ## Credits  
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - [@Asterisk4Magisk/Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)

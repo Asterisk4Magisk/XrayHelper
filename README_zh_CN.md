@@ -54,6 +54,9 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
 
 **注意：${clash.template}总是会覆盖你所使用的配置文件**  
 
+## 许可
+[Mozilla Public License Version 2.0 (MPL)](https://raw.githubusercontent.com/Asterisk4Magisk/XrayHelper/master/LICENSE)
+
 ## 鸣谢
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - [@Asterisk4Magisk/Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)
