@@ -4,24 +4,24 @@ import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
+	"strconv"
 	"strings"
 )
 
 func GetUid(pkgInfo string) (string, error) {
+	var appId, userId int
 	info := strings.Split(pkgInfo, ":")
-	if len(info) == 1 {
-		if pkgId, ok := builds.PackageMap[info[0]]; ok {
-			return pkgId, nil
-		}
+	if pkgId, ok := builds.PackageMap[info[0]]; ok {
+		appId, _ = strconv.Atoi(pkgId)
 	} else {
-		if pkgId, ok := builds.PackageMap[info[0]]; ok {
-			if info[1] == "0" {
-				return pkgId, nil
-			}
-			return info[1] + pkgId, nil
-		}
+		return "", errors.New("cannot get uid").WithPrefix("tools")
 	}
-	return "", errors.New("cannot get uid " + info[0]).WithPrefix("tools")
+	if len(info) == 2 {
+		appId, _ = strconv.Atoi(info[1])
+	} else {
+		appId = 0
+	}
+	return strconv.Itoa(userId*100000 + appId), nil
 }
 
 func DisableIPV6DNS() error {
