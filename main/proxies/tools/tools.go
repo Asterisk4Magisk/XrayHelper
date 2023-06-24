@@ -14,12 +14,10 @@ func GetUid(pkgInfo string) (string, error) {
 	if pkgId, ok := builds.PackageMap[info[0]]; ok {
 		appId, _ = strconv.Atoi(pkgId)
 	} else {
-		return "", errors.New("cannot get uid").WithPrefix("tools")
+		return "", errors.New("cannot get uid from "+pkgInfo).WithPrefix("tools")
 	}
 	if len(info) == 2 {
-		appId, _ = strconv.Atoi(info[1])
-	} else {
-		appId = 0
+		userId, _ = strconv.Atoi(info[1])
 	}
 	return strconv.Itoa(userId*100000 + appId), nil
 }
