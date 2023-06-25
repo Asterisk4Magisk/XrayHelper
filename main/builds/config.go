@@ -57,6 +57,7 @@ func LoadConfig() error {
 	}
 	log.HandleDebug(Config.XrayHelper)
 	log.HandleDebug(Config.Proxy)
+	log.HandleDebug(Config.Clash)
 	return nil
 }
 

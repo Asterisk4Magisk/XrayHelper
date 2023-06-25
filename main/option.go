@@ -6,7 +6,6 @@ import (
 	"XrayHelper/main/log"
 	"fmt"
 	"github.com/jessevdk/go-flags"
-	"os"
 )
 
 var Option struct {
@@ -16,16 +15,12 @@ var Option struct {
 	Service        commands.ServiceCommand `command:"service" description:"control core service"`
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
 	Update         commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd or subscribe"`
-	Switch         commands.SwitchCommand  `command:"switch" description:"switch subscribe node"`
+	Switch         commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
 }
 
 // LoadOption load Option, the program entry
-func LoadOption() {
-	if len(os.Args) == 1 {
-		fmt.Println(builds.VersionStatement())
-		fmt.Println(builds.IntroStatement())
-		return
-	}
+func LoadOption() int {
+	rCode := 0
 	log.Verbose = &Option.VerboseFlag
 	builds.ConfigFilePath = &Option.ConfigFilePath
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
@@ -36,17 +31,22 @@ func LoadOption() {
 			if typ == flags.ErrCommandRequired {
 				if Option.VersionFlag {
 					fmt.Println(builds.Version())
+					err = nil
+				} else {
+					rCode = 127
 				}
-				err = nil
-			}
-			if typ == flags.ErrHelp {
+			} else if typ == flags.ErrHelp {
 				fmt.Println(builds.VersionStatement())
 				fmt.Println(err.Error())
 				err = nil
+			} else {
+				rCode = 126
 			}
 			log.HandleError(err)
 		} else {
 			log.HandleError(err)
+			rCode = 1
 		}
 	}
+	return rCode
 }

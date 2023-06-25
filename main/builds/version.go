@@ -9,9 +9,9 @@ import (
 const (
 	VersionX byte = 1
 	VersionY byte = 2
-	VersionZ byte = 0
-	Build         = "-release"
-	Intro         = "An xray helper for Android to control system proxy."
+	VersionZ byte = 1
+	Build         = "-debug"
+	Intro         = "An universal helper for Android to control system proxy.\n\nTelegram channel: https://t.me/Asterisk4Magisk\nTelegram chat: https://t.me/AsteriskFactory\n\nReport issues at https://github.com/Asterisk4Magisk/XrayHelper/issues\n"
 )
 
 func Version() string {
