@@ -28,6 +28,7 @@ func (this *ServiceCommand) Execute(args []string) error {
 	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("service").WithPathObj(*this)
 	}
+	log.HandleInfo("service: current core type is " + builds.Config.XrayHelper.CoreType)
 	switch args[0] {
 	case "start":
 		log.HandleInfo("service: starting core")
@@ -117,6 +118,9 @@ func startService() error {
 		return err
 	}
 	service.Start()
+	if service.Err() != nil {
+		return errors.New("start core service failed, ", service.Err()).WithPrefix("service")
+	}
 	for i := 0; i < 15; i++ {
 		time.Sleep(1 * time.Second)
 		if builds.Config.Proxy.Method == "tproxy" {
@@ -141,7 +145,7 @@ func startService() error {
 		}
 	} else {
 		_ = service.Kill()
-		return errors.New("start core service failed, ", service.Err()).WithPrefix("service")
+		return errors.New("core service not listen, please check error.log").WithPrefix("service")
 	}
 	return nil
 }

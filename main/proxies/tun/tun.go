@@ -115,8 +115,15 @@ func startTun() error {
 	if err := os.WriteFile(tun2socksConfigPath, configByte, 0644); err != nil {
 		return errors.New("write tun2socks config failed, ", err).WithPrefix("tun")
 	}
-	service := common.NewExternal(0, nil, nil, tun2socksPath, tun2socksConfigPath)
+	tun2socksLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
+	if err != nil {
+		return errors.New("open tun2socks log file failed, ", err).WithPrefix("tun")
+	}
+	service := common.NewExternal(0, tun2socksLogFile, tun2socksLogFile, tun2socksPath, tun2socksConfigPath)
 	service.Start()
+	if service.Err() != nil {
+		return errors.New("start tun2socks failed, ", service.Err()).WithPrefix("tun")
+	}
 	deviceReady := false
 	for i := 0; i < 15; i++ {
 		time.Sleep(1 * time.Second)
@@ -132,7 +139,7 @@ func startTun() error {
 		}
 	} else {
 		_ = service.Kill()
-		return errors.New("start tun2socks service failed, ", service.Err()).WithPrefix("tun")
+		return errors.New("create tun device failed, please check tun2socks.log").WithPrefix("tun")
 	}
 	return nil
 }

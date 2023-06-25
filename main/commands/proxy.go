@@ -22,7 +22,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("proxy").WithPathObj(*this)
 	}
-	log.HandleInfo("proxy: current method is " + builds.Config.Proxy.Method)
+	log.HandleInfo("proxy: current proxy method is " + builds.Config.Proxy.Method)
 	proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
 	if err != nil {
 		return err
