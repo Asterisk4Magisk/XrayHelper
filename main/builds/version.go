@@ -11,7 +11,7 @@ const (
 	VersionY byte = 2
 	VersionZ byte = 1
 	Build         = "-release"
-	Intro         = "An universal helper for Android to control system proxy.\n\nTelegram channel: https://t.me/Asterisk4Magisk\nTelegram chat: https://t.me/AsteriskFactory\n\nReport issues at https://github.com/Asterisk4Magisk/XrayHelper/issues\n"
+	Intro         = "A unified helper for Android to control system proxy.\n\nTelegram channel: https://t.me/Asterisk4Magisk\nTelegram chat: https://t.me/AsteriskFactory\n\nReport issues at https://github.com/Asterisk4Magisk/XrayHelper/issues\n"
 )
 
 func Version() string {
