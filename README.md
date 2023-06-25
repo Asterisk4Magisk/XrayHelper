@@ -42,7 +42,7 @@ proxy:
 - update geodata  
   `xrayhelper update geodata`, update geodata from [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)  
 - update subscribe  
-  `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, fully compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard, and also support clash config url  
+  `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, fully compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard, and also support clash subscribe url(should add prefix `clash+` to the subscribe url)  
 - update yacd  
   `xrayhelper update yacd`, update yacd for clash, dest path is `${xrayHelper.dataDir}/yacd-gh-pages`
 

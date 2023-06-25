@@ -12,7 +12,7 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
     - `dataDir`必填，指定XrayHelper的数据目录，用于存储GEO数据文件、自定义节点和订阅节点信息等
     - `runDir`必填，用于存储运行时所产生的文件，例如核心的pid值，核心日志等
     - `proxyTag`默认值`proxy`，使用XrayHelper进行节点切换时，将进行替换的出站代理Tag
-    - `subList`可选，数组，与 [v2rayNg](https://github.com/2dust/v2rayNG) 兼容的节点订阅链接(`xray`、`v2ray`、`sing-box`)，也支持`clash`配置文件链接
+    - `subList`可选，数组，与 [v2rayNg](https://github.com/2dust/v2rayNG) 兼容的节点订阅链接(`xray`、`v2ray`、`sing-box`)，也支持`clash`订阅链接(需要在订阅链接前添加`clash+`前缀，用来标识这是一个clash订阅链接)
 - proxy  
     - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`，使用tun模式时，需要提前下载 tun2socks 二进制文件（`xrayhelper update tun2socks`）
     - `tproxyPort`默认值`65535`，透明代理端口，该值需要与核心的`tproxy`入站代理端口相对应，`tproxy`模式需要

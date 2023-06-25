@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 )
 
 type ClashSwitch struct{}
@@ -30,21 +31,31 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 			return false, err
 		}
 	} else {
-		for index, clashSubUrl := range builds.Config.XrayHelper.SubList {
-			fmt.Printf("[%d] %s\n", index, clashSubUrl)
+		var clashUrl []string
+		for _, subUrl := range builds.Config.XrayHelper.SubList {
+			if strings.HasPrefix(subUrl, "clash+") {
+				clashUrl = append(clashUrl, strings.TrimPrefix(subUrl, "clash+"))
+			}
 		}
-		fmt.Print("Please choose a clash subscribe: ")
-		index := 0
-		_, err := fmt.Scanln(&index)
-		if err != nil {
-			return false, errors.New("invalid input, ", err).WithPrefix("clashswitch").WithPathObj(*this)
-		}
-		if index < 0 || index >= len(builds.Config.XrayHelper.SubList) {
-			return false, errors.New("invalid node number").WithPrefix("clashswitch").WithPathObj(*this)
-		}
-		_ = os.Remove(clashConfig)
-		if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), clashConfig); err != nil {
-			return false, err
+		if len(clashUrl) > 0 {
+			for index, clashSubUrl := range clashUrl {
+				fmt.Printf("[%d] %s\n", index, clashSubUrl)
+			}
+			fmt.Print("Please choose a clash subscribe: ")
+			index := 0
+			_, err := fmt.Scanln(&index)
+			if err != nil {
+				return false, errors.New("invalid input, ", err).WithPrefix("clashswitch").WithPathObj(*this)
+			}
+			if index < 0 || index >= len(builds.Config.XrayHelper.SubList) {
+				return false, errors.New("invalid node number").WithPrefix("clashswitch").WithPathObj(*this)
+			}
+			_ = os.Remove(clashConfig)
+			if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), clashConfig); err != nil {
+				return false, err
+			}
+		} else {
+			return false, errors.New("do not have any clash subscribe url in subList").WithPrefix("clashswitch").WithPathObj(*this)
 		}
 	}
 	return true, nil

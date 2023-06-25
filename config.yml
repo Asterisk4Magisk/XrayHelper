@@ -7,8 +7,9 @@ xrayHelper:
     proxyTag: proxy
     subList:
         - https://testsuburl.com
+        - clash+https://testclashsuburl.com
 proxy:
-    method: tproxy
+    method: tun
     tproxyPort: 65535
     socksPort: 65534
     enableIPv6: false

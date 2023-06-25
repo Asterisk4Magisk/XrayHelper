@@ -309,8 +309,17 @@ func updateSubscribe() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return errors.New("create DataDir failed, ", err).WithPrefix("update")
 	}
+	var v2rayNgUrl, clashUrl []string
+	for _, subUrl := range builds.Config.XrayHelper.SubList {
+		if strings.HasPrefix(subUrl, "clash+") {
+			clashUrl = append(clashUrl, strings.TrimPrefix(subUrl, "clash+"))
+		} else {
+			v2rayNgUrl = append(v2rayNgUrl, subUrl)
+		}
+	}
+	// update v2rayNg subscribe
 	builder := strings.Builder{}
-	for index, subUrl := range builds.Config.XrayHelper.SubList {
+	for _, subUrl := range v2rayNgUrl {
 		rawData, err := common.GetRawData(subUrl)
 		if err != nil {
 			log.HandleError(err)
@@ -318,16 +327,24 @@ func updateSubscribe() error {
 		}
 		subData, err := common.DecodeBase64(string(rawData))
 		if err != nil {
-			log.HandleDebug(err)
-			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
-				return errors.New("write subscribe file failed, ", err).WithPrefix("update")
-			}
+			log.HandleError(err)
 			continue
 		}
 		builder.WriteString(strings.TrimSpace(subData) + "\n")
 	}
 	if builder.Len() > 0 {
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
+			return errors.New("write subscribe file failed, ", err).WithPrefix("update")
+		}
+	}
+	// update clash subscribe
+	for index, subUrl := range clashUrl {
+		rawData, err := common.GetRawData(subUrl)
+		if err != nil {
+			log.HandleError(err)
+			continue
+		}
+		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
 			return errors.New("write subscribe file failed, ", err).WithPrefix("update")
 		}
 	}
