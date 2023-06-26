@@ -51,8 +51,8 @@ func CheckPort(protocol string, host string, port string) bool {
 	return true
 }
 
-// CheckPortLocal check whether the local port is listening
-func CheckPortLocal(port string) bool {
+// CheckLocalPort check whether the local port is listening
+func CheckLocalPort(port string) bool {
 	var msg bytes.Buffer
 	NewExternal(0, &msg, nil, "netstat", "-tnlp").Run()
 	return strings.Contains(msg.String(), port)

@@ -227,7 +227,7 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 			tj.FingerPrint = "firefox"
 		}
 		//parse trojan reality PublicKey
-		if publicKeys, ok := tjQuery["pbx"]; ok && len(publicKeys) == 1 {
+		if publicKeys, ok := tjQuery["pbk"]; ok && len(publicKeys) == 1 {
 			tj.PublicKey = publicKeys[0]
 		}
 		//parse trojan reality ShortId
@@ -381,7 +381,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 			vl.FingerPrint = "firefox"
 		}
 		//parse VLESS reality PublicKey
-		if publicKeys, ok := vlQuery["pbx"]; ok && len(publicKeys) == 1 {
+		if publicKeys, ok := vlQuery["pbk"]; ok && len(publicKeys) == 1 {
 			vl.PublicKey = publicKeys[0]
 		}
 		//parse VLESS reality ShortId

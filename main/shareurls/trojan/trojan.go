@@ -28,7 +28,7 @@ type Trojan struct {
 	FingerPrint string
 	Alpn        string
 	//reality
-	PublicKey string //pbx
+	PublicKey string //pbk
 	ShortId   string //sid
 	SpiderX   string //spx
 }
