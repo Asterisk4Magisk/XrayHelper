@@ -5,6 +5,7 @@ import (
 	"XrayHelper/main/common"
 	"XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"XrayHelper/main/proxies"
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
@@ -264,6 +265,13 @@ func updateCore() error {
 	if serviceRunFlag {
 		log.HandleInfo("update: starting core with new version")
 		_ = startService()
+		proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
+		if err != nil {
+			log.HandleError("update: get proxy failed, " + err.Error())
+		} else {
+			proxy.Disable()
+			_ = proxy.Enable()
+		}
 	}
 	return nil
 }
