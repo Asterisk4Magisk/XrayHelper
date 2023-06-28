@@ -265,12 +265,16 @@ func updateCore() error {
 	if serviceRunFlag {
 		log.HandleInfo("update: starting core with new version")
 		_ = startService()
-		proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
-		if err != nil {
-			log.HandleError("update: get proxy failed, " + err.Error())
+		if err := builds.LoadPackage(); err != nil {
+			log.HandleError("update: load package failed, " + err.Error())
 		} else {
-			proxy.Disable()
-			_ = proxy.Enable()
+			proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
+			if err != nil {
+				log.HandleError("update: get proxy failed, " + err.Error())
+			} else {
+				proxy.Disable()
+				_ = proxy.Enable()
+			}
 		}
 	}
 	return nil
