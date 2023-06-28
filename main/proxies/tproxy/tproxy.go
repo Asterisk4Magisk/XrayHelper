@@ -72,14 +72,8 @@ func (this *Tproxy) Disable() {
 		deleteRoute(true)
 		cleanIptablesChain(true)
 	}
-	switch builds.Config.XrayHelper.CoreType {
-	case "clash":
-		tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
-	default:
-		if !builds.Config.Proxy.EnableIPv6 {
-			tools.EnableIPV6DNS()
-		}
-	}
+	tools.EnableIPV6DNS()
+	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 }
 
 // addRoute Add ip route to proxy
