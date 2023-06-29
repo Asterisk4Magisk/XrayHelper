@@ -104,14 +104,6 @@ func getExternalIPv6Addr() ([]string, error) {
 
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
-	// open saveFile
-	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
-	if err != nil {
-		return errors.New("cannot open file "+filepath+", ", err).WithPrefix("network")
-	}
-	defer func(saveFile *os.File) {
-		_ = saveFile.Close()
-	}(saveFile)
 	// get file from url
 	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
@@ -123,6 +115,14 @@ func DownloadFile(filepath string, url string) error {
 	if response.StatusCode != http.StatusOK {
 		return errors.New("bad http status "+response.Status+", ", err).WithPrefix("network")
 	}
+	// open saveFile
+	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+	if err != nil {
+		return errors.New("cannot open file "+filepath+", ", err).WithPrefix("network")
+	}
+	defer func(saveFile *os.File) {
+		_ = saveFile.Close()
+	}(saveFile)
 	_, err = io.Copy(saveFile, response.Body)
 	if err != nil {
 		return errors.New("save file "+filepath+" failed, ", err).WithPrefix("network")
