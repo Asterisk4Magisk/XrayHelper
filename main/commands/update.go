@@ -22,7 +22,9 @@ import (
 const (
 	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
 	clashUrl                  = "https://api.github.com/repos/Dreamacro/clash/releases/latest"
+	clashMetaUrl              = "https://api.github.com/repos/MetaCubeX/Clash.Meta/releases/latest"
 	yacdDownloadUrl           = "https://github.com/haishanh/yacd/archive/gh-pages.zip"
+	yacdMetaDownloadUrl       = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
 	xrayCoreDownloadUrl       = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl      = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
 	geoipDownloadUrl          = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
@@ -39,7 +41,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify operation, available operation [core|tun2socks|geodata|subscribe|yacd]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("not specify operation, available operation [core|tun2socks|geodata|subscribe|yacd|yacd-meta]").WithPrefix("update").WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return errors.New("too many arguments").WithPrefix("update").WithPathObj(*this)
@@ -75,8 +77,14 @@ func (this *UpdateCommand) Execute(args []string) error {
 			return err
 		}
 		log.HandleInfo("update: update success")
+	case "yacd-meta":
+		log.HandleInfo("update: updating yacd-meta")
+		if err := updateYacdMeta(); err != nil {
+			return err
+		}
+		log.HandleInfo("update: update success")
 	default:
-		return errors.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe|yacd]").WithPrefix("update").WithPathObj(*this)
+		return errors.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe|yacd|yacd-meta]").WithPrefix("update").WithPathObj(*this)
 	}
 	return nil
 }
@@ -259,6 +267,43 @@ func updateCore() error {
 			return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
 		}
 		_ = saveFile.Close()
+	case "clash.meta":
+		clashMetaDownloadUrl, err := getDownloadUrl(clashMetaUrl, "clash.meta-android-arm64-v")
+		if err != nil {
+			return err
+		}
+		clashMetaGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "clash.meta.gz")
+		if err := common.DownloadFile(clashMetaGzipPath, clashMetaDownloadUrl); err != nil {
+			return err
+		}
+		// update core need stop core service first
+		if len(getServicePid()) > 0 {
+			log.HandleInfo("update: detect core is running, stop it")
+			stopService()
+			serviceRunFlag = true
+			_ = os.Remove(builds.Config.XrayHelper.CorePath)
+		}
+		clashMetaGzip, err := os.Open(clashMetaGzipPath)
+		if err != nil {
+			return errors.New("open gzip file failed, ", err).WithPrefix("update")
+		}
+		defer func(clashMetaGzip *os.File) {
+			_ = clashMetaGzip.Close()
+			_ = os.Remove(clashMetaGzipPath)
+		}(clashMetaGzip)
+		gzipReader, err := gzip.NewReader(clashMetaGzip)
+		if err != nil {
+			return errors.New("open gzip file failed, ", err).WithPrefix("update")
+		}
+		defer func(gzipReader *gzip.Reader) {
+			_ = gzipReader.Close()
+		}(gzipReader)
+		saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+		_, err = io.Copy(saveFile, gzipReader)
+		if err != nil {
+			return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+		}
+		_ = saveFile.Close()
 	default:
 		return errors.New("unknown core type " + builds.Config.XrayHelper.CoreType).WithPrefix("update")
 	}
@@ -371,7 +416,7 @@ func updateYacd() error {
 	}
 	zipReader, err := zip.OpenReader(yacdZipPath)
 	if err != nil {
-		return errors.New("open yacd.zip failed, ", err).WithPrefix("update")
+		return errors.New("open zip file failed, ", err).WithPrefix("update")
 	}
 	defer func(zipReader *zip.ReadCloser) {
 		_ = zipReader.Close()
@@ -379,6 +424,52 @@ func updateYacd() error {
 	}(zipReader)
 	if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "yacd-gh-pages/")); err != nil {
 		return errors.New("remove old yacd files failed, ", err).WithPrefix("update")
+	}
+	for _, file := range zipReader.File {
+		t := filepath.Join(builds.Config.XrayHelper.DataDir, file.Name)
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(t, 0644); err != nil {
+				return errors.New("create dir "+t+" failed, ", err).WithPrefix("update")
+			}
+			continue
+		}
+		fr, err := file.Open()
+		if err != nil {
+			return errors.New("open file "+file.Name+" failed, ", err)
+		}
+		fw, err := os.OpenFile(t, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
+		if err != nil {
+			_ = fr.Close()
+			return errors.New("open file "+t+" failed, ", err).WithPrefix("update")
+		}
+		_, err = io.Copy(fw, fr)
+		if err != nil {
+			_ = fw.Close()
+			_ = fr.Close()
+			return errors.New("copy file "+file.Name+" failed, ", err).WithPrefix("update")
+		}
+		_ = fw.Close()
+		_ = fr.Close()
+	}
+	return nil
+}
+
+// updateYacdMeta update yacd-meta
+func updateYacdMeta() error {
+	yacdMetaZipPath := path.Join(builds.Config.XrayHelper.DataDir, "yacd-meta.zip")
+	if err := common.DownloadFile(yacdMetaZipPath, yacdMetaDownloadUrl); err != nil {
+		return err
+	}
+	zipReader, err := zip.OpenReader(yacdMetaZipPath)
+	if err != nil {
+		return errors.New("open zip file failed, ", err).WithPrefix("update")
+	}
+	defer func(zipReader *zip.ReadCloser) {
+		_ = zipReader.Close()
+		_ = os.Remove(yacdMetaZipPath)
+	}(zipReader)
+	if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "Yacd-meta-gh-pages/")); err != nil {
+		return errors.New("remove old yacd-meta files failed, ", err).WithPrefix("update")
 	}
 	for _, file := range zipReader.File {
 		t := filepath.Join(builds.Config.XrayHelper.DataDir, file.Name)

@@ -14,8 +14,8 @@ var Option struct {
 	VersionFlag    bool                    `short:"V" long:"version" description:"show current version"`
 	Service        commands.ServiceCommand `command:"service" description:"control core service"`
 	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
-	Update         commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd or subscribe"`
-	Switch         commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
+	Update         commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd, yacd-meta or subscribe"`
+	Switch         commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash/clash.meta config"`
 }
 
 // LoadOption load Option, the program entry

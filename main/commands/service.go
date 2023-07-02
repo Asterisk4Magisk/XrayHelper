@@ -84,6 +84,8 @@ func startService() error {
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
 			case "clash":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig)
+			case "clash.meta":
+				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig)
 			default:
 				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
 			}
@@ -97,6 +99,8 @@ func startService() error {
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
 			case "clash":
 				return errors.New("clash CoreConfig should be a directory").WithPrefix("service")
+			case "clash.meta":
+				return errors.New("clash.meta CoreConfig should be a directory").WithPrefix("service")
 			default:
 				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
 			}
@@ -110,7 +114,11 @@ func startService() error {
 			return err
 		}
 	case "clash":
-		if err := overrideClashConfig(builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
+		if err := overrideClashConfig(false, builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
+			return err
+		}
+	case "clash.meta":
+		if err := overrideClashConfig(true, builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
 			return err
 		}
 	}
@@ -283,7 +291,7 @@ func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err err
 	return marshal, nil
 }
 
-func overrideClashConfig(template string, target string) error {
+func overrideClashConfig(meta bool, template string, target string) error {
 	if len(template) == 0 {
 		return nil
 	}
@@ -312,6 +320,14 @@ func overrideClashConfig(template string, target string) error {
 	delete(targetYamlMap, "secret")
 	delete(targetYamlMap, "allow-lan")
 	delete(targetYamlMap, "bind-address")
+	if meta {
+		delete(targetYamlMap, "tun")
+		delete(targetYamlMap, "ebpf")
+		delete(targetYamlMap, "sniffer")
+		delete(targetYamlMap, "external-controller-tls")
+		delete(targetYamlMap, "tls")
+		delete(targetYamlMap, "experimental")
+	}
 	// open template config and replace target value with it
 	templateFile, err := os.ReadFile(template)
 	if err != nil {
@@ -331,7 +347,9 @@ func overrideClashConfig(template string, target string) error {
 		// assert dns
 		dnsMap, ok := dns.(map[string]interface{})
 		if ok {
-			dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+			if !meta {
+				dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+			}
 			dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
 		}
 		templateYamlMap["dns"] = dnsMap

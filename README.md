@@ -1,7 +1,7 @@
 English | [简体中文](README_zh_CN.md)  
 
 # XrayHelper  
-XrayHelper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.  
+A unified helper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.  
 
 ## Control Core Service  
 `xrayhelper service start`, start core service  
@@ -36,7 +36,7 @@ proxy:
 
 ## Update Components  
 - update core  
-  `xrayhelper update core`, should configure **xrayHelper.coreType** first, support `xray`, `v2ray`, `sing-box`, `clash`  
+  `xrayhelper update core`, should configure **xrayHelper.coreType** first, support `xray`, `v2ray`, `sing-box`, `clash`, `clash.meta`  
 - update tun2socks  
   `xrayhelper update tun2socks`, update tun2socks from [heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)  
 - update geodata  
@@ -44,7 +44,9 @@ proxy:
 - update subscribe  
   `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first, fully compatible with [v2rayNg](https://github.com/2dust/v2rayNG)'s subscription link standard, and also support clash subscribe url(should add prefix `clash+` to the subscribe url)  
 - update yacd  
-  `xrayhelper update yacd`, update yacd for clash, dest path is `${xrayHelper.dataDir}/yacd-gh-pages`
+  `xrayhelper update yacd`, update yacd for clash, dest path is `${xrayHelper.dataDir}/yacd-gh-pages`  
+- update yacd-meta  
+  `xrayhelper update yacd-meta`, update yacd-meta for clash.meta, dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`  
 
 ## Switch Proxy Node  
 ### xray, v2ray, sing-box  
@@ -53,7 +55,7 @@ proxy:
 - switch custom nodes  
   `xrayhelper switch custom`, put custom nodes share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find them use this command
 
-### clash  
+### clash, clash.meta  
 - switch subscribe config  
   `xrayhelper switch`, should update subscribe first  
 - switch custom config  
@@ -66,7 +68,7 @@ proxy:
 
 ## Credits  
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
-- [@Asterisk4Magisk/Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)
 - [@2dust/v2rayNG](https://github.com/2dust/v2rayNG)
 - [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - [@haishanh/yacd](https://github.com/haishanh/yacd)
+- [@MetaCubeX/Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)

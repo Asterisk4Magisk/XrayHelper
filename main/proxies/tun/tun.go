@@ -49,7 +49,7 @@ func (this *Tun) Enable() error {
 	}
 	// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
 	switch builds.Config.XrayHelper.CoreType {
-	case "clash":
+	case "clash", "clash.meta":
 		if err := tools.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
 			this.Disable()
 			return err
@@ -68,11 +68,11 @@ func (this *Tun) Enable() error {
 func (this *Tun) Disable() {
 	deleteRoute(false)
 	cleanIptablesChain(false)
-	if builds.Config.Proxy.EnableIPv6 {
-		deleteRoute(true)
-		cleanIptablesChain(true)
-	}
+	//always clean ipv6 rules
+	deleteRoute(true)
+	cleanIptablesChain(true)
 	stopTun()
+	//always clean dns rules
 	tools.EnableIPV6DNS()
 	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 }
