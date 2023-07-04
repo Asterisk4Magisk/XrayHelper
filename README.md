@@ -1,7 +1,7 @@
 English | [简体中文](README_zh_CN.md)
 
 # XrayHelper
-A unified helper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.
+A unified helper for Android to control system proxy, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.
 
 # Config
 XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhelper.yml`, and you can customize the path with the `-c` option.  
@@ -21,7 +21,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 
 ## Update Components
 - update core  
-  `xrayhelper update core`, should configure **xrayHelper.coreType** first, support `xray`, `v2ray`, `sing-box`, `clash`, `clash.meta`
+  `xrayhelper update core`, should configure **xrayHelper.coreType** first
 - update tun2socks  
   `xrayhelper update tun2socks`, update tun2socks from [heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - update geodata  
