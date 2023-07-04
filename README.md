@@ -3,7 +3,7 @@ English | [简体中文](README_zh_CN.md)
 # XrayHelper
 A unified helper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.
 
-# Configuration
+# Config
 XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhelper.yml`, and you can customize the path with the `-c` option.  
 [Example of xrayhelper config](config.yml)
 
@@ -46,7 +46,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 - switch custom config  
   `xrayhelper switch example.yaml`, use `${xrayHelper.coreConfig}/example.yaml` file as config
 
-**notice: ${xrayHelper.clash.template} will overwrite selected config above**
+**notice: ${xrayHelper.clash.template} will overwrite(or inject) selected config above**
 
 ## License
 [Mozilla Public License Version 2.0 (MPL)](https://raw.githubusercontent.com/Asterisk4Magisk/XrayHelper/master/LICENSE)
