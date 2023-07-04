@@ -1,20 +1,20 @@
 [English](README.md) | 简体中文
 
-# XrayHelper  
-一个安卓专属的通用代理助手，使用golang实现[Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)的部分脚本，提供arm64和amd64二进制文件.
+# XrayHelper
+一个安卓专属的通用代理助手，使用golang实现[Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)的部分脚本，提供arm64和amd64二进制文件
 
-## 配置文件  
-[配置示例](config.yml)  
-XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径
-- xrayHelper  
+## 配置文件
+XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径  
+[配置示例](config.yml)
+- xrayHelper
     - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`、`clash`、`clash.meta`
     - `corePath`必填，指定核心路径
     - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令
     - `dataDir`必填，指定XrayHelper的数据目录，用于存储GEO数据文件、自定义节点和订阅节点信息等
     - `runDir`必填，用于存储运行时所产生的文件，例如核心的pid值，核心日志等
     - `proxyTag`默认值`proxy`，使用XrayHelper进行节点切换时，将进行替换的出站代理Tag
-    - `subList`可选，数组，与 [v2rayNg](https://github.com/2dust/v2rayNG) 兼容的节点订阅链接(xray、v2ray、sing-box)，也支持clash/clash.meta订阅链接(需要在订阅链接前添加`clash+`前缀，用来标识这是一个clash订阅链接)
-- proxy  
+    - `subList`可选，数组，与 [v2rayNg](https://github.com/2dust/v2rayNG) 兼容的节点订阅链接(SSR、SIP002、v2rayNg)，也支持clash/clash.meta订阅链接(需要在订阅链接前添加`clash+`前缀，用来标识这是一个clash订阅链接)
+- proxy
     - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`，使用tun模式时，需要提前下载 tun2socks 二进制文件（`xrayhelper update tun2socks`）
     - `tproxyPort`默认值`65535`，透明代理端口，该值需要与核心的`tproxy`入站代理端口相对应，`tproxy`模式需要
     - `socksPort`默认值`65534`，socks5代理端口，该值需要与核心的`socks`入站代理端口相对应，`tun`模式需要
@@ -41,20 +41,20 @@ XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelpe
 - update
     - `core`更新核心，需要指定coreType
     - `geodata`从 [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) 更新geo数据库
-    - `subscribe`更新订阅
-    - `tun2socks`更新 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)  
+    - `subscribe`更新订阅节点
+    - `tun2socks`从更新 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)更新tun2socks
     - `yacd`更新 [yacd](https://github.com/haishanh/yacd)
     - `yacd-meta`更新 [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)
-### xray、v2ray、sing-box  
-- switch  
+### xray、v2ray、sing-box
+- switch
     - 不带任何参数时，从订阅`${xrayHelper.dataDir}/sub.txt`获取节点信息并选择
     - `custom`从`${xrayHelper.dataDir}/custom.txt`获取节点信息并选择，因此，可将自定义节点的分享链接放置于此方便选择
-### clash、clash.meta  
-- switch  
+### clash、clash.meta
+- switch
   - 不带任何参数时，使用`${xrayHelper.dataDir}/clashSub#{index}.yaml`作为配置文件
   - `example.yaml`使用`${xrayHelper.coreConfig}/example.yaml`作为配置文件
 
-**注意：${clash.template}总是会覆盖你所使用的配置文件**  
+**注意：${clash.template}总是会覆盖你所使用的配置文件**
 
 ## 许可
 [Mozilla Public License Version 2.0 (MPL)](https://raw.githubusercontent.com/Asterisk4Magisk/XrayHelper/master/LICENSE)

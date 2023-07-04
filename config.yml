@@ -2,14 +2,14 @@
 xrayHelper:
     # Required, Default value: xray, your core type, support xray, v2ray, sing-box, clash, clash.meta
     coreType: xray
-    # Required, an absolute path to your core
+    # Required, absolute path to your core
     corePath: /data/adb/xray/bin/xray
-    # Required, an absolute path to your core config, can be a directory or single file
+    # Required, absolute path to your core config, can be a directory or single file
     coreConfig: /data/adb/xray/confs/
-    # Required, an absolute path to xrayhelper data directory, include a lot of data of xrayhelper
+    # Required, absolute path to xrayhelper data directory, include a lot of data of xrayhelper
     # such as core geodate, v2rayNg's standard subscribe node share url and clash/clash.meta subscribe config
     dataDir: /data/adb/xray/data/
-    # Required, an absolute path to xrayhelper temp directory, include xrayhelper logs, core pid, core logs and so on
+    # Required, absolute path to xrayhelper temp directory, include xrayhelper logs, core pid, core logs and so on
     runDir: /data/adb/xray/run/
     # Required for xray/v2ray/sing-box, Default value: proxy, the replaced outbound object's tag when you use xrayhelper to switch proxy node
     proxyTag: proxy
