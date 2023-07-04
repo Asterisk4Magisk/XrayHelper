@@ -3,36 +3,21 @@ English | [简体中文](README_zh_CN.md)
 # XrayHelper  
 A unified helper for Android, some scripts in [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) rewritten with golang, provide arm64 and amd64 binary.  
 
+# Configuration  
+[Example of xrayhelper config](config.yml)  
+XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhelper.yml`, and you can customize the path with the `-c` option.
+
+# Commands  
 ## Control Core Service  
 `xrayhelper service start`, start core service  
 `xrayhelper service stop`, stop core service  
 `xrayhelper service restart`, restart core service  
 `xrayhelper service status`, show core status  
 
-## Control System Proxy  
-Support application package proxy list run with blacklist and whitelist, bypass specific network interface, and proxy ap interface, should configure **proxy**  
-```yaml
-proxy:
-    method: tproxy
-    tproxyPort: 65535
-    socksPort: 65534
-    enableIPv6: false
-    mode: whitelist
-    pkgList:
-        - com.kiwibrowser.browser
-        - com.termux:20
-    apList:
-        - wlan2
-        - rndis0
-    ignoreList:
-        - ignore
-    intraList:
-        - 192.168.123.0/24
-        - fd12:3456:789a:bcde::/64
-```
+## Control System Proxy
 `xrayhelper proxy enable`, enable system proxy  
 `xrayhelper proxy disable`, disable system proxy  
-`xrayhelper proxy refresh`, refresh system proxy  
+`xrayhelper proxy refresh`, refresh system proxy rule  
 
 ## Update Components  
 - update core  

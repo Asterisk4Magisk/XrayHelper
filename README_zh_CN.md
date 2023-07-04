@@ -4,6 +4,7 @@
 一个安卓专属的通用代理助手，使用golang实现[Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)的部分脚本，提供arm64和amd64二进制文件.
 
 ## 配置文件  
+[配置示例](config.yml)  
 XrayHelper使用yml格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径
 - xrayHelper  
     - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`、`clash`、`clash.meta`
