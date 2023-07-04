@@ -3,7 +3,7 @@
 # XrayHelper
 一个安卓专属的通用代理助手，使用 Golang 实现 [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk) 的部分脚本，提供 arm64 和 amd64 二进制文件
 
-## 配置文件
+## 配置
 XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径  
 [配置示例](config.yml)
 - xrayHelper
@@ -39,9 +39,9 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `disable`停用系统代理规则
     - `refresh`刷新系统代理规则
 - update
-    - `core`更新核心，需要指定 coreType
+    - `core`更新核心，需要指定 **xrayHelper.coreType**
     - `geodata`从 [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) 更新 GEO 数据文件
-    - `subscribe`更新订阅节点（或 clash/clash.meta 订阅）到`${xrayHelper.dataDir}/sub.txt`（或`${xrayHelper.dataDir}/clashSub#{index}.yaml`）
+    - `subscribe`更新订阅节点（或 clash/clash.meta 订阅）到`${xrayHelper.dataDir}/sub.txt`（或`${xrayHelper.dataDir}/clashSub#{index}.yaml`），需要指定 **xrayHelper.subList**
     - `tun2socks`从 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) 更新 tun2socks
     - `yacd`更新 [yacd](https://github.com/haishanh/yacd) 到`${xrayHelper.dataDir}/yacd-gh-pages`
     - `yacd-meta`更新 [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta) 到`${xrayHelper.dataDir}/Yacd-meta-gh-pages`
