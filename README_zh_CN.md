@@ -15,9 +15,9 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `proxyTag`默认值`proxy`，使用 XrayHelper 进行节点切换时，将进行替换的出站代理 Tag
     - `subList`可选，数组，节点订阅链接（SSR/SIP002/v2rayNg），也支持 clash/clash.meta 订阅链接(需要在订阅链接前添加`clash+`前缀)
 - proxy
-    - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`，使用 tun 模式时，需要提前下载 tun2socks 二进制文件（可使用命令`xrayhelper update tun2socks`）
+    - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`、`tun2socks`，使用 tun 模式时，请确保你的核心支持 tun 并正确配置它；使用 tun2socks 模式时，需要提前下载 tun2socks 二进制文件（可使用命令`xrayhelper update tun2socks`）
     - `tproxyPort`默认值`65535`，透明代理端口，该值需要与核心的 tproxy 入站代理端口相对应，`tproxy`模式需要
-    - `socksPort`默认值`65534`，socks5 代理端口，该值需要与核心的 socks5 入站代理端口相对应，`tun`模式需要
+    - `socksPort`默认值`65534`，socks5 代理端口，该值需要与核心的 socks5 入站代理端口相对应，`tun2socks`模式需要
     - `enableIPv6`默认值`false`，是否启用 ipv6 代理，需要代理节点支持
     - `mode`默认值`blacklist`，代理应用名单模式，可选`whitelist`、`blacklist`，使用白名单模式时，下方应用名单内的应用流量会被标记，其他流量不会被标记（即绕过），反之，黑名单模式则不标记应用名单内的应用流量
     - `pkgList`，可选，数组，代理应用名单，格式为`apk包名:用户`，未指定用户时，默认0，即机主；需要注意当该列表为空时，无论代理名单是什么模式，都会标记所有应用流量
@@ -25,8 +25,12 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `ignoreList`，可选，数组，需要忽略的接口名，例如`wlan+`可以实现连上 wifi 不走代理
     - `intraList`，可选，数组，CIDR，默认情况下，内网地址不会被标记，若需要将部分内网地址标记，可配置此项
 - clash
-    - `dnsPort`默认值`65533`，clash/clash.meta 监听的 dns 端口
-    - `template`可选，clash/clash.meta 配置模板，指定配置模板后，该模板会**覆盖（或注入）** clash/clash.meta 配置文件对应内容
+  - `dnsPort`默认值`65533`，clash/clash.meta 监听的 dns 端口
+  - `template`可选，clash/clash.meta 配置模板，指定配置模板后，该模板会**覆盖（或注入）** clash/clash.meta 配置文件对应内容
+- tun
+  - `tunDevice`默认值`xtun`，核心或 tun2socks 所创建的 tun 设备名
+  - `tunIPv4`默认值`10.10.12.1`，tun 设备的 ipv4 地址
+  - `tunIPv6`默认值`fd02:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd`，tun 设备的 ipv6 地址
 
 ## 命令
 - service

@@ -16,7 +16,7 @@ func NewProxy(method string) (ProxyMethod, error) {
 	switch method {
 	case "tproxy":
 		return new(tproxy.Tproxy), nil
-	case "tun":
+	case "tun", "tun2socks":
 		return new(tun.Tun), nil
 	default:
 		return nil, errors.New("unsupported proxy method " + method).WithPrefix("proxies")

@@ -252,7 +252,7 @@ func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err err
 	}
 	dns, ok := jsonMap["dns"]
 	if !ok {
-		return nil, errors.New("cannot find dns").WithPrefix("service")
+		return nil, errors.New("cannot find dns object from your core config").WithPrefix("service")
 	}
 	// assert dns
 	dnsMap, ok := dns.(map[string]interface{})
