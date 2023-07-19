@@ -56,11 +56,9 @@ func (this *Tproxy) Enable() error {
 			return err
 		}
 	default:
-		if !builds.Config.Proxy.EnableIPv6 {
-			if err := tools.DisableIPV6DNS(); err != nil {
-				this.Disable()
-				return err
-			}
+		if err := tools.RedirectDNS(builds.Config.Proxy.TproxyPort); err != nil {
+			this.Disable()
+			return err
 		}
 	}
 	return nil
@@ -72,7 +70,6 @@ func (this *Tproxy) Disable() {
 	deleteRoute(true)
 	cleanIptablesChain(true)
 	//always clean dns rules
-	tools.EnableIPV6DNS()
 	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 }
 
