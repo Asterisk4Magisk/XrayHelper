@@ -55,9 +55,11 @@ func (this *Tun) Enable() error {
 			return err
 		}
 	default:
-		if err := tools.RedirectDNS(builds.Config.Proxy.TproxyPort); err != nil {
-			this.Disable()
-			return err
+		if !builds.Config.Proxy.EnableIPv6 {
+			if err := tools.DisableIPV6DNS(); err != nil {
+				this.Disable()
+				return err
+			}
 		}
 	}
 	return nil
@@ -71,6 +73,7 @@ func (this *Tun) Disable() {
 	cleanIptablesChain(true)
 	stopTun()
 	//always clean dns rules
+	tools.EnableIPV6DNS()
 	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 }
 
