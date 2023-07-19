@@ -55,7 +55,7 @@ func (this *Tun) Enable() error {
 			return err
 		}
 	default:
-		if err := tools.RedirectDNS(builds.Config.Proxy.TproxyPort); err != nil {
+		if err := tools.RedirectDNS(builds.Config.Proxy.SocksPort); err != nil {
 			this.Disable()
 			return err
 		}
