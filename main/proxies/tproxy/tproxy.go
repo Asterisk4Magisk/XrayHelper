@@ -7,6 +7,7 @@ import (
 	"XrayHelper/main/log"
 	"XrayHelper/main/proxies/tools"
 	"bytes"
+	"strings"
 )
 
 var useDummy bool
@@ -260,7 +261,7 @@ func createProxyChain(ipv6 bool) error {
 		}
 	}
 	// mark all dns request
-	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+	if !strings.Contains(builds.Config.XrayHelper.CoreType, "clash") {
 		if err := currentIpt.Insert("mangle", "PROXY", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
 			return errors.New("mark all dns request on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix("tproxy")
 		}
@@ -347,7 +348,7 @@ func createMangleChain(ipv6 bool) error {
 		}
 	}
 	// mark all dns request
-	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+	if !strings.Contains(builds.Config.XrayHelper.CoreType, "clash") {
 		if err := currentIpt.Insert("mangle", "XRAY", 1, "-p", "udp", "--dport", "53", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
 			return errors.New("mark all dns request on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 		}

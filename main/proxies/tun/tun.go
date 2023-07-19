@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -348,7 +349,7 @@ func createProxyChain(ipv6 bool) error {
 		}
 	}
 	// mark all dns request
-	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+	if !strings.Contains(builds.Config.XrayHelper.CoreType, "clash") {
 		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "TUN2SOCKS"); err != nil {
 			return errors.New("mark all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix("tun")
 		}
@@ -428,7 +429,7 @@ func createMangleChain(ipv6 bool) error {
 		}
 	}
 	// mark all dns request
-	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+	if !strings.Contains(builds.Config.XrayHelper.CoreType, "clash") {
 		if err := currentIpt.Insert("mangle", "TUN2SOCKS", 1, "-p", "udp", "--dport", "53", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return errors.New("mark all dns request on "+currentProto+" udp mangle chain TUN2SOCKS failed, ", err).WithPrefix("tun")
 		}
