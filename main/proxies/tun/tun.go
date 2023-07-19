@@ -341,7 +341,7 @@ func createProxyChain(ipv6 bool) error {
 	// mark all dns request
 	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
 		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "TUN2SOCKS"); err != nil {
-			return errors.New("mark all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix("tproxy")
+			return errors.New("mark all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix("tun")
 		}
 	}
 	// apply rules to OUTPUT
@@ -416,6 +416,12 @@ func createMangleChain(ipv6 bool) error {
 		}
 		if err := currentIpt.Append("mangle", "TUN2SOCKS", "-p", "udp", "-i", ap, "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return errors.New("create ap interface "+ap+" proxy on "+currentProto+" udp mangle chain TUN2SOCKS failed, ", err).WithPrefix("tun")
+		}
+	}
+	// mark all dns request
+	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+		if err := currentIpt.Insert("mangle", "TUN2SOCKS", 1, "-p", "udp", "--dport", "53", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
+			return errors.New("mark all dns request on "+currentProto+" udp mangle chain TUN2SOCKS failed, ", err).WithPrefix("tun")
 		}
 	}
 	// apply rules to PREROUTING
