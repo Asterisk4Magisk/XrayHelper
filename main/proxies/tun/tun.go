@@ -338,6 +338,12 @@ func createProxyChain(ipv6 bool) error {
 			}
 		}
 	}
+	// mark all dns request
+	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "TUN2SOCKS"); err != nil {
+			return errors.New("mark all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix("tproxy")
+		}
+	}
 	// apply rules to OUTPUT
 	if err := currentIpt.Append("mangle", "OUTPUT", "-j", "XT"); err != nil {
 		return errors.New("apply mangle chain XT to OUTPUT failed, ", err).WithPrefix("tun")
