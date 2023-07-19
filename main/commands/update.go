@@ -22,6 +22,7 @@ import (
 const (
 	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
 	clashUrl                  = "https://api.github.com/repos/Dreamacro/clash/releases/latest"
+	clashPremiumUrl           = "https://api.github.com/repos/Dreamacro/clash/releases/tags/premium"
 	clashMetaUrl              = "https://api.github.com/repos/MetaCubeX/Clash.Meta/releases/latest"
 	yacdDownloadUrl           = "https://github.com/haishanh/yacd/archive/gh-pages.zip"
 	yacdMetaDownloadUrl       = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
@@ -255,6 +256,43 @@ func updateCore() error {
 			_ = os.Remove(clashGzipPath)
 		}(clashGzip)
 		gzipReader, err := gzip.NewReader(clashGzip)
+		if err != nil {
+			return errors.New("open gzip file failed, ", err).WithPrefix("update")
+		}
+		defer func(gzipReader *gzip.Reader) {
+			_ = gzipReader.Close()
+		}(gzipReader)
+		saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+		_, err = io.Copy(saveFile, gzipReader)
+		if err != nil {
+			return errors.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+		}
+		_ = saveFile.Close()
+	case "clash.premium":
+		clashPremiumDownloadUrl, err := getDownloadUrl(clashPremiumUrl, "clash-linux-arm64")
+		if err != nil {
+			return err
+		}
+		clashPremiumGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "clash.premium.gz")
+		if err := common.DownloadFile(clashPremiumGzipPath, clashPremiumDownloadUrl); err != nil {
+			return err
+		}
+		// update core need stop core service first
+		if len(getServicePid()) > 0 {
+			log.HandleInfo("update: detect core is running, stop it")
+			stopService()
+			serviceRunFlag = true
+			_ = os.Remove(builds.Config.XrayHelper.CorePath)
+		}
+		clashPremiumGzip, err := os.Open(clashPremiumGzipPath)
+		if err != nil {
+			return errors.New("open gzip file failed, ", err).WithPrefix("update")
+		}
+		defer func(clashPremiumGzip *os.File) {
+			_ = clashPremiumGzip.Close()
+			_ = os.Remove(clashPremiumGzipPath)
+		}(clashPremiumGzip)
+		gzipReader, err := gzip.NewReader(clashPremiumGzip)
 		if err != nil {
 			return errors.New("open gzip file failed, ", err).WithPrefix("update")
 		}

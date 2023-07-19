@@ -1,20 +1,20 @@
 # Example of xrayhelper config
 xrayHelper:
-    # Required, Default value: xray, your core type, support xray, v2ray, sing-box, clash, clash.meta
+    # Required, Default value: xray, your core type, support xray, v2ray, sing-box, clash, clash.premium, clash.meta
     coreType: xray
     # Required, absolute path to your core
     corePath: /data/adb/xray/bin/xray
     # Required, absolute path to your core config, can be a directory or single file
     coreConfig: /data/adb/xray/confs/
     # Required, absolute path to xrayhelper data directory, include a lot of data of xrayhelper
-    # such as core geodate, v2rayNg's standard subscribe node share url and clash/clash.meta subscribe config
+    # such as core geodate, v2rayNg's standard subscribe node share url and clash/clash.premium/clash.meta subscribe config
     dataDir: /data/adb/xray/data/
     # Required, absolute path to xrayhelper temp directory, include xrayhelper logs, core pid, core logs and so on
     runDir: /data/adb/xray/run/
     # Required for xray/v2ray/sing-box, Default value: proxy, the replaced outbound object's tag when you use xrayhelper to switch proxy node
     proxyTag: proxy
     # Optional, your subscribe url, support SSR, SIP002, v2rayNg standard share url
-    # and also support clash/clash.meta config url, but you need add a prefix "clash+"
+    # and also support clash/clash.premium/clash.meta config url, but you need add a prefix "clash+"
     subList:
         - https://testsuburl.com
         - clash+https://testclashsuburl.com
@@ -51,9 +51,9 @@ proxy:
         - 192.168.123.0/24
         - fd12:3456:789a:bcde::/64
 clash:
-    # Required for clash/clash.meta, Default value: 65533, all dns request will be redirected to the port which listen by clash/clash.meta
+    # Required for clash/clash.premium/clash.meta, Default value: 65533, all dns request will be redirected to the port which listen by clash/clash.premium/clash.meta
     dnsPort: 65533
-    # Optional, if not empty, the template config will replace (or inject to) the actual clash/clash.meta config
+    # Optional, if not empty, the template config will replace (or inject to) the actual clash/clash.premium/clash.meta config
     template: /data/adb/xray/clashconfs/template.yaml
 tun:
     # Required for tun/tun2socks proxy method, Default value: xtun, marked traffic will be forwarded to this network device

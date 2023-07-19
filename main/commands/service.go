@@ -82,9 +82,7 @@ func startService() error {
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
 			case "sing-box":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
-			case "clash":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig)
-			case "clash.meta":
+			case "clash", "clash.meta", "clash.premium":
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig)
 			default:
 				return errors.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix("service")
@@ -99,6 +97,8 @@ func startService() error {
 				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
 			case "clash":
 				return errors.New("clash CoreConfig should be a directory").WithPrefix("service")
+			case "clash.premium":
+				return errors.New("clash.premium CoreConfig should be a directory").WithPrefix("service")
 			case "clash.meta":
 				return errors.New("clash.meta CoreConfig should be a directory").WithPrefix("service")
 			default:
@@ -113,7 +113,7 @@ func startService() error {
 		if err := handleRayDNS(builds.Config.Proxy.EnableIPv6); err != nil {
 			return err
 		}
-	case "clash":
+	case "clash", "clash.premium":
 		if err := overrideClashConfig(false, builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
 			return err
 		}
@@ -137,6 +137,10 @@ func startService() error {
 				break
 			}
 		} else if builds.Config.Proxy.Method == "tun" {
+			// tun don't need check any local port
+			listenFlag = true
+			break
+		} else if builds.Config.Proxy.Method == "tun2socks" {
 			if common.CheckLocalPort(builds.Config.Proxy.SocksPort) {
 				listenFlag = true
 				break
@@ -320,8 +324,8 @@ func overrideClashConfig(meta bool, template string, target string) error {
 	delete(targetYamlMap, "secret")
 	delete(targetYamlMap, "allow-lan")
 	delete(targetYamlMap, "bind-address")
+	delete(targetYamlMap, "tun")
 	if meta {
-		delete(targetYamlMap, "tun")
 		delete(targetYamlMap, "ebpf")
 		delete(targetYamlMap, "sniffer")
 		delete(targetYamlMap, "external-controller-tls")

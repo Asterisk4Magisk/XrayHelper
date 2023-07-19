@@ -29,7 +29,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 - update subscribe  
   `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first
 - update yacd  
-  `xrayhelper update yacd`, update yacd for clash, dest path is `${xrayHelper.dataDir}/yacd-gh-pages`
+  `xrayhelper update yacd`, update yacd for clash/clash.premium, dest path is `${xrayHelper.dataDir}/yacd-gh-pages`
 - update yacd-meta  
   `xrayhelper update yacd-meta`, update yacd-meta for clash.meta, dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`
 
@@ -40,7 +40,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 - switch custom nodes  
   `xrayhelper switch custom`, put custom nodes share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find them use this command
 
-### clash, clash.meta
+### clash, clash.premium, clash.meta
 - switch subscribe config  
   `xrayhelper switch`, should update subscribe first
 - switch custom config  
