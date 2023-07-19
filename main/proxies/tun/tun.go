@@ -72,8 +72,6 @@ func (this *Tun) Disable() {
 	stopTun()
 	//always clean dns rules
 	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
-	tools.CleanRedirectDNS(builds.Config.Proxy.TproxyPort)
-	tools.CleanRedirectDNS(builds.Config.Proxy.SocksPort)
 }
 
 func startTun() error {
