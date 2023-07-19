@@ -348,7 +348,7 @@ func createMangleChain(ipv6 bool) error {
 	}
 	// mark all dns request
 	if builds.Config.XrayHelper.CoreType != "clash" && builds.Config.XrayHelper.CoreType != "clash.meta" {
-		if err := currentIpt.Insert("mangle", "XRAY", 1, "-p", "udp", "--dport", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
+		if err := currentIpt.Insert("mangle", "XRAY", 1, "-p", "udp", "--dport", "53", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
 			return errors.New("mark all dns request on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix("tproxy")
 		}
 	}
