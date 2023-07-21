@@ -51,7 +51,7 @@ func (this *Tproxy) Enable() error {
 	}
 	// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
 	switch builds.Config.XrayHelper.CoreType {
-	case "clash", "clash.meta":
+	case "clash", "clash.premium", "clash.meta":
 		if err := tools.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
 			this.Disable()
 			return err
