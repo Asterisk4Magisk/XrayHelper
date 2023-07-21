@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -205,7 +206,7 @@ func handleRayDNS(ipv6 bool) error {
 				return errors.New("open config dir failed, ", err).WithPrefix("service")
 			}
 			for _, conf := range confDir {
-				if !conf.IsDir() {
+				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
 					confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()))
 					if err != nil {
 						return errors.New("read config file failed, ", err).WithPrefix("service")
