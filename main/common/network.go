@@ -70,16 +70,14 @@ func CheckIPv6Connection() bool {
 	return CheckPort("udp", dns6, "53")
 }
 
-func CheckLocalIP(addr string) bool {
-	addrs, err := net.InterfaceAddrs()
+func CheckLocalDevice(dev string) bool {
+	devices, err := net.Interfaces()
 	if err != nil {
 		return false
 	}
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok {
-			if addr == ipnet.IP.String() {
-				return true
-			}
+	for _, device := range devices {
+		if dev == device.Name {
+			return true
 		}
 	}
 	return false

@@ -24,9 +24,9 @@ func (this *Tun) Enable() error {
 			return err
 		}
 	} else {
-		if !tunDeviceReady(builds.Config.Tun.TunIPv4) {
+		if !tunDeviceReady(builds.Config.Proxy.TunDevice) {
 			this.Disable()
-			return errors.New("cannot find your tun device IPv4 address " + builds.Config.Tun.TunIPv4 + " did you configure core correctly?").WithPrefix("tun").WithPathObj(*this)
+			return errors.New("cannot find your tun device " + builds.Config.Proxy.TunDevice + " did you configure core correctly?").WithPrefix("tun").WithPathObj(*this)
 		}
 	}
 	if err := addRoute(false); err != nil {
@@ -85,10 +85,10 @@ func (this *Tun) Disable() {
 	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 }
 
-func tunDeviceReady(checkIP string) bool {
+func tunDeviceReady(checkDev string) bool {
 	for i := 0; i < 15; i++ {
 		time.Sleep(1 * time.Second)
-		if common.CheckLocalIP(checkIP) {
+		if common.CheckLocalDevice(checkDev) {
 			return true
 		}
 	}
@@ -112,11 +112,11 @@ func startTun2socks() error {
 			Udp     string `yaml:"udp"`
 		} `yaml:"socks5"`
 	}
-	tunConfig.Tunnel.Name = builds.Config.Tun.TunDevice
+	tunConfig.Tunnel.Name = builds.Config.Proxy.TunDevice
 	tunConfig.Tunnel.Mtu = common.Tun2socksMTU
 	tunConfig.Tunnel.MultiQueue = common.Tun2socksMultiQueue
-	tunConfig.Tunnel.IPv4 = builds.Config.Tun.TunIPv4
-	tunConfig.Tunnel.IPv6 = builds.Config.Tun.TunIPv6
+	tunConfig.Tunnel.IPv4 = common.Tun2socksIPv4
+	tunConfig.Tunnel.IPv6 = common.Tun2socksIPv6
 	tunConfig.Socks5.Port, _ = strconv.Atoi(builds.Config.Proxy.SocksPort)
 	tunConfig.Socks5.Address = "127.0.0.1"
 	tunConfig.Socks5.Udp = common.Tun2socksUdpMode
@@ -136,7 +136,7 @@ func startTun2socks() error {
 	if service.Err() != nil {
 		return errors.New("start tun2socks failed, ", service.Err()).WithPrefix("tun")
 	}
-	if tunDeviceReady(builds.Config.Tun.TunIPv4) {
+	if tunDeviceReady(builds.Config.Proxy.TunDevice) {
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.pid"), []byte(strconv.Itoa(service.Pid())), 0644); err != nil {
 			_ = service.Kill()
 			return errors.New("write tun2socks pid failed, ", err).WithPrefix("tun")
@@ -179,7 +179,7 @@ func addRoute(ipv6 bool) error {
 			return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tun")
 		}
 		errMsg.Reset()
-		common.NewExternal(0, nil, &errMsg, "ip", "route", "add", "default", "dev", builds.Config.Tun.TunDevice, "table", common.TunTableId).Run()
+		common.NewExternal(0, nil, &errMsg, "ip", "route", "add", "default", "dev", builds.Config.Proxy.TunDevice, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tun")
 		}
@@ -195,7 +195,7 @@ func addRoute(ipv6 bool) error {
 			return errors.New("add ip rule failed, ", errMsg.String()).WithPrefix("tun")
 		}
 		errMsg.Reset()
-		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "default", "dev", builds.Config.Tun.TunDevice, "table", common.TunTableId).Run()
+		common.NewExternal(0, nil, &errMsg, "ip", "-6", "route", "add", "default", "dev", builds.Config.Proxy.TunDevice, "table", common.TunTableId).Run()
 		if errMsg.Len() > 0 {
 			return errors.New("add ip route failed, ", errMsg.String()).WithPrefix("tun")
 		}
@@ -250,8 +250,8 @@ func createProxyChain(ipv6 bool) error {
 		return errors.New("create "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
 	}
 	// bypass tun2socks
-	if err := currentIpt.Append("mangle", "XT", "-o", builds.Config.Tun.TunDevice, "-j", "RETURN"); err != nil {
-		return errors.New("ignore tun2socks interface "+builds.Config.Tun.TunDevice+" on "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
+	if err := currentIpt.Append("mangle", "XT", "-o", builds.Config.Proxy.TunDevice, "-j", "RETURN"); err != nil {
+		return errors.New("ignore tun2socks interface "+builds.Config.Proxy.TunDevice+" on "+currentProto+" mangle chain XT failed, ", err).WithPrefix("tun")
 	}
 	// bypass ignore list
 	for _, ignore := range builds.Config.Proxy.IgnoreList {

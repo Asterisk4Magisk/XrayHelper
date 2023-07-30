@@ -30,6 +30,7 @@ var Config struct {
 		Method     string   `default:"tproxy" yaml:"method"`
 		TproxyPort string   `default:"65535" yaml:"tproxyPort"`
 		SocksPort  string   `default:"65534" yaml:"socksPort"`
+		TunDevice  string   `default:"xtun" yaml:"tunDevice"`
 		EnableIPv6 bool     `default:"false" yaml:"enableIPv6"`
 		Mode       string   `default:"blacklist" yaml:"mode"`
 		PkgList    []string `yaml:"pkgList"`
@@ -41,11 +42,6 @@ var Config struct {
 		DNSPort  string `default:"65533" yaml:"dnsPort"`
 		Template string `yaml:"template"`
 	} `yaml:"clash"`
-	Tun struct {
-		TunDevice string `default:"xtun" yaml:"tunDevice"`
-		TunIPv4   string `default:"10.10.12.1" yaml:"tunIPv4"`
-		TunIPv6   string `default:"fd02:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd" yaml:"tunIPv6"`
-	} `yaml:"tun"`
 }
 
 // LoadConfig load program configuration file, should be called before any command Execute
@@ -63,7 +59,6 @@ func LoadConfig() error {
 	log.HandleDebug(Config.XrayHelper)
 	log.HandleDebug(Config.Proxy)
 	log.HandleDebug(Config.Clash)
-	log.HandleDebug(Config.Tun)
 	return nil
 }
 

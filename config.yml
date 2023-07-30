@@ -28,6 +28,8 @@ proxy:
     tproxyPort: 65535
     # Required for tun2socks, Default value: 65534, port of core socks5 inbound
     socksPort: 65534
+    # Required for tun/tun2socks proxy method, Default value: xtun, marked traffic will be forwarded to this network device in tun/tun2socks mode
+    tunDevice: xtun
     # Required, Default value: false, enable ipv6 proxy, need your proxy server support proxy ipv6 traffic
     enableIPv6: false
     # Required, Default value: blacklist, application package list proxy mode, support blacklist, whitelist
@@ -55,10 +57,3 @@ clash:
     dnsPort: 65533
     # Optional, if not empty, the template config will replace (or inject to) the actual clash/clash.premium/clash.meta config
     template: /data/adb/xray/clashconfs/template.yaml
-tun:
-    # Required for tun/tun2socks proxy method, Default value: xtun, marked traffic will be forwarded to this network device
-    tunDevice: xtun
-    # Required for tun/tun2socks proxy method, Default value: 10.10.12.1, your tun device ipv4 address
-    tunIPv4: 10.10.12.1
-    # Required for tun/tun2socks proxy method, Default value: fd02:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd, your tun device ipv6 address
-    tunIPv6: fd02:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd
