@@ -23,66 +23,67 @@ func (this *Tun) Enable() error {
 			this.Disable()
 			return err
 		}
-	} else {
-		if !tunDeviceReady(builds.Config.Proxy.TunDevice) {
-			this.Disable()
-			return errors.New("cannot find your tun device " + builds.Config.Proxy.TunDevice + " did you configure core correctly?").WithPrefix("tun").WithPathObj(*this)
-		}
-	}
-	if err := addRoute(false); err != nil {
-		this.Disable()
-		return err
-	}
-	if err := createMangleChain(false); err != nil {
-		this.Disable()
-		return err
-	}
-	if err := createProxyChain(false); err != nil {
-		this.Disable()
-		return err
-	}
-	if builds.Config.Proxy.EnableIPv6 {
-		if err := addRoute(true); err != nil {
+		if err := addRoute(false); err != nil {
 			this.Disable()
 			return err
 		}
-		if err := createMangleChain(true); err != nil {
+		if err := createMangleChain(false); err != nil {
 			this.Disable()
 			return err
 		}
-		if err := createProxyChain(true); err != nil {
+		if err := createProxyChain(false); err != nil {
 			this.Disable()
 			return err
 		}
-	}
-	// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
-	switch builds.Config.XrayHelper.CoreType {
-	case "clash", "clash.premium", "clash.meta":
-		if err := tools.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
-			this.Disable()
-			return err
-		}
-	default:
-		if !builds.Config.Proxy.EnableIPv6 {
-			if err := tools.DisableIPV6DNS(); err != nil {
+		if builds.Config.Proxy.EnableIPv6 {
+			if err := addRoute(true); err != nil {
 				this.Disable()
 				return err
 			}
+			if err := createMangleChain(true); err != nil {
+				this.Disable()
+				return err
+			}
+			if err := createProxyChain(true); err != nil {
+				this.Disable()
+				return err
+			}
+		}
+		// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
+		switch builds.Config.XrayHelper.CoreType {
+		case "clash", "clash.premium", "clash.meta":
+			if err := tools.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
+				this.Disable()
+				return err
+			}
+		default:
+			if !builds.Config.Proxy.EnableIPv6 {
+				if err := tools.DisableIPV6DNS(); err != nil {
+					this.Disable()
+					return err
+				}
+			}
+		}
+	} else {
+		if !tunDeviceReady(builds.Config.Proxy.TunDevice) {
+			return errors.New("cannot find your tun device " + builds.Config.Proxy.TunDevice + " did you configure core correctly?").WithPrefix("tun").WithPathObj(*this)
 		}
 	}
 	return nil
 }
 
 func (this *Tun) Disable() {
-	deleteRoute(false)
-	cleanIptablesChain(false)
-	//always clean ipv6 rules
-	deleteRoute(true)
-	cleanIptablesChain(true)
-	stopTun2socks()
-	//always clean dns rules
-	tools.EnableIPV6DNS()
-	tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
+	if builds.Config.Proxy.Method == "tun2socks" {
+		deleteRoute(false)
+		cleanIptablesChain(false)
+		//always clean ipv6 rules
+		deleteRoute(true)
+		cleanIptablesChain(true)
+		stopTun2socks()
+		//always clean dns rules
+		tools.EnableIPV6DNS()
+		tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
+	}
 }
 
 func tunDeviceReady(checkDev string) bool {
@@ -234,7 +235,7 @@ func deleteRoute(ipv6 bool) {
 	}
 }
 
-// createProxyChain Create PROXY chain for local applications
+// createProxyChain Create XT chain for local applications
 func createProxyChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := common.Ipt
@@ -361,7 +362,7 @@ func createProxyChain(ipv6 bool) error {
 	return nil
 }
 
-// createMangleChain Create XRAY chain for AP interface
+// createMangleChain Create TUN2SOCKS chain for AP interface, there will be problem on some device
 func createMangleChain(ipv6 bool) error {
 	var currentProto string
 	currentIpt := common.Ipt
