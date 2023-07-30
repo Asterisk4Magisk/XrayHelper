@@ -4,10 +4,24 @@ import (
 	"XrayHelper/main/serial"
 	"fmt"
 	"github.com/fatih/color"
+	"os/exec"
+	"strings"
 	"time"
 )
 
 var Verbose *bool
+
+func init() {
+	out, err := exec.Command("/system/bin/getprop", "persist.sys.timezone").Output()
+	if err != nil {
+		return
+	}
+	z, err := time.LoadLocation(strings.TrimSpace(string(out)))
+	if err != nil {
+		return
+	}
+	time.Local = z
+}
 
 // HandleError record error log
 func HandleError(v interface{}) {
