@@ -130,7 +130,7 @@ func startService() error {
 	if service.Err() != nil {
 		return errors.New("start core service failed, ", service.Err()).WithPrefix("service")
 	}
-	for i := 0; i < 90; i++ {
+	for i := 0; i < 180; i++ {
 		time.Sleep(1 * time.Second)
 		if builds.Config.Proxy.Method == "tproxy" {
 			if common.CheckLocalPort(builds.Config.Proxy.TproxyPort) {
