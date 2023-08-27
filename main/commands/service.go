@@ -111,8 +111,11 @@ func startService() error {
 	case "xray", "v2ray", "sing-box":
 		service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 		service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
-		if err := handleRayDNS(builds.Config.Proxy.EnableIPv6); err != nil {
-			return err
+		// if enable AutoDNSStrategy
+		if builds.Config.Proxy.AutoDNSStrategy {
+			if err := handleRayDNS(builds.Config.Proxy.EnableIPv6); err != nil {
+				return err
+			}
 		}
 	case "clash", "clash.premium":
 		if err := overrideClashConfig(false, builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
@@ -130,7 +133,7 @@ func startService() error {
 	if service.Err() != nil {
 		return errors.New("start core service failed, ", service.Err()).WithPrefix("service")
 	}
-	for i := 0; i < 120; i++ {
+	for i := 0; i < *builds.CoreStartTimeout; i++ {
 		time.Sleep(1 * time.Second)
 		if builds.Config.Proxy.Method == "tproxy" {
 			if common.CheckLocalPort(builds.Config.Proxy.TproxyPort) {
@@ -346,18 +349,21 @@ func overrideClashConfig(meta bool, template string, target string) error {
 	if !ok {
 		return errors.New("assert clash template config to map failed").WithPrefix("service")
 	}
-	templateYamlMap["ipv6"] = builds.Config.Proxy.EnableIPv6
-	dns, ok := templateYamlMap["dns"]
-	if ok {
-		// assert dns
-		dnsMap, ok := dns.(map[string]interface{})
+	// if enable AutoDNSStrategy
+	if builds.Config.Proxy.AutoDNSStrategy {
+		templateYamlMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+		dns, ok := templateYamlMap["dns"]
 		if ok {
-			if !meta {
-				dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+			// assert dns
+			dnsMap, ok := dns.(map[string]interface{})
+			if ok {
+				if !meta {
+					dnsMap["ipv6"] = builds.Config.Proxy.EnableIPv6
+				}
+				dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
 			}
-			dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
+			templateYamlMap["dns"] = dnsMap
 		}
-		templateYamlMap["dns"] = dnsMap
 	}
 	// save template
 	marshal, err := yaml.Marshal(templateYamlMap)

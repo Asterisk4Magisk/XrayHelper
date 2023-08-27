@@ -13,7 +13,7 @@ xrayHelper:
     runDir: /data/adb/xray/run/
     # Required for xray/v2ray/sing-box, Default value: proxy, the replaced outbound object's tag when you use xrayhelper to switch proxy node
     proxyTag: proxy
-    # Optional, your subscribe url, support SSR, SIP002, v2rayNg standard share url
+    # Optional, your subscribe url, support SIP002, SSR, v2rayNg, Hysteria standard share url
     # and also support clash/clash.premium/clash.meta config url, but you need add a prefix "clash+"
     subList:
         - https://testsuburl.com
@@ -32,6 +32,8 @@ proxy:
     tunDevice: xtun
     # Required, Default value: false, enable ipv6 proxy, need your proxy server support proxy ipv6 traffic
     enableIPv6: false
+    # Required, Default value: true, auto config core's DNS Strategy, if you disable it, please ensure you cannot get any AAAA record from core's dns when not enable IPv6 proxy, otherwise Domain-based proxy rules may not work
+    autoDNSStrategy: true
     # Required, Default value: blacklist, application package list proxy mode, support blacklist, whitelist
     # blacklist mode, application traffic in pkgList will be bypassed, others will be marked
     # whitelist mode, application traffic in pkgList will be marked, others will be bypassed

@@ -10,13 +10,14 @@ import (
 )
 
 var Option struct {
-	ConfigFilePath string                  `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
-	VerboseFlag    bool                    `short:"v" long:"verbose" description:"show verbose debug information"`
-	VersionFlag    bool                    `short:"V" long:"version" description:"show current version"`
-	Service        commands.ServiceCommand `command:"service" description:"control core service"`
-	Proxy          commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
-	Update         commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd, yacd-meta or subscribe"`
-	Switch         commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash/clash.meta config"`
+	ConfigFilePath   string                  `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
+	VerboseFlag      bool                    `short:"v" long:"verbose" description:"show verbose debug information"`
+	VersionFlag      bool                    `short:"V" long:"version" description:"show current version"`
+	CoreStartTimeout int                     `short:"t" long:"core-start-timeout" default:"15" description:"core listen check timeout (Second)"`
+	Service          commands.ServiceCommand `command:"service" description:"control core service"`
+	Proxy            commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
+	Update           commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd, yacd-meta or subscribe"`
+	Switch           commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash/clash.meta config"`
 }
 
 // LoadOption load Option, the program entry
@@ -29,6 +30,7 @@ func LoadOption() int {
 	rCode := 0
 	log.Verbose = &Option.VerboseFlag
 	builds.ConfigFilePath = &Option.ConfigFilePath
+	builds.CoreStartTimeout = &Option.CoreStartTimeout
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
 	_, err := parser.Parse()
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 const packageListPath = "/data/system/packages.list"
 
 var ConfigFilePath *string
+var CoreStartTimeout *int
 var PackageMap = make(map[string]string)
 
 // Config the program configuration, yml
@@ -27,16 +28,17 @@ var Config struct {
 		SubList    []string `yaml:"subList"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {
-		Method     string   `default:"tproxy" yaml:"method"`
-		TproxyPort string   `default:"65535" yaml:"tproxyPort"`
-		SocksPort  string   `default:"65534" yaml:"socksPort"`
-		TunDevice  string   `default:"xtun" yaml:"tunDevice"`
-		EnableIPv6 bool     `default:"false" yaml:"enableIPv6"`
-		Mode       string   `default:"blacklist" yaml:"mode"`
-		PkgList    []string `yaml:"pkgList"`
-		ApList     []string `yaml:"apList"`
-		IgnoreList []string `yaml:"ignoreList"`
-		IntraList  []string `yaml:"intraList"`
+		Method          string   `default:"tproxy" yaml:"method"`
+		TproxyPort      string   `default:"65535" yaml:"tproxyPort"`
+		SocksPort       string   `default:"65534" yaml:"socksPort"`
+		TunDevice       string   `default:"xtun" yaml:"tunDevice"`
+		EnableIPv6      bool     `default:"false" yaml:"enableIPv6"`
+		AutoDNSStrategy bool     `default:"true" yaml:"autoDNSStrategy"`
+		Mode            string   `default:"blacklist" yaml:"mode"`
+		PkgList         []string `yaml:"pkgList"`
+		ApList          []string `yaml:"apList"`
+		IgnoreList      []string `yaml:"ignoreList"`
+		IntraList       []string `yaml:"intraList"`
 	} `yaml:"proxy"`
 	Clash struct {
 		DNSPort  string `default:"65533" yaml:"dnsPort"`

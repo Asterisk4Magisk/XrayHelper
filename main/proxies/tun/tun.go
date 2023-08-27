@@ -87,7 +87,7 @@ func (this *Tun) Disable() {
 }
 
 func tunDeviceReady(checkDev string) bool {
-	for i := 0; i < 15; i++ {
+	for i := 0; i < *builds.CoreStartTimeout; i++ {
 		time.Sleep(1 * time.Second)
 		if common.CheckLocalDevice(checkDev) {
 			return true
