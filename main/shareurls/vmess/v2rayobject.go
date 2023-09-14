@@ -16,7 +16,7 @@ func getMuxObjectV2ray(enabled bool) map[string]interface{} {
 func getVmessSettingsObjectV2ray(vmess *Vmess) map[string]interface{} {
 	settingsObject := make(map[string]interface{})
 	settingsObject["address"] = vmess.Server
-	settingsObject["port"], _ = strconv.Atoi(vmess.Port)
+	settingsObject["port"], _ = strconv.Atoi(string(vmess.Port))
 	settingsObject["uuid"] = vmess.Id
 	return settingsObject
 }
@@ -101,7 +101,7 @@ func getStreamSettingsObjectV2ray(vmess *Vmess) map[string]interface{} {
 	case "tls":
 		securitySettings := make(map[string]interface{})
 		var alpn []interface{}
-		alpnSlice := strings.Split(vmess.Alpn, ",")
+		alpnSlice := strings.Split(string(vmess.Alpn), ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
@@ -115,7 +115,7 @@ func getStreamSettingsObjectV2ray(vmess *Vmess) map[string]interface{} {
 		securitySettings := make(map[string]interface{})
 		tlsConfig := make(map[string]interface{})
 		var alpn []interface{}
-		alpnSlice := strings.Split(vmess.Alpn, ",")
+		alpnSlice := strings.Split(string(vmess.Alpn), ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)

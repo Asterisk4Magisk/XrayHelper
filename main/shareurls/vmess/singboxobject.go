@@ -11,7 +11,7 @@ func getVmessTlsObjectSingbox(vmess *Vmess) map[string]interface{} {
 		tlsObject["enabled"] = true
 		tlsObject["server_name"] = vmess.Sni
 		var alpn []interface{}
-		alpnSlice := strings.Split(vmess.Alpn, ",")
+		alpnSlice := strings.Split(string(vmess.Alpn), ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)

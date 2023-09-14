@@ -17,12 +17,12 @@ func getVmessSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 	var vnextsObject []interface{}
 	vnext := make(map[string]interface{})
 	vnext["address"] = vmess.Server
-	vnext["port"], _ = strconv.Atoi(vmess.Port)
+	vnext["port"], _ = strconv.Atoi(string(vmess.Port))
 
 	var usersObject []interface{}
 	user := make(map[string]interface{})
 	user["id"] = vmess.Id
-	user["alterId"], _ = strconv.Atoi(vmess.AlterId)
+	user["alterId"], _ = strconv.Atoi(string(vmess.AlterId))
 	user["security"] = vmess.Security
 	user["level"] = 0
 	usersObject = append(usersObject, user)
@@ -118,7 +118,7 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 	if len(vmess.Tls) > 0 {
 		tlsSettingsObject := make(map[string]interface{})
 		var alpn []interface{}
-		alpnSlice := strings.Split(vmess.Alpn, ",")
+		alpnSlice := strings.Split(string(vmess.Alpn), ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)

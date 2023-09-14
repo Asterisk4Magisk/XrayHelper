@@ -4,24 +4,32 @@ import (
 	"XrayHelper/main/errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
+type String string
+
+func (this *String) UnmarshalJSON(port []byte) error {
+	*this = String(strings.ReplaceAll(string(port), "\"", ""))
+	return nil
+}
+
 type Vmess struct {
-	Remarks     string `json:"ps"`
-	Server      string `json:"add"`
-	Port        string `json:"port"`
-	Id          string `json:"id"`
-	AlterId     string `json:"aid"`
-	Security    string `json:"scy"`
-	Network     string `json:"net"`
-	Type        string `json:"type"`
-	Host        string `json:"host"`
-	Path        string `json:"path"`
-	Tls         string `json:"tls"`
-	Sni         string `json:"sni"`
-	FingerPrint string `json:"fp"`
-	Alpn        string `json:"alpn"`
-	Version     string `json:"v"`
+	Remarks     String `json:"ps"`
+	Server      String `json:"add"`
+	Port        String `json:"port"`
+	Id          String `json:"id"`
+	AlterId     String `json:"aid"`
+	Security    String `json:"scy"`
+	Network     String `json:"net"`
+	Type        String `json:"type"`
+	Host        String `json:"host"`
+	Path        String `json:"path"`
+	Tls         String `json:"tls"`
+	Sni         String `json:"sni"`
+	FingerPrint String `json:"fp"`
+	Alpn        String `json:"alpn"`
+	Version     String `json:"v"`
 }
 
 func (this *Vmess) GetNodeInfo() string {
@@ -29,7 +37,7 @@ func (this *Vmess) GetNodeInfo() string {
 }
 
 func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
-	if version, _ := strconv.Atoi(this.Version); version < 2 {
+	if version, _ := strconv.Atoi(string(this.Version)); version < 2 {
 		return nil, errors.New("unsupported vmess share link version " + this.Version).WithPrefix("vmess").WithPathObj(*this)
 	}
 	switch coreType {
@@ -54,10 +62,10 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["type"] = "vmess"
 		outboundObject["tag"] = tag
 		outboundObject["server"] = this.Server
-		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
+		outboundObject["server_port"], _ = strconv.Atoi(string(this.Port))
 		outboundObject["uuid"] = this.Id
 		outboundObject["security"] = "auto"
-		outboundObject["alter_id"], _ = strconv.Atoi(this.AlterId)
+		outboundObject["alter_id"], _ = strconv.Atoi(string(this.AlterId))
 		outboundObject["tls"] = getVmessTlsObjectSingbox(this)
 		outboundObject["transport"] = getVmessTransportObjectSingbox(this)
 		return outboundObject, nil
