@@ -34,16 +34,16 @@ func LoadOption() int {
 	builds.CoreStartTimeout = &Option.CoreStartTimeout
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
 	if _, err := parser.Parse(); err != nil {
-		var flagError *flags.Error
-		if errors.As(err, &flagError) {
-			if (*flagError).Type == flags.ErrCommandRequired {
+		var flagsError *flags.Error
+		if errors.As(err, &flagsError) {
+			if errors.Is((*flagsError).Type, flags.ErrCommandRequired) {
 				if Option.VersionFlag {
 					fmt.Println(builds.Version())
 					err = nil
 				} else {
 					rCode = 127
 				}
-			} else if (*flagError).Type == flags.ErrHelp {
+			} else if errors.Is((*flagsError).Type, flags.ErrHelp) {
 				fmt.Println(builds.VersionStatement())
 				fmt.Println(err.Error())
 				err = nil
@@ -51,6 +51,9 @@ func LoadOption() int {
 				rCode = 126
 			}
 			log.HandleError(err)
+		} else {
+			log.HandleError(err)
+			rCode = 1
 		}
 	}
 	return rCode
