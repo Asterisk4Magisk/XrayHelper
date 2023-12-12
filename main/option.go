@@ -36,14 +36,14 @@ func LoadOption() int {
 	if _, err := parser.Parse(); err != nil {
 		var flagError *flags.Error
 		if errors.As(err, &flagError) {
-			if errors.Is((*flagError).Type, flags.ErrCommandRequired) {
+			if (*flagError).Type == flags.ErrCommandRequired {
 				if Option.VersionFlag {
 					fmt.Println(builds.Version())
 					err = nil
 				} else {
 					rCode = 127
 				}
-			} else if errors.Is((*flagError).Type, flags.ErrHelp) {
+			} else if (*flagError).Type == flags.ErrHelp {
 				fmt.Println(builds.VersionStatement())
 				fmt.Println(err.Error())
 				err = nil
