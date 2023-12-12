@@ -1,7 +1,7 @@
 package trojan
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"fmt"
 	"strconv"
 )
@@ -37,7 +37,7 @@ func (this *Trojan) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Trojan, Server: %+v, Port: %+v, Network: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Password)
 }
 
-func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
 		outboundObject := make(map[string]interface{})
@@ -66,6 +66,6 @@ func (this *Trojan) ToOutoundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("trojan").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("trojan").WithPathObj(*this)
 	}
 }

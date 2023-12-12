@@ -1,7 +1,7 @@
 package switches
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"XrayHelper/main/switches/clash"
 	"XrayHelper/main/switches/ray"
 )
@@ -15,9 +15,9 @@ func NewSwitch(coreType string) (Switch, error) {
 	switch coreType {
 	case "xray", "v2ray", "sing-box":
 		return new(ray.RaySwitch), nil
-	case "clash", "clash.premium", "clash.meta":
+	case "clash.meta", "mihomo":
 		return new(clash.ClashSwitch), nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("switches")
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("switches")
 	}
 }

@@ -1,7 +1,7 @@
 package shareurls
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"strings"
 )
 
@@ -18,7 +18,7 @@ const (
 // ShareUrl implement this interface, that node can be converted to core OutoundObject
 type ShareUrl interface {
 	GetNodeInfo() string
-	ToOutoundWithTag(coreType string, tag string) (interface{}, error)
+	ToOutboundWithTag(coreType string, tag string) (interface{}, error)
 }
 
 // Parse return a ShareUrl
@@ -44,5 +44,5 @@ func Parse(link string) (ShareUrl, error) {
 	if strings.HasPrefix(link, hysteriaPrefix) {
 		return parseHysteria(link)
 	}
-	return nil, errors.New("not a supported share link").WithPrefix("shareurl")
+	return nil, e.New("not a supported share link").WithPrefix("shareurl")
 }

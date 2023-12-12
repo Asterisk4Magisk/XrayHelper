@@ -1,7 +1,7 @@
 package shadowsocks
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"fmt"
 	"strconv"
 )
@@ -18,7 +18,7 @@ func (this *Shadowsocks) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Shadowsocks, Server: %+v, Port: %+v, Method: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Method, this.Password)
 }
 
-func (this *Shadowsocks) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Shadowsocks) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
 		outboundObject := make(map[string]interface{})
@@ -46,6 +46,6 @@ func (this *Shadowsocks) ToOutoundWithTag(coreType string, tag string) (interfac
 		outboundObject["password"] = this.Password
 		return outboundObject, nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("shadowsocks").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("shadowsocks").WithPathObj(*this)
 	}
 }

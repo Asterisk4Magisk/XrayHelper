@@ -1,7 +1,7 @@
 package vmess
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -36,9 +36,9 @@ func (this *Vmess) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Vmess, Server: %+v, Port: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
 }
 
-func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	if version, _ := strconv.Atoi(string(this.Version)); version < 2 {
-		return nil, errors.New("unsupported vmess share link version " + this.Version).WithPrefix("vmess").WithPathObj(*this)
+		return nil, e.New("unsupported vmess share link version " + this.Version).WithPrefix("vmess").WithPathObj(*this)
 	}
 	switch coreType {
 	case "xray":
@@ -70,6 +70,6 @@ func (this *Vmess) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["transport"] = getVmessTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
 	}
 }

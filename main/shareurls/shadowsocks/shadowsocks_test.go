@@ -60,7 +60,7 @@ func TestShadowsocks(t *testing.T) {
 			}
 			log.HandleInfo(shareUrl.GetNodeInfo())
 			// replace
-			outbound, err = shareUrl.ToOutoundWithTag("xray", "proxy")
+			outbound, err = shareUrl.ToOutboundWithTag("xray", "proxy")
 			if err != nil {
 				t.Error(err)
 			}

@@ -1,7 +1,7 @@
 package vless
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"fmt"
 	"strconv"
 )
@@ -39,7 +39,7 @@ func (this *VLESS) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: VLESS, Server: %+v, Port: %+v, Flow: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Flow, this.Network, this.Id)
 }
 
-func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *VLESS) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
 		outboundObject := make(map[string]interface{})
@@ -50,7 +50,7 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["tag"] = tag
 		return outboundObject, nil
 	case "v2ray":
-		return nil, errors.New("v2ray core not support VLESS").WithPrefix("vless").WithPathObj(*this)
+		return nil, e.New("v2ray core not support VLESS").WithPrefix("vless").WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "vless"
@@ -63,6 +63,6 @@ func (this *VLESS) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		outboundObject["transport"] = getVLESSTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("vless").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("vless").WithPathObj(*this)
 	}
 }

@@ -1,7 +1,7 @@
 package shadowsocksr
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"fmt"
 	"strconv"
 )
@@ -22,12 +22,12 @@ func (this *ShadowsocksR) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: ShadowsocksR, Server: %+v, Port: %+v, Method: %+v, Protocol: %+v, Obfs: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Method, this.Protocol, this.Obfs, this.Password)
 }
 
-func (this *ShadowsocksR) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *ShadowsocksR) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
-		return nil, errors.New("xray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, e.New("xray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
 	case "v2ray":
-		return nil, errors.New("v2ray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, e.New("v2ray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "shadowsocksr"
@@ -42,6 +42,6 @@ func (this *ShadowsocksR) ToOutoundWithTag(coreType string, tag string) (interfa
 		outboundObject["protocol_param"] = this.ProtoParam
 		return outboundObject, nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("shadowsocksr").WithPathObj(*this)
 	}
 }

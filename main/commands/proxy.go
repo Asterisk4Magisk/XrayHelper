@@ -2,7 +2,7 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"XrayHelper/main/proxies"
 )
@@ -17,10 +17,10 @@ func (this *ProxyCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return errors.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
+		return e.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
 	if len(args) > 1 {
-		return errors.New("too many arguments").WithPrefix("proxy").WithPathObj(*this)
+		return e.New("too many arguments").WithPrefix("proxy").WithPathObj(*this)
 	}
 	log.HandleInfo("proxy: current proxy method is " + builds.Config.Proxy.Method)
 	proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
@@ -43,7 +43,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 			return err
 		}
 	default:
-		return errors.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
+		return e.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
 	}
 	return nil
 }

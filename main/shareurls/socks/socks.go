@@ -1,7 +1,7 @@
 package socks
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"fmt"
 	"strconv"
 )
@@ -18,7 +18,7 @@ func (this *Socks) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Socks, Server: %+v, Port: %+v, User: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.User, this.Password)
 }
 
-func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Socks) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
 		outboundObject := make(map[string]interface{})
@@ -48,6 +48,6 @@ func (this *Socks) ToOutoundWithTag(coreType string, tag string) (interface{}, e
 		}
 		return outboundObject, nil
 	default:
-		return nil, errors.New("unsupported core type " + coreType).WithPrefix("socks").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix("socks").WithPathObj(*this)
 	}
 }

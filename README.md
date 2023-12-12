@@ -28,10 +28,8 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
   `xrayhelper update geodata`, update geodata from [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - update subscribe  
   `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first
-- update yacd  
-  `xrayhelper update yacd`, update yacd for clash/clash.premium, dest path is `${xrayHelper.dataDir}/yacd-gh-pages`
 - update yacd-meta  
-  `xrayhelper update yacd-meta`, update yacd-meta for clash.meta, dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`
+  `xrayhelper update yacd-meta`, update yacd-meta for mihomo(clash.meta), dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`
 
 ## Switch Proxy Node
 ### xray, v2ray, sing-box
@@ -40,7 +38,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 - switch custom nodes  
   `xrayhelper switch custom`, put custom nodes share link into `${xrayHelper.dataDir}/custom.txt` file, then you can find them use this command
 
-### clash, clash.premium, clash.meta
+### mihomo(clash.meta)
 - switch subscribe config  
   `xrayhelper switch`, should update subscribe first
 - switch custom config  
@@ -55,5 +53,5 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - [@2dust/v2rayNG](https://github.com/2dust/v2rayNG)
 - [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
-- [@haishanh/yacd](https://github.com/haishanh/yacd)
+- ~~[@haishanh/yacd](https://github.com/haishanh/yacd)~~
 - [@MetaCubeX/Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)

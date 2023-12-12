@@ -1,7 +1,7 @@
 package builds
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"bufio"
 	"github.com/creasty/defaults"
@@ -50,13 +50,13 @@ var Config struct {
 func LoadConfig() error {
 	configFile, err := os.ReadFile(*ConfigFilePath)
 	if err != nil {
-		return errors.New("load config failed, ", err).WithPrefix("config")
+		return e.New("load config failed, ", err).WithPrefix("config")
 	}
 	if err := defaults.Set(&Config); err != nil {
-		return errors.New("set default config failed, ", err).WithPrefix("config")
+		return e.New("set default config failed, ", err).WithPrefix("config")
 	}
 	if err := yaml.Unmarshal(configFile, &Config); err != nil {
-		return errors.New("unmarshal config failed, ", err).WithPrefix("config")
+		return e.New("unmarshal config failed, ", err).WithPrefix("config")
 	}
 	log.HandleDebug(Config.XrayHelper)
 	log.HandleDebug(Config.Proxy)
@@ -68,7 +68,7 @@ func LoadConfig() error {
 func LoadPackage() error {
 	packageListFile, err := os.Open(packageListPath)
 	if err != nil {
-		return errors.New("load package failed, ", err).WithPrefix("config")
+		return e.New("load package failed, ", err).WithPrefix("config")
 	}
 	packageScanner := bufio.NewScanner(packageListFile)
 	packageScanner.Split(bufio.ScanLines)
@@ -79,7 +79,7 @@ func LoadPackage() error {
 		}
 	}
 	if err := packageListFile.Close(); err != nil {
-		return errors.New("close package file failed, ", err).WithPrefix("config")
+		return e.New("close package file failed, ", err).WithPrefix("config")
 	}
 	log.HandleDebug(PackageMap)
 	return nil

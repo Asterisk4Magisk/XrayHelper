@@ -1,8 +1,9 @@
 package common
 
 import (
-	"XrayHelper/main/errors"
+	e "XrayHelper/main/errors"
 	"context"
+	"errors"
 	"io"
 	"os/exec"
 	"time"
@@ -30,18 +31,18 @@ type external struct {
 
 // NewExternal returns a new external object with cmd
 func NewExternal(timeout time.Duration, out io.Writer, err io.Writer, name string, arg ...string) External {
-	var e = external{timeout: timeout}
+	var ex = external{timeout: timeout}
 	if timeout > 0 {
-		e.ctx, e.cancel = context.WithTimeout(context.Background(), timeout)
-		e.cmd = exec.CommandContext(e.ctx, name, arg...)
-		e.cmd.Stdout = out
-		e.cmd.Stderr = err
+		ex.ctx, ex.cancel = context.WithTimeout(context.Background(), timeout)
+		ex.cmd = exec.CommandContext(ex.ctx, name, arg...)
+		ex.cmd.Stdout = out
+		ex.cmd.Stderr = err
 	} else {
-		e.cmd = exec.Command(name, arg...)
-		e.cmd.Stdout = out
-		e.cmd.Stderr = err
+		ex.cmd = exec.Command(name, arg...)
+		ex.cmd.Stdout = out
+		ex.cmd.Stderr = err
 	}
-	return &e
+	return &ex
 }
 
 // AppendEnv add env variable, eg: JAVA_HOME=/usr/local/java/
@@ -53,10 +54,10 @@ func (this *external) Run() {
 	if this.timeout > 0 {
 		defer this.cancel()
 	}
-	this.err = errors.New(this.cmd.Run()).WithPrefix("external").WithPathObj(*this.cmd)
+	this.err = e.New(this.cmd.Run()).WithPrefix("external").WithPathObj(*this.cmd)
 	if this.timeout > 0 {
-		if this.ctx.Err() == context.DeadlineExceeded {
-			this.err = errors.New("command timed out").WithPrefix("external").WithPathObj(*this)
+		if errors.Is(this.ctx.Err(), context.DeadlineExceeded) {
+			this.err = e.New("command timed out").WithPrefix("external").WithPathObj(*this)
 		}
 	}
 }
@@ -80,10 +81,10 @@ func (this *external) Wait() error {
 	if this.timeout > 0 {
 		defer this.cancel()
 	}
-	err := errors.New(this.cmd.Wait()).WithPrefix("external").WithPathObj(*this.cmd)
+	err := e.New(this.cmd.Wait()).WithPrefix("external").WithPathObj(*this.cmd)
 	if this.timeout > 0 {
-		if this.ctx.Err() == context.DeadlineExceeded {
-			this.err = errors.New("command timed out").WithPrefix("external").WithPathObj(*this)
+		if errors.Is(this.ctx.Err(), context.DeadlineExceeded) {
+			this.err = e.New("command timed out").WithPrefix("external").WithPathObj(*this)
 		}
 	}
 	return err
