@@ -10,8 +10,10 @@ import (
 	"archive/zip"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -44,6 +46,21 @@ func (this *UpdateCommand) Execute(args []string) error {
 	}
 	if len(args) > 1 {
 		return e.New("too many arguments").WithPrefix(tagUpdate).WithPathObj(*this)
+	}
+	// deal the BypassSelf Flag
+	log.HandleDebug("BypassSelf: " + strconv.FormatBool(*builds.BypassSelf))
+	log.HandleDebug("CurrentGid: " + strconv.Itoa(os.Getgid()))
+	if *builds.BypassSelf && strconv.Itoa(os.Getgid()) != common.CoreGid {
+		self := common.NewExternal(0, os.Stdout, os.Stderr, os.Args[0], os.Args[1:]...)
+		_ = self.SetUidGid("0", common.CoreGid)
+		log.HandleDebug("will exec update command in new xrayhelper process, waiting")
+		self.Run()
+		var exitError *exec.ExitError
+		if errors.As(self.Err(), &exitError) {
+			os.Exit(exitError.ExitCode())
+		} else {
+			os.Exit(0)
+		}
 	}
 	switch args[0] {
 	case "core":

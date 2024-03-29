@@ -56,7 +56,7 @@ func (this *external) Run() {
 	if this.timeout > 0 {
 		defer this.cancel()
 	}
-	this.err = e.New(this.cmd.Run()).WithPrefix(tagExternal).WithPathObj(*this.cmd)
+	this.err = this.cmd.Run()
 	if this.timeout > 0 {
 		if errors.Is(this.ctx.Err(), context.DeadlineExceeded) {
 			this.err = e.New("command timed out").WithPrefix(tagExternal).WithPathObj(*this)
@@ -83,13 +83,13 @@ func (this *external) Wait() error {
 	if this.timeout > 0 {
 		defer this.cancel()
 	}
-	err := e.New(this.cmd.Wait()).WithPrefix(tagExternal).WithPathObj(*this.cmd)
+	this.err = this.cmd.Wait()
 	if this.timeout > 0 {
 		if errors.Is(this.ctx.Err(), context.DeadlineExceeded) {
 			this.err = e.New("command timed out").WithPrefix(tagExternal).WithPathObj(*this)
 		}
 	}
-	return err
+	return this.err
 }
 
 func (this *external) Kill() error {

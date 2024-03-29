@@ -15,6 +15,7 @@ const tagConfig = "config"
 
 var ConfigFilePath *string
 var CoreStartTimeout *int
+var BypassSelf *bool
 var PackageMap = make(map[string]string)
 
 // Config the program configuration, yml

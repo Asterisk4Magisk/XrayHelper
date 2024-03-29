@@ -11,27 +11,31 @@ import (
 )
 
 var Option struct {
-	ConfigFilePath   string                  `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
-	VerboseFlag      bool                    `short:"v" long:"verbose" description:"show verbose debug information"`
-	VersionFlag      bool                    `short:"V" long:"version" description:"show current version"`
-	CoreStartTimeout int                     `short:"t" long:"core-start-timeout" default:"15" description:"core listen check timeout (Second)"`
-	Service          commands.ServiceCommand `command:"service" description:"control core service"`
-	Proxy            commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
-	Update           commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd-meta or subscribe"`
-	Switch           commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
+	BypassSelf       bool   `short:"b" long:"bypass-self" description:"bypass xrayhelper self network traffic (tproxy only)"`
+	ConfigFilePath   string `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
+	CoreStartTimeout int    `short:"t" long:"core-start-timeout" default:"15" description:"core listen check timeout (second)"`
+	VerboseFlag      bool   `short:"v" long:"verbose" description:"show verbose debug information"`
+	VersionFlag      bool   `short:"V" long:"version" description:"show current version"`
+
+	Service commands.ServiceCommand `command:"service" description:"control core service"`
+	Proxy   commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
+	Update  commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd-meta or subscribe"`
+	Switch  commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
 }
 
 // LoadOption load Option, the program entry
 func LoadOption() int {
+	// if no args, show Intro
 	if len(os.Args) == 1 {
 		fmt.Println(builds.VersionStatement())
 		fmt.Println(builds.IntroStatement())
 		return 0
 	}
-	rCode := 0
 	log.Verbose = &Option.VerboseFlag
 	builds.ConfigFilePath = &Option.ConfigFilePath
 	builds.CoreStartTimeout = &Option.CoreStartTimeout
+	builds.BypassSelf = &Option.BypassSelf
+	rCode := 0
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
 	if _, err := parser.Parse(); err != nil {
 		var flagsError *flags.Error
