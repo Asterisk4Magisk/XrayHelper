@@ -26,11 +26,11 @@ jobs:
           - goos: android
             goarch: arm64
             cc: aarch64-linux-android34-clang
-            cx: aarch64-linux-android34-clang++
+            cxx: aarch64-linux-android34-clang++
           - goos: android
             goarch: amd64
             cc: x86_64-linux-android34-clang
-            cx: x86_64-linux-android34-clang++
+            cxx: x86_64-linux-android34-clang++
       fail-fast: false
 
     runs-on: ubuntu-latest
@@ -52,10 +52,10 @@ jobs:
         run: |
           export _NAME=$(jq ".[\"$GOOS-$GOARCH\"].friendlyName" -r < .github/build/friendly-filenames.json)
           export _CC=${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.cc }}
-          export _CX=${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.cx }}
-          echo "GOOS: $GOOS, GOARCH: $GOARCH, CC: $_CC, CX: $_CX, RELEASE_NAME: $_NAME"
+          export _CXX=${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.cxx }}
+          echo "GOOS: $GOOS, GOARCH: $GOARCH, CC: $_CC, CXX: $_CXX, RELEASE_NAME: $_NAME"
           echo "CC=$_CC" >> $GITHUB_ENV
-          echo "CX=$_CX" >> $GITHUB_ENV
+          echo "CXX=$_CXX" >> $GITHUB_ENV
           echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
 
       - name: Set up Go
