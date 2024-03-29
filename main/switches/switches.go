@@ -6,6 +6,8 @@ import (
 	"XrayHelper/main/switches/ray"
 )
 
+const tagSwitches = "switches"
+
 // Switch implement this interface, that program can deal different core config switch
 type Switch interface {
 	Execute(args []string) (bool, error)
@@ -18,6 +20,6 @@ func NewSwitch(coreType string) (Switch, error) {
 	case "clash.meta", "mihomo":
 		return new(clash.ClashSwitch), nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("switches")
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagSwitches)
 	}
 }

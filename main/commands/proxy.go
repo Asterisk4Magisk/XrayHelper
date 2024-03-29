@@ -7,6 +7,8 @@ import (
 	"XrayHelper/main/proxies"
 )
 
+const tagProxy = "proxy"
+
 type ProxyCommand struct{}
 
 func (this *ProxyCommand) Execute(args []string) error {
@@ -17,10 +19,10 @@ func (this *ProxyCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return e.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
+		return e.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix(tagProxy).WithPathObj(*this)
 	}
 	if len(args) > 1 {
-		return e.New("too many arguments").WithPrefix("proxy").WithPathObj(*this)
+		return e.New("too many arguments").WithPrefix(tagService).WithPathObj(*this)
 	}
 	log.HandleInfo("proxy: current proxy method is " + builds.Config.Proxy.Method)
 	proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
@@ -43,7 +45,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 			return err
 		}
 	default:
-		return e.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix("proxy").WithPathObj(*this)
+		return e.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix(tagProxy).WithPathObj(*this)
 	}
 	return nil
 }

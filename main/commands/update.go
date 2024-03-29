@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	tagUpdate                 = "update"
 	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
 	mihomoUrl                 = "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest"
 	yacdMetaDownloadUrl       = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
@@ -39,10 +40,10 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return e.New("not specify operation, available operation [core|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix("update").WithPathObj(*this)
+		return e.New("not specify operation, available operation [core|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	if len(args) > 1 {
-		return e.New("too many arguments").WithPrefix("update").WithPathObj(*this)
+		return e.New("too many arguments").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	switch args[0] {
 	case "core":
@@ -76,7 +77,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		}
 		log.HandleInfo("update: update success")
 	default:
-		return e.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe|yacd|yacd-meta]").WithPrefix("update").WithPathObj(*this)
+		return e.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	return nil
 }
@@ -84,14 +85,14 @@ func (this *UpdateCommand) Execute(args []string) error {
 // updateCore update core, support xray, singbox
 func updateCore() error {
 	if runtime.GOARCH != "arm64" {
-		return e.New("this feature only support arm64 device").WithPrefix("update")
+		return e.New("this feature only support arm64 device").WithPrefix(tagUpdate)
 	}
 	serviceRunFlag := false
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
-		return e.New("create run dir failed, ", err).WithPrefix("update")
+		return e.New("create run dir failed, ", err).WithPrefix(tagUpdate)
 	}
 	if err := os.MkdirAll(path.Dir(builds.Config.XrayHelper.CorePath), 0644); err != nil {
-		return e.New("create core path dir failed, ", err).WithPrefix("update")
+		return e.New("create core path dir failed, ", err).WithPrefix(tagUpdate)
 	}
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
@@ -108,7 +109,7 @@ func updateCore() error {
 		}
 		zipReader, err := zip.OpenReader(xrayZipPath)
 		if err != nil {
-			return e.New("open xray.zip failed, ", err).WithPrefix("update")
+			return e.New("open xray.zip failed, ", err).WithPrefix(tagUpdate)
 		}
 		defer func(zipReader *zip.ReadCloser) {
 			_ = zipReader.Close()
@@ -118,15 +119,15 @@ func updateCore() error {
 			if file.Name == "xray" {
 				fileReader, err := file.Open()
 				if err != nil {
-					return e.New("cannot get file reader "+file.Name+", ", err).WithPrefix("update")
+					return e.New("cannot get file reader "+file.Name+", ", err).WithPrefix(tagUpdate)
 				}
 				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 				if err != nil {
-					return e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix("update")
+					return e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
 				}
 				_, err = io.Copy(saveFile, fileReader)
 				if err != nil {
-					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
 				}
 				_ = saveFile.Close()
 				_ = fileReader.Close()
@@ -147,7 +148,7 @@ func updateCore() error {
 		}
 		zipReader, err := zip.OpenReader(v2rayZipPath)
 		if err != nil {
-			return e.New("open v2ray.zip failed, ", err).WithPrefix("update")
+			return e.New("open v2ray.zip failed, ", err).WithPrefix(tagUpdate)
 		}
 		defer func(zipReader *zip.ReadCloser) {
 			_ = zipReader.Close()
@@ -157,15 +158,15 @@ func updateCore() error {
 			if file.Name == "v2ray" {
 				fileReader, err := file.Open()
 				if err != nil {
-					return e.New("cannot get file reader "+file.Name+", ", err).WithPrefix("update")
+					return e.New("cannot get file reader "+file.Name+", ", err).WithPrefix(tagUpdate)
 				}
 				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 				if err != nil {
-					return e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix("update")
+					return e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
 				}
 				_, err = io.Copy(saveFile, fileReader)
 				if err != nil {
-					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
 				}
 				_ = saveFile.Close()
 				_ = fileReader.Close()
@@ -190,7 +191,7 @@ func updateCore() error {
 		}
 		singboxGzip, err := os.Open(singboxGzipPath)
 		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix("update")
+			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
 		}
 		defer func(singboxGzip *os.File) {
 			_ = singboxGzip.Close()
@@ -198,7 +199,7 @@ func updateCore() error {
 		}(singboxGzip)
 		gzipReader, err := gzip.NewReader(singboxGzip)
 		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix("update")
+			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
 		}
 		defer func(gzipReader *gzip.Reader) {
 			_ = gzipReader.Close()
@@ -208,7 +209,7 @@ func updateCore() error {
 			fileHeader, err := tarReader.Next()
 			if err != nil {
 				if err == io.EOF {
-					return e.New("cannot find sing-box binary").WithPrefix("update")
+					return e.New("cannot find sing-box binary").WithPrefix(tagUpdate)
 				}
 				continue
 			}
@@ -216,7 +217,7 @@ func updateCore() error {
 				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 				_, err = io.Copy(saveFile, tarReader)
 				if err != nil {
-					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
 				}
 				_ = saveFile.Close()
 				break
@@ -240,7 +241,7 @@ func updateCore() error {
 		}
 		mihomoGzip, err := os.Open(mihomoGzipPath)
 		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix("update")
+			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
 		}
 		defer func(mihomoGzip *os.File) {
 			_ = mihomoGzip.Close()
@@ -248,7 +249,7 @@ func updateCore() error {
 		}(mihomoGzip)
 		gzipReader, err := gzip.NewReader(mihomoGzip)
 		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix("update")
+			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
 		}
 		defer func(gzipReader *gzip.Reader) {
 			_ = gzipReader.Close()
@@ -256,11 +257,11 @@ func updateCore() error {
 		saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 		_, err = io.Copy(saveFile, gzipReader)
 		if err != nil {
-			return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix("update")
+			return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
 		}
 		_ = saveFile.Close()
 	default:
-		return e.New("unknown core type " + builds.Config.XrayHelper.CoreType).WithPrefix("update")
+		return e.New("unknown core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagUpdate)
 	}
 	if serviceRunFlag {
 		log.HandleInfo("update: starting core with new version")
@@ -283,7 +284,7 @@ func updateCore() error {
 // updateTun2socks update tun2socks
 func updateTun2socks() error {
 	if runtime.GOARCH != "arm64" {
-		return e.New("this feature only support arm64 device").WithPrefix("update")
+		return e.New("this feature only support arm64 device").WithPrefix(tagUpdate)
 	}
 	savePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "tun2socks")
 	if err := common.DownloadFile(savePath, tun2socksDownloadUrl); err != nil {
@@ -295,7 +296,7 @@ func updateTun2socks() error {
 // updateGeodata update geodata
 func updateGeodata() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
-		return e.New("create DataDir failed, ", err).WithPrefix("update")
+		return e.New("create DataDir failed, ", err).WithPrefix(tagUpdate)
 	}
 	switch builds.Config.XrayHelper.CoreType {
 	case "sing-box":
@@ -319,7 +320,7 @@ func updateGeodata() error {
 // updateSubscribe update subscribe
 func updateSubscribe() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
-		return e.New("create DataDir failed, ", err).WithPrefix("update")
+		return e.New("create DataDir failed, ", err).WithPrefix(tagUpdate)
 	}
 	var v2rayNgUrl, clashUrl []string
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
@@ -346,7 +347,7 @@ func updateSubscribe() error {
 	}
 	if builder.Len() > 0 {
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
-			return e.New("write subscribe file failed, ", err).WithPrefix("update")
+			return e.New("write subscribe file failed, ", err).WithPrefix(tagUpdate)
 		}
 	}
 	// update clash subscribe
@@ -357,7 +358,7 @@ func updateSubscribe() error {
 			continue
 		}
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
-			return e.New("write subscribe file failed, ", err).WithPrefix("update")
+			return e.New("write subscribe file failed, ", err).WithPrefix(tagUpdate)
 		}
 	}
 	return nil
@@ -371,20 +372,20 @@ func updateYacdMeta() error {
 	}
 	zipReader, err := zip.OpenReader(yacdMetaZipPath)
 	if err != nil {
-		return e.New("open zip file failed, ", err).WithPrefix("update")
+		return e.New("open zip file failed, ", err).WithPrefix(tagUpdate)
 	}
 	defer func(zipReader *zip.ReadCloser) {
 		_ = zipReader.Close()
 		_ = os.Remove(yacdMetaZipPath)
 	}(zipReader)
 	if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "Yacd-meta-gh-pages/")); err != nil {
-		return e.New("remove old yacd-meta files failed, ", err).WithPrefix("update")
+		return e.New("remove old yacd-meta files failed, ", err).WithPrefix(tagUpdate)
 	}
 	for _, file := range zipReader.File {
 		t := filepath.Join(builds.Config.XrayHelper.DataDir, file.Name)
 		if file.FileInfo().IsDir() {
 			if err := os.MkdirAll(t, 0644); err != nil {
-				return e.New("create dir "+t+" failed, ", err).WithPrefix("update")
+				return e.New("create dir "+t+" failed, ", err).WithPrefix(tagUpdate)
 			}
 			continue
 		}
@@ -395,13 +396,13 @@ func updateYacdMeta() error {
 		fw, err := os.OpenFile(t, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 		if err != nil {
 			_ = fr.Close()
-			return e.New("open file "+t+" failed, ", err).WithPrefix("update")
+			return e.New("open file "+t+" failed, ", err).WithPrefix(tagUpdate)
 		}
 		_, err = io.Copy(fw, fr)
 		if err != nil {
 			_ = fw.Close()
 			_ = fr.Close()
-			return e.New("copy file "+file.Name+" failed, ", err).WithPrefix("update")
+			return e.New("copy file "+file.Name+" failed, ", err).WithPrefix(tagUpdate)
 		}
 		_ = fw.Close()
 		_ = fr.Close()
@@ -418,21 +419,21 @@ func getDownloadUrl(githubApi string, nameContent string) (string, error) {
 	var jsonValue interface{}
 	err = json.Unmarshal(rawData, &jsonValue)
 	if err != nil {
-		return "", e.New("unmarshal github json failed, ", err).WithPrefix("update")
+		return "", e.New("unmarshal github json failed, ", err).WithPrefix(tagUpdate)
 	}
 	// assert json to map
 	jsonMap, ok := jsonValue.(map[string]interface{})
 	if !ok {
-		return "", e.New("assert github json to map failed").WithPrefix("update")
+		return "", e.New("assert github json to map failed").WithPrefix(tagUpdate)
 	}
 	assets, ok := jsonMap["assets"]
 	if !ok {
-		return "", e.New("cannot find assets ").WithPrefix("update")
+		return "", e.New("cannot find assets ").WithPrefix(tagUpdate)
 	}
 	// assert assets
 	assetsMap, ok := assets.([]interface{})
 	if !ok {
-		return "", e.New("assert assets to []interface failed").WithPrefix("update")
+		return "", e.New("assert assets to []interface failed").WithPrefix(tagUpdate)
 	}
 	for _, asset := range assetsMap {
 		assetMap, ok := asset.(map[string]interface{})
@@ -446,10 +447,10 @@ func getDownloadUrl(githubApi string, nameContent string) (string, error) {
 		if strings.Contains(name, nameContent) {
 			downloadUrl, ok := assetMap["browser_download_url"].(string)
 			if !ok {
-				return "", e.New("assert browser_download_url to string failed").WithPrefix("update")
+				return "", e.New("assert browser_download_url to string failed").WithPrefix(tagUpdate)
 			}
 			return downloadUrl, nil
 		}
 	}
-	return "", e.New("cannot get download url from " + githubApi).WithPrefix("update")
+	return "", e.New("cannot get download url from " + githubApi).WithPrefix(tagUpdate)
 }

@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+const tagSocks = "socks"
+
 type Socks struct {
 	Remarks  string
 	Server   string
@@ -48,6 +50,6 @@ func (this *Socks) ToOutboundWithTag(coreType string, tag string) (interface{}, 
 		}
 		return outboundObject, nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("socks").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagSocks).WithPathObj(*this)
 	}
 }

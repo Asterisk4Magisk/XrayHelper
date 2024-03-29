@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+const tagTrojan = "trojan"
+
 type Trojan struct {
 	//basic
 	Remarks  string
@@ -66,6 +68,6 @@ func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (interface{},
 		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("trojan").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagTrojan).WithPathObj(*this)
 	}
 }

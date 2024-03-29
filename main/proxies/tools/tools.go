@@ -8,13 +8,15 @@ import (
 	"strings"
 )
 
+const tagTools = "tools"
+
 func GetUid(pkgInfo string) (string, error) {
 	var appId, userId int
 	info := strings.Split(pkgInfo, ":")
 	if pkgId, ok := builds.PackageMap[info[0]]; ok {
 		appId, _ = strconv.Atoi(pkgId)
 	} else {
-		return "", e.New("cannot get uid from " + pkgInfo).WithPrefix("tools")
+		return "", e.New("cannot get uid from " + pkgInfo).WithPrefix(tagTools)
 	}
 	if len(info) == 2 {
 		userId, _ = strconv.Atoi(info[1])
@@ -24,7 +26,7 @@ func GetUid(pkgInfo string) (string, error) {
 
 func DisableIPV6DNS() error {
 	if err := common.Ipt6.Insert("filter", "OUTPUT", 1, "-p", "udp", "--dport", "53", "-j", "REJECT"); err != nil {
-		return e.New("disable dns request on ipv6 failed, ", err).WithPrefix("tools")
+		return e.New("disable dns request on ipv6 failed, ", err).WithPrefix(tagTools)
 	}
 	return nil
 }
@@ -35,7 +37,7 @@ func EnableIPV6DNS() {
 
 func RedirectDNS(port string) error {
 	if err := common.Ipt.Insert("nat", "OUTPUT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "DNAT", "--to-destination", "127.0.0.1:"+port); err != nil {
-		return e.New("redirect dns request failed, ", err).WithPrefix("tools")
+		return e.New("redirect dns request failed, ", err).WithPrefix(tagTools)
 	}
 	if err := DisableIPV6DNS(); err != nil {
 		return err

@@ -6,6 +6,8 @@ import (
 	"XrayHelper/main/proxies/tun"
 )
 
+const tagProxies = "proxies"
+
 // ProxyMethod implement this interface, that program can use different proxy method
 type ProxyMethod interface {
 	Enable() error
@@ -19,6 +21,6 @@ func NewProxy(method string) (ProxyMethod, error) {
 	case "tun", "tun2socks":
 		return new(tun.Tun), nil
 	default:
-		return nil, e.New("unsupported proxy method " + method).WithPrefix("proxies")
+		return nil, e.New("unsupported proxy method " + method).WithPrefix(tagProxies)
 	}
 }

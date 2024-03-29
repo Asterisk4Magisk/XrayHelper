@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+const tagVless = "vless"
+
 type VLESS struct {
 	//basic
 	Remarks    string
@@ -50,7 +52,7 @@ func (this *VLESS) ToOutboundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["tag"] = tag
 		return outboundObject, nil
 	case "v2ray":
-		return nil, e.New("v2ray core not support VLESS").WithPrefix("vless").WithPathObj(*this)
+		return nil, e.New("v2ray core not support VLESS").WithPrefix(tagVless).WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "vless"
@@ -63,6 +65,6 @@ func (this *VLESS) ToOutboundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["transport"] = getVLESSTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("vless").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagVless).WithPathObj(*this)
 	}
 }

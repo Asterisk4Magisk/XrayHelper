@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	timeout = 3000
-	dns     = "223.5.5.5:53"
-	dns6    = "2400:3200::1"
+	tagNetwork = "network"
+	timeout    = 3000
+	dns        = "223.5.5.5:53"
+	dns6       = "2400:3200::1"
 )
 
 // getHttpClient get a http client with custom dns
@@ -88,7 +89,7 @@ func getExternalIPv6Addr() ([]string, error) {
 	var ipv6Addrs []string
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return nil, e.New("cannot get ip address from local interface, ", err).WithPrefix("network")
+		return nil, e.New("cannot get ip address from local interface, ", err).WithPrefix(tagNetwork)
 	}
 	for _, address := range addrs {
 		if ipnet, ok := address.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
@@ -105,25 +106,25 @@ func DownloadFile(filepath string, url string) error {
 	// get file from url
 	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
-		return e.New("cannot get file "+url+", ", err).WithPrefix("network")
+		return e.New("cannot get file "+url+", ", err).WithPrefix(tagNetwork)
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(response.Body)
 	if response.StatusCode != http.StatusOK {
-		return e.New("bad http status "+response.Status+", ", err).WithPrefix("network")
+		return e.New("bad http status "+response.Status+", ", err).WithPrefix(tagNetwork)
 	}
 	// open saveFile
 	saveFile, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 	if err != nil {
-		return e.New("cannot open file "+filepath+", ", err).WithPrefix("network")
+		return e.New("cannot open file "+filepath+", ", err).WithPrefix(tagNetwork)
 	}
 	defer func(saveFile *os.File) {
 		_ = saveFile.Close()
 	}(saveFile)
 	_, err = io.Copy(saveFile, response.Body)
 	if err != nil {
-		return e.New("save file "+filepath+" failed, ", err).WithPrefix("network")
+		return e.New("save file "+filepath+" failed, ", err).WithPrefix(tagNetwork)
 	}
 	return nil
 }
@@ -132,17 +133,17 @@ func DownloadFile(filepath string, url string) error {
 func GetRawData(url string) ([]byte, error) {
 	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
 	if err != nil {
-		return nil, e.New("cannot get url "+url+", ", err).WithPrefix("network")
+		return nil, e.New("cannot get url "+url+", ", err).WithPrefix(tagNetwork)
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(response.Body)
 	if response.StatusCode != http.StatusOK {
-		return nil, e.New("bad http status "+response.Status+", ", err).WithPrefix("network")
+		return nil, e.New("bad http status "+response.Status+", ", err).WithPrefix(tagNetwork)
 	}
 	raw, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, e.New("read data failed, ", err).WithPrefix("network")
+		return nil, e.New("read data failed, ", err).WithPrefix(tagNetwork)
 	}
 	return raw, nil
 }

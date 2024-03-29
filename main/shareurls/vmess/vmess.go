@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const tagVmess = "vmess"
+
 type String string
 
 func (this *String) UnmarshalJSON(port []byte) error {
@@ -38,7 +40,7 @@ func (this *Vmess) GetNodeInfo() string {
 
 func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	if version, _ := strconv.Atoi(string(this.Version)); version < 2 {
-		return nil, e.New("unsupported vmess share link version " + this.Version).WithPrefix("vmess").WithPathObj(*this)
+		return nil, e.New("unsupported vmess share link version " + this.Version).WithPrefix(tagVmess).WithPathObj(*this)
 	}
 	switch coreType {
 	case "xray":
@@ -70,6 +72,6 @@ func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (interface{}, 
 		outboundObject["transport"] = getVmessTransportObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("vmess").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagVmess).WithPathObj(*this)
 	}
 }

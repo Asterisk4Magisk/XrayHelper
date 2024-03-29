@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+const tagHysteria = "hysteria"
+
 type Hysteria struct {
 	Remarks   string
 	Host      string
@@ -28,9 +30,9 @@ func (this *Hysteria) GetNodeInfo() string {
 func (this *Hysteria) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
-		return nil, e.New("xray core not support hysteria").WithPrefix("hysteria").WithPathObj(*this)
+		return nil, e.New("xray core not support hysteria").WithPrefix(tagHysteria).WithPathObj(*this)
 	case "v2ray":
-		return nil, e.New("v2ray core not support hysteria").WithPrefix("hysteria").WithPathObj(*this)
+		return nil, e.New("v2ray core not support hysteria").WithPrefix(tagHysteria).WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "hysteria"
@@ -44,6 +46,6 @@ func (this *Hysteria) ToOutboundWithTag(coreType string, tag string) (interface{
 		outboundObject["tls"] = getHysteriaTlsObjectSingbox(this)
 		return outboundObject, nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("hysteria").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagHysteria).WithPathObj(*this)
 	}
 }

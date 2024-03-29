@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	tagShareurl    = "shareurl"
 	socksPrefix    = "socks://"
 	ssPrefix       = "ss://"
 	ssrPrefix      = "ssr://"
@@ -44,5 +45,5 @@ func Parse(link string) (ShareUrl, error) {
 	if strings.HasPrefix(link, hysteriaPrefix) {
 		return parseHysteria(link)
 	}
-	return nil, e.New("not a supported share link").WithPrefix("shareurl")
+	return nil, e.New("not a supported share link").WithPrefix(tagShareurl)
 }

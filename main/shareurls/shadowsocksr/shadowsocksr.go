@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+const tagShadowsocksr = "shadowsocksr"
+
 type ShadowsocksR struct {
 	Remarks    string
 	Server     string
@@ -25,9 +27,9 @@ func (this *ShadowsocksR) GetNodeInfo() string {
 func (this *ShadowsocksR) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
 	switch coreType {
 	case "xray":
-		return nil, e.New("xray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, e.New("xray core not support shadowsocksr").WithPrefix(tagShadowsocksr).WithPathObj(*this)
 	case "v2ray":
-		return nil, e.New("v2ray core not support shadowsocksr").WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, e.New("v2ray core not support shadowsocksr").WithPrefix(tagShadowsocksr).WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "shadowsocksr"
@@ -42,6 +44,6 @@ func (this *ShadowsocksR) ToOutboundWithTag(coreType string, tag string) (interf
 		outboundObject["protocol_param"] = this.ProtoParam
 		return outboundObject, nil
 	default:
-		return nil, e.New("unsupported core type " + coreType).WithPrefix("shadowsocksr").WithPathObj(*this)
+		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagShadowsocksr).WithPathObj(*this)
 	}
 }

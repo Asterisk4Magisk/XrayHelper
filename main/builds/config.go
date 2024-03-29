@@ -11,6 +11,7 @@ import (
 )
 
 const packageListPath = "/data/system/packages.list"
+const tagConfig = "config"
 
 var ConfigFilePath *string
 var CoreStartTimeout *int
@@ -50,13 +51,13 @@ var Config struct {
 func LoadConfig() error {
 	configFile, err := os.ReadFile(*ConfigFilePath)
 	if err != nil {
-		return e.New("load config failed, ", err).WithPrefix("config")
+		return e.New("load config failed, ", err).WithPrefix(tagConfig)
 	}
 	if err := defaults.Set(&Config); err != nil {
-		return e.New("set default config failed, ", err).WithPrefix("config")
+		return e.New("set default config failed, ", err).WithPrefix(tagConfig)
 	}
 	if err := yaml.Unmarshal(configFile, &Config); err != nil {
-		return e.New("unmarshal config failed, ", err).WithPrefix("config")
+		return e.New("unmarshal config failed, ", err).WithPrefix(tagConfig)
 	}
 	log.HandleDebug(Config.XrayHelper)
 	log.HandleDebug(Config.Proxy)
@@ -68,7 +69,7 @@ func LoadConfig() error {
 func LoadPackage() error {
 	packageListFile, err := os.Open(packageListPath)
 	if err != nil {
-		return e.New("load package failed, ", err).WithPrefix("config")
+		return e.New("load package failed, ", err).WithPrefix(tagConfig)
 	}
 	packageScanner := bufio.NewScanner(packageListFile)
 	packageScanner.Split(bufio.ScanLines)
@@ -79,7 +80,7 @@ func LoadPackage() error {
 		}
 	}
 	if err := packageListFile.Close(); err != nil {
-		return e.New("close package file failed, ", err).WithPrefix("config")
+		return e.New("close package file failed, ", err).WithPrefix(tagConfig)
 	}
 	log.HandleDebug(PackageMap)
 	return nil

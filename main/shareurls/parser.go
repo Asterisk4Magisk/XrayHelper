@@ -15,12 +15,14 @@ import (
 	"strings"
 )
 
+const tagParser = "parser"
+
 // parseShadowsocks parse shadowsocks url
 func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 	ss := new(shadowsocks.Shadowsocks)
 	ssParse, err := url.Parse(ssUrl)
 	if err != nil {
-		return nil, e.New("shadowsocks url parse err, ", err).WithPrefix("parser")
+		return nil, e.New("shadowsocks url parse err, ", err).WithPrefix(tagParser)
 	}
 	ss.Remarks = ssParse.Fragment
 	ss.Server = ssParse.Hostname()
@@ -66,7 +68,7 @@ func parseShadowsocksR(ssrUrl string) (ShareUrl, error) {
 	ssr.Password, _ = common.DecodeBase64(info[5])
 	ssrQuery, err := url.ParseQuery(infoAndParam[1])
 	if err != nil {
-		return nil, e.New("shadowsocksr url parse query err, ", err).WithPrefix("parser")
+		return nil, e.New("shadowsocksr url parse query err, ", err).WithPrefix(tagParser)
 	}
 	if obfsParam, ok := ssrQuery["obfsparam"]; ok {
 		ssr.ObfsParam, _ = common.DecodeBase64(obfsParam[0])
@@ -86,7 +88,7 @@ func parseSocks(socksUrl string) (ShareUrl, error) {
 	so := new(socks.Socks)
 	soParse, err := url.Parse(socksUrl)
 	if err != nil {
-		return nil, e.New("socks url parse err, ", err).WithPrefix("parser")
+		return nil, e.New("socks url parse err, ", err).WithPrefix(tagParser)
 	}
 	so.Remarks = soParse.Fragment
 	so.Server = soParse.Hostname()
@@ -106,7 +108,7 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 	tj := new(trojan.Trojan)
 	tjParse, err := url.Parse(trojanUrl)
 	if err != nil {
-		return nil, e.New("trojan url parse err, ", err).WithPrefix("parser")
+		return nil, e.New("trojan url parse err, ", err).WithPrefix(tagParser)
 	}
 	tj.Remarks = tjParse.Fragment
 	tj.Password = tjParse.User.Username()
@@ -114,23 +116,23 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 	tj.Port = tjParse.Port()
 	tjQuery, err := url.ParseQuery(tjParse.RawQuery)
 	if err != nil {
-		return nil, e.New("trojan url parse query err, ", err).WithPrefix("parser")
+		return nil, e.New("trojan url parse query err, ", err).WithPrefix(tagParser)
 	}
 	//parse trojan network
 	if types, ok := tjQuery["type"]; !ok {
 		tj.Network = "tcp"
 	} else if len(types) > 1 {
-		return nil, e.New("multiple trojan transport type").WithPrefix("parser")
+		return nil, e.New("multiple trojan transport type").WithPrefix(tagParser)
 	} else if tj.Network = types[0]; tj.Network == "" {
-		return nil, e.New("empty trojan transport type").WithPrefix("parser")
+		return nil, e.New("empty trojan transport type").WithPrefix(tagParser)
 	}
 	//parse trojan security
 	if security, ok := tjQuery["security"]; !ok {
 		tj.Security = "tls"
 	} else if len(security) > 1 {
-		return nil, e.New("multiple trojan security type").WithPrefix("parser")
+		return nil, e.New("multiple trojan security type").WithPrefix(tagParser)
 	} else if tj.Security = security[0]; tj.Security == "" {
-		return nil, e.New("empty trojan security type").WithPrefix("parser")
+		return nil, e.New("empty trojan security type").WithPrefix(tagParser)
 	}
 	switch tj.Network {
 	case "tcp":
@@ -197,7 +199,7 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 			tj.Path = serviceNames[0]
 		}
 	default:
-		return nil, e.New("unknown trojan transport type " + tj.Network).WithPrefix("parser")
+		return nil, e.New("unknown trojan transport type " + tj.Network).WithPrefix(tagParser)
 	}
 	switch tj.Security {
 	case "tls":
@@ -239,7 +241,7 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 			tj.SpiderX = spiderX[0]
 		}
 	default:
-		return nil, e.New("unknown trojan security type " + tj.Security).WithPrefix("parser")
+		return nil, e.New("unknown trojan security type " + tj.Security).WithPrefix(tagParser)
 	}
 	return tj, nil
 }
@@ -249,7 +251,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	vl := new(vless.VLESS)
 	vlParse, err := url.Parse(vlessUrl)
 	if err != nil {
-		return nil, e.New("VLESS url parse err, ", err).WithPrefix("parser")
+		return nil, e.New("VLESS url parse err, ", err).WithPrefix(tagParser)
 	}
 	vl.Remarks = vlParse.Fragment
 	vl.Id = vlParse.User.Username()
@@ -257,20 +259,20 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	vl.Port = vlParse.Port()
 	vlQuery, err := url.ParseQuery(vlParse.RawQuery)
 	if err != nil {
-		return nil, e.New("VLESS url parse query err, ", err).WithPrefix("parser")
+		return nil, e.New("VLESS url parse query err, ", err).WithPrefix(tagParser)
 	}
 	//parse VLESS encryption
 	if encryption, ok := vlQuery["encryption"]; !ok {
 		vl.Encryption = "none"
 	} else if len(encryption) > 1 {
-		return nil, e.New("multiple VLESS encryption").WithPrefix("parser")
+		return nil, e.New("multiple VLESS encryption").WithPrefix(tagParser)
 	} else if vl.Encryption = encryption[0]; vl.Encryption == "" {
-		return nil, e.New("empty VLESS encryption").WithPrefix("parser")
+		return nil, e.New("empty VLESS encryption").WithPrefix(tagParser)
 	}
 	//parse VLESS flow
 	if flows, ok := vlQuery["flow"]; ok {
 		if len(flows) > 1 {
-			return nil, e.New("multiple VLESS flow").WithPrefix("parser")
+			return nil, e.New("multiple VLESS flow").WithPrefix(tagParser)
 		} else {
 			vl.Flow = flows[0]
 		}
@@ -279,17 +281,17 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	if types, ok := vlQuery["type"]; !ok {
 		vl.Network = "tcp"
 	} else if len(types) > 1 {
-		return nil, e.New("multiple VLESS transport type").WithPrefix("parser")
+		return nil, e.New("multiple VLESS transport type").WithPrefix(tagParser)
 	} else if vl.Network = types[0]; vl.Network == "" {
-		return nil, e.New("empty VLESS transport type").WithPrefix("parser")
+		return nil, e.New("empty VLESS transport type").WithPrefix(tagParser)
 	}
 	//parse VLESS security
 	if security, ok := vlQuery["security"]; !ok {
 		vl.Security = "tls"
 	} else if len(security) > 1 {
-		return nil, e.New("multiple VLESS security type").WithPrefix("parser")
+		return nil, e.New("multiple VLESS security type").WithPrefix(tagParser)
 	} else if vl.Security = security[0]; vl.Security == "" {
-		return nil, e.New("empty VLESS security type").WithPrefix("parser")
+		return nil, e.New("empty VLESS security type").WithPrefix(tagParser)
 	}
 	switch vl.Network {
 	case "tcp":
@@ -351,7 +353,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 			vl.Path = serviceNames[0]
 		}
 	default:
-		return nil, e.New("unknown VLESS transport type " + vl.Network).WithPrefix("parser")
+		return nil, e.New("unknown VLESS transport type " + vl.Network).WithPrefix(tagParser)
 	}
 	switch vl.Security {
 	case "tls":
@@ -393,7 +395,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 			vl.SpiderX = spiderX[0]
 		}
 	default:
-		return nil, e.New("unknown VLESS security type " + vl.Security).WithPrefix("parser")
+		return nil, e.New("unknown VLESS security type " + vl.Security).WithPrefix(tagParser)
 	}
 	return vl, nil
 }
@@ -407,7 +409,7 @@ func parseVmess(vmessUrl string) (ShareUrl, error) {
 	}
 	err = json.Unmarshal([]byte(originJson), v2)
 	if err != nil {
-		return nil, e.New("unmarshal origin json failed, ", err).WithPrefix("parser")
+		return nil, e.New("unmarshal origin json failed, ", err).WithPrefix(tagParser)
 	}
 	return v2, nil
 }
@@ -417,19 +419,19 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	ht := new(hysteria.Hysteria)
 	htParse, err := url.Parse(hysteriaUrl)
 	if err != nil {
-		return nil, e.New("hysteria url parse err, ", err).WithPrefix("parser")
+		return nil, e.New("hysteria url parse err, ", err).WithPrefix(tagParser)
 	}
 	ht.Remarks = htParse.Fragment
 	ht.Host = htParse.Hostname()
 	ht.Port = htParse.Port()
 	htQuery, err := url.ParseQuery(htParse.RawQuery)
 	if err != nil {
-		return nil, e.New("hysteria url parse query err, ", err).WithPrefix("parser")
+		return nil, e.New("hysteria url parse query err, ", err).WithPrefix(tagParser)
 	}
 	//parse hysteria protocol
 	if protocols, ok := htQuery["protocol"]; ok {
 		if len(protocols) > 1 {
-			return nil, e.New("multiple hysteria protocol").WithPrefix("parser")
+			return nil, e.New("multiple hysteria protocol").WithPrefix(tagParser)
 		} else {
 			ht.Protocol = protocols[0]
 		}
@@ -437,7 +439,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria auth
 	if auth, ok := htQuery["auth"]; ok {
 		if len(auth) > 1 {
-			return nil, e.New("multiple hysteria auth").WithPrefix("parser")
+			return nil, e.New("multiple hysteria auth").WithPrefix(tagParser)
 		} else {
 			ht.Auth = auth[0]
 		}
@@ -445,7 +447,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria peer
 	if peer, ok := htQuery["peer"]; ok {
 		if len(peer) > 1 {
-			return nil, e.New("multiple hysteria peer").WithPrefix("parser")
+			return nil, e.New("multiple hysteria peer").WithPrefix(tagParser)
 		} else {
 			ht.Peer = peer[0]
 		}
@@ -453,7 +455,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria insecure
 	if insecure, ok := htQuery["insecure"]; ok {
 		if len(insecure) > 1 {
-			return nil, e.New("multiple hysteria insecure").WithPrefix("parser")
+			return nil, e.New("multiple hysteria insecure").WithPrefix(tagParser)
 		} else {
 			ht.Insecure = insecure[0]
 		}
@@ -461,7 +463,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria upmbps
 	if upmbps, ok := htQuery["upmbps"]; ok {
 		if len(upmbps) > 1 {
-			return nil, e.New("multiple hysteria upmbps").WithPrefix("parser")
+			return nil, e.New("multiple hysteria upmbps").WithPrefix(tagParser)
 		} else {
 			ht.UpMBPS = upmbps[0]
 		}
@@ -469,7 +471,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria downmbps
 	if downmbps, ok := htQuery["downmbps"]; ok {
 		if len(downmbps) > 1 {
-			return nil, e.New("multiple hysteria downmbps").WithPrefix("parser")
+			return nil, e.New("multiple hysteria downmbps").WithPrefix(tagParser)
 		} else {
 			ht.DownMBPS = downmbps[0]
 		}
@@ -477,7 +479,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria alpn
 	if alpn, ok := htQuery["alpn"]; ok {
 		if len(alpn) > 1 {
-			return nil, e.New("multiple hysteria alpn").WithPrefix("parser")
+			return nil, e.New("multiple hysteria alpn").WithPrefix(tagParser)
 		} else {
 			ht.Alpn = alpn[0]
 		}
@@ -485,7 +487,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria obfs
 	if obfs, ok := htQuery["obfs"]; ok {
 		if len(obfs) > 1 {
-			return nil, e.New("multiple hysteria obfs").WithPrefix("parser")
+			return nil, e.New("multiple hysteria obfs").WithPrefix(tagParser)
 		} else {
 			ht.Obfs = obfs[0]
 		}
@@ -493,7 +495,7 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 	//parse hysteria obfsParam
 	if obfsParam, ok := htQuery["obfsParam"]; ok {
 		if len(obfsParam) > 1 {
-			return nil, e.New("multiple hysteria obfsParam").WithPrefix("parser")
+			return nil, e.New("multiple hysteria obfsParam").WithPrefix(tagParser)
 		} else {
 			ht.ObfsParam = obfsParam[0]
 		}
