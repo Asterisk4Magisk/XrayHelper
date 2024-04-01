@@ -9,7 +9,6 @@ const (
 	tagShareurl    = "shareurl"
 	socksPrefix    = "socks://"
 	ssPrefix       = "ss://"
-	ssrPrefix      = "ssr://"
 	vmessPrefix    = "vmess://"
 	vlessPrefix    = "vless://"
 	trojanPrefix   = "trojan://"
@@ -29,9 +28,6 @@ func Parse(link string) (ShareUrl, error) {
 	}
 	if strings.HasPrefix(link, ssPrefix) {
 		return parseShadowsocks(link)
-	}
-	if strings.HasPrefix(link, ssrPrefix) {
-		return parseShadowsocksR(strings.TrimPrefix(link, ssrPrefix))
 	}
 	if strings.HasPrefix(link, vmessPrefix) {
 		return parseVmess(strings.TrimPrefix(link, vmessPrefix))
