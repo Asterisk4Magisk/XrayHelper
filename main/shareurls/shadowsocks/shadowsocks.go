@@ -30,14 +30,6 @@ func (this *Shadowsocks) ToOutboundWithTag(coreType string, tag string) (interfa
 		outboundObject["streamSettings"] = getStreamSettingsObjectXray("tcp")
 		outboundObject["tag"] = tag
 		return outboundObject, nil
-	case "v2ray":
-		outboundObject := make(map[string]interface{})
-		outboundObject["mux"] = getMuxObjectXray(false)
-		outboundObject["protocol"] = "shadowsocks"
-		outboundObject["settings"] = getShadowsocksSettingsObjectV2ray(this)
-		outboundObject["streamSettings"] = getStreamSettingsObjectV2ray("tcp")
-		outboundObject["tag"] = tag
-		return outboundObject, nil
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "shadowsocks"

@@ -46,7 +46,7 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `subscribe`更新订阅节点（或 clash 订阅）到`${xrayHelper.dataDir}/sub.txt`（或`${xrayHelper.dataDir}/clashSub#{index}.yaml`），需要指定 **xrayHelper.subList**
     - `tun2socks`从 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) 更新 tun2socks
     - `yacd-meta`更新 [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta) 到`${xrayHelper.dataDir}/Yacd-meta-gh-pages`
-### xray、v2ray、sing-box
+### xray、sing-box
 - switch
     - 不带任何参数时，从订阅`${xrayHelper.dataDir}/sub.txt`获取节点信息并选择
     - `custom`从`${xrayHelper.dataDir}/custom.txt`获取节点信息并选择，因此，可将自定义节点的分享链接放置于此方便选择

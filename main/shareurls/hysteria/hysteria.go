@@ -31,8 +31,6 @@ func (this *Hysteria) ToOutboundWithTag(coreType string, tag string) (interface{
 	switch coreType {
 	case "xray":
 		return nil, e.New("xray core not support hysteria").WithPrefix(tagHysteria).WithPathObj(*this)
-	case "v2ray":
-		return nil, e.New("v2ray core not support hysteria").WithPrefix(tagHysteria).WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "hysteria"

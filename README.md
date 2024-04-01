@@ -32,7 +32,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
   `xrayhelper update yacd-meta`, update yacd-meta for mihomo(clash.meta), dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`
 
 ## Switch Proxy Node
-### xray, v2ray, sing-box
+### xray, sing-box
 - switch subscribe nodes  
   `xrayhelper switch`, should configure **xrayHelper.proxyTag** and update subscribe first, **warning: it will replace your outbounds configuration which has the same proxy tag**
 - switch custom nodes  

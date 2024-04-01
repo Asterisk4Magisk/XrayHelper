@@ -28,8 +28,6 @@ func (this *ShadowsocksR) ToOutboundWithTag(coreType string, tag string) (interf
 	switch coreType {
 	case "xray":
 		return nil, e.New("xray core not support shadowsocksr").WithPrefix(tagShadowsocksr).WithPathObj(*this)
-	case "v2ray":
-		return nil, e.New("v2ray core not support shadowsocksr").WithPrefix(tagShadowsocksr).WithPathObj(*this)
 	case "sing-box":
 		outboundObject := make(map[string]interface{})
 		outboundObject["type"] = "shadowsocksr"

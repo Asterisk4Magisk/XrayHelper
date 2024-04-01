@@ -15,7 +15,7 @@ type Switch interface {
 
 func NewSwitch(coreType string) (Switch, error) {
 	switch coreType {
-	case "xray", "v2ray", "sing-box":
+	case "xray", "sing-box":
 		return new(ray.RaySwitch), nil
 	case "clash.meta", "mihomo":
 		return new(clash.ClashSwitch), nil
