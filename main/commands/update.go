@@ -22,17 +22,15 @@ import (
 )
 
 const (
-	tagUpdate                 = "update"
-	singboxUrl                = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
-	mihomoUrl                 = "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest"
-	yacdMetaDownloadUrl       = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
-	xrayCoreDownloadUrl       = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
-	v2rayCoreDownloadUrl      = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
-	geoipDownloadUrl          = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
-	geoipDownloadUrlSingbox   = "https://github.com/lyc8503/sing-box-rules/releases/latest/download/geoip.db"
-	geositeDownloadUrl        = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
-	geositeDownloadUrlSingbox = "https://github.com/lyc8503/sing-box-rules/releases/latest/download/geosite.db"
-	tun2socksDownloadUrl      = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
+	tagUpdate            = "update"
+	singboxUrl           = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
+	mihomoUrl            = "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest"
+	yacdMetaDownloadUrl  = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
+	xrayCoreDownloadUrl  = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
+	v2rayCoreDownloadUrl = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
+	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
+	geositeDownloadUrl   = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
+	tun2socksDownloadUrl = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
 )
 
 type UpdateCommand struct{}
@@ -315,21 +313,11 @@ func updateGeodata() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return e.New("create DataDir failed, ", err).WithPrefix(tagUpdate)
 	}
-	switch builds.Config.XrayHelper.CoreType {
-	case "sing-box":
-		if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.db"), geoipDownloadUrlSingbox); err != nil {
-			return err
-		}
-		if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.db"), geositeDownloadUrlSingbox); err != nil {
-			return err
-		}
-	default:
-		if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipDownloadUrl); err != nil {
-			return err
-		}
-		if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeDownloadUrl); err != nil {
-			return err
-		}
+	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipDownloadUrl); err != nil {
+		return err
+	}
+	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeDownloadUrl); err != nil {
+		return err
 	}
 	return nil
 }
