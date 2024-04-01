@@ -20,9 +20,9 @@ type VLESS struct {
 	Security   string
 
 	//addon
-	//http/ws/h2->host quic->security
+	//ws/httpupgrade/h2->host quic->security grpc->authority
 	Host string
-	//ws/h2->path quic->key kcp->seed grpc->serviceName
+	//ws/httpupgrade/h2->path quic->key kcp->seed grpc->serviceName
 	Path string
 	//tcp/kcp/quic->type grpc->mode
 	Type string

@@ -89,13 +89,20 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 		wsSettingsObject["headers"] = headersObject
 		wsSettingsObject["path"] = vmess.Path
 		streamSettingsObject["wsSettings"] = wsSettingsObject
-	case "h2":
+	case "http", "h2":
 		httpSettingsObject := make(map[string]interface{})
 		var host []interface{}
 		host = append(host, vmess.Host)
 		httpSettingsObject["host"] = host
 		httpSettingsObject["path"] = vmess.Path
 		streamSettingsObject["httpSettings"] = httpSettingsObject
+	case "httpupgrade":
+		httpupgradeSettingsObject := make(map[string]interface{})
+		var host []interface{}
+		host = append(host, vmess.Host)
+		httpupgradeSettingsObject["host"] = host
+		httpupgradeSettingsObject["path"] = vmess.Path
+		streamSettingsObject["httpupgrade"] = httpupgradeSettingsObject
 	case "quic":
 		quicSettingsObject := make(map[string]interface{})
 		headerObject := make(map[string]interface{})
@@ -111,6 +118,7 @@ func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
 		} else {
 			grpcSettingsObject["multiMode"] = false
 		}
+		grpcSettingsObject["authority"] = vmess.Host
 		grpcSettingsObject["serviceName"] = vmess.Path
 		streamSettingsObject["grpcSettings"] = grpcSettingsObject
 	}

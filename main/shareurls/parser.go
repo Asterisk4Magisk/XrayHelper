@@ -121,16 +121,7 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 		if seeds, ok := tjQuery["seed"]; ok && len(seeds) == 1 {
 			tj.Path = seeds[0]
 		}
-	case "ws":
-		//parse trojan host
-		if hosts, ok := tjQuery["host"]; ok && len(hosts) == 1 {
-			tj.Host = hosts[0]
-		}
-		//parse trojan path
-		if paths, ok := tjQuery["path"]; ok && len(paths) == 1 {
-			tj.Path = paths[0]
-		}
-	case "http":
+	case "ws", "http", "h2", "httpupgrade":
 		//parse trojan host
 		if hosts, ok := tjQuery["host"]; ok && len(hosts) == 1 {
 			tj.Host = hosts[0]
@@ -153,6 +144,10 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 			tj.Path = quicKey[0]
 		}
 	case "grpc":
+		//parse trojan grpc authority
+		if authority, ok := tjQuery["authority"]; ok && len(authority) == 1 {
+			tj.Host = authority[0]
+		}
 		//parse trojan grpc mode
 		if modes, ok := tjQuery["mode"]; ok && len(modes) == 1 {
 			tj.Type = modes[0]
@@ -173,8 +168,6 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 		//parse trojan tls fingerprint
 		if fps, ok := tjQuery["fp"]; ok && len(fps) == 1 {
 			tj.FingerPrint = fps[0]
-		} else {
-			tj.FingerPrint = "firefox"
 		}
 		//parse trojan tls Alpn
 		if alpns, ok := tjQuery["alpn"]; ok && len(alpns) == 1 {
@@ -188,8 +181,6 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 		//parse trojan reality fingerprint
 		if fps, ok := tjQuery["fp"]; ok && len(fps) == 1 {
 			tj.FingerPrint = fps[0]
-		} else {
-			tj.FingerPrint = "firefox"
 		}
 		//parse trojan reality PublicKey
 		if publicKeys, ok := tjQuery["pbk"]; ok && len(publicKeys) == 1 {
@@ -256,6 +247,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	} else if vl.Security = security[0]; vl.Security == "" {
 		return nil, e.New("empty VLESS security type").WithPrefix(tagParser)
 	}
+
 	switch vl.Network {
 	case "tcp":
 		//parse VLESS headerType
@@ -275,16 +267,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 		if seeds, ok := vlQuery["seed"]; ok && len(seeds) == 1 {
 			vl.Path = seeds[0]
 		}
-	case "ws":
-		//parse VLESS host
-		if hosts, ok := vlQuery["host"]; ok && len(hosts) == 1 {
-			vl.Host = hosts[0]
-		}
-		//parse VLESS path
-		if paths, ok := vlQuery["path"]; ok && len(paths) == 1 {
-			vl.Path = paths[0]
-		}
-	case "http":
+	case "ws", "http", "h2", "httpupgrade":
 		//parse VLESS host
 		if hosts, ok := vlQuery["host"]; ok && len(hosts) == 1 {
 			vl.Host = hosts[0]
@@ -307,6 +290,10 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 			vl.Path = quicKey[0]
 		}
 	case "grpc":
+		//parse VLESS grpc authority
+		if authority, ok := vlQuery["authority"]; ok && len(authority) == 1 {
+			vl.Host = authority[0]
+		}
 		//parse VLESS grpc mode
 		if modes, ok := vlQuery["mode"]; ok && len(modes) == 1 {
 			vl.Type = modes[0]
@@ -327,8 +314,6 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 		//parse VLESS tls fingerprint
 		if fps, ok := vlQuery["fp"]; ok && len(fps) == 1 {
 			vl.FingerPrint = fps[0]
-		} else {
-			vl.FingerPrint = "firefox"
 		}
 		//parse VLESS tls Alpn
 		if alpns, ok := vlQuery["alpn"]; ok && len(alpns) == 1 {
@@ -342,8 +327,6 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 		//parse VLESS reality fingerprint
 		if fps, ok := vlQuery["fp"]; ok && len(fps) == 1 {
 			vl.FingerPrint = fps[0]
-		} else {
-			vl.FingerPrint = "firefox"
 		}
 		//parse VLESS reality PublicKey
 		if publicKeys, ok := vlQuery["pbk"]; ok && len(publicKeys) == 1 {

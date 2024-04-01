@@ -82,13 +82,20 @@ func getStreamSettingsObjectXray(trojan *Trojan) map[string]interface{} {
 		wsSettingsObject["headers"] = headersObject
 		wsSettingsObject["path"] = trojan.Path
 		streamSettingsObject["wsSettings"] = wsSettingsObject
-	case "h2":
+	case "http", "h2":
 		httpSettingsObject := make(map[string]interface{})
 		var host []interface{}
 		host = append(host, trojan.Host)
 		httpSettingsObject["host"] = host
 		httpSettingsObject["path"] = trojan.Path
 		streamSettingsObject["httpSettings"] = httpSettingsObject
+	case "httpupgrade":
+		httpupgradeSettingsObject := make(map[string]interface{})
+		var host []interface{}
+		host = append(host, trojan.Host)
+		httpupgradeSettingsObject["host"] = host
+		httpupgradeSettingsObject["path"] = trojan.Path
+		streamSettingsObject["httpupgrade"] = httpupgradeSettingsObject
 	case "quic":
 		quicSettingsObject := make(map[string]interface{})
 		headerObject := make(map[string]interface{})
@@ -104,6 +111,7 @@ func getStreamSettingsObjectXray(trojan *Trojan) map[string]interface{} {
 		} else {
 			grpcSettingsObject["multiMode"] = false
 		}
+		grpcSettingsObject["authority"] = trojan.Host
 		grpcSettingsObject["serviceName"] = trojan.Path
 		streamSettingsObject["grpcSettings"] = grpcSettingsObject
 	}

@@ -89,13 +89,21 @@ func getStreamSettingsObjectXray(vless *VLESS) map[string]interface{} {
 		wsSettingsObject["headers"] = headersObject
 		wsSettingsObject["path"] = vless.Path
 		streamSettingsObject["wsSettings"] = wsSettingsObject
-	case "h2":
+	case "http", "h2":
 		httpSettingsObject := make(map[string]interface{})
 		var host []interface{}
 		host = append(host, vless.Host)
 		httpSettingsObject["host"] = host
 		httpSettingsObject["path"] = vless.Path
 		streamSettingsObject["httpSettings"] = httpSettingsObject
+	case "httpupgrade":
+		httpupgradeSettingsObject := make(map[string]interface{})
+		var host []interface{}
+		host = append(host, vless.Host)
+		httpupgradeSettingsObject["host"] = host
+		httpupgradeSettingsObject["path"] = vless.Path
+		streamSettingsObject["httpupgrade"] = httpupgradeSettingsObject
+
 	case "quic":
 		quicSettingsObject := make(map[string]interface{})
 		headerObject := make(map[string]interface{})
@@ -111,6 +119,7 @@ func getStreamSettingsObjectXray(vless *VLESS) map[string]interface{} {
 		} else {
 			grpcSettingsObject["multiMode"] = false
 		}
+		grpcSettingsObject["authority"] = vless.Host
 		grpcSettingsObject["serviceName"] = vless.Path
 		streamSettingsObject["grpcSettings"] = grpcSettingsObject
 	}

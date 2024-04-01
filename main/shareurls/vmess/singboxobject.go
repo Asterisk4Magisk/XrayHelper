@@ -28,7 +28,7 @@ func getVmessTlsObjectSingbox(vmess *Vmess) map[string]interface{} {
 func getVmessTransportObjectSingbox(vmess *Vmess) map[string]interface{} {
 	transportObject := make(map[string]interface{})
 	switch vmess.Network {
-	case "tcp", "h2":
+	case "tcp", "http", "h2":
 		transportObject["type"] = "http"
 		var host []interface{}
 		host = append(host, vmess.Host)

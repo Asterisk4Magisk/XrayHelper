@@ -41,7 +41,7 @@ func getVLESSTlsObjectSingbox(vless *VLESS) map[string]interface{} {
 func getVLESSTransportObjectSingbox(vless *VLESS) map[string]interface{} {
 	transportObject := make(map[string]interface{})
 	switch vless.Network {
-	case "tcp", "h2":
+	case "tcp", "http", "h2":
 		transportObject["type"] = "http"
 		var host []interface{}
 		host = append(host, vless.Host)

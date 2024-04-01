@@ -41,7 +41,7 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) map[string]interface{} {
 func getTrojanTransportObjectSingbox(trojan *Trojan) map[string]interface{} {
 	transportObject := make(map[string]interface{})
 	switch trojan.Network {
-	case "tcp", "h2":
+	case "tcp", "http", "h2":
 		transportObject["type"] = "http"
 		var host []interface{}
 		host = append(host, trojan.Host)
