@@ -13,7 +13,7 @@ xrayHelper:
     runDir: /data/adb/xray/run/
     # Required for xray/v2ray/sing-box, Default value: proxy, the replaced outbound object's tag when you use xrayhelper to switch proxy node
     proxyTag: proxy
-    # Optional, your subscribe url, support SIP002, SSR, v2rayNg, Hysteria standard share url
+    # Optional, your subscribe url, support SIP002, v2rayNg, Hysteria, Hysteria2 standard share url
     # and also support clash config url, but you need add a prefix "clash+"
     subList:
         - https://testsuburl.com

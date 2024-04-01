@@ -6,13 +6,15 @@ import (
 )
 
 const (
-	tagShareurl    = "shareurl"
-	socksPrefix    = "socks://"
-	ssPrefix       = "ss://"
-	vmessPrefix    = "vmess://"
-	vlessPrefix    = "vless://"
-	trojanPrefix   = "trojan://"
-	hysteriaPrefix = "hysteria://"
+	tagShareurl     = "shareurl"
+	socksPrefix     = "socks://"
+	ssPrefix        = "ss://"
+	vmessPrefix     = "vmess://"
+	vlessPrefix     = "vless://"
+	trojanPrefix    = "trojan://"
+	hysteriaPrefix  = "hysteria://"
+	hysteria2Prefix = "hysteria2://"
+	hy2Prefix       = "hy2://"
 )
 
 // ShareUrl implement this interface, that node can be converted to core OutoundObject
@@ -40,6 +42,9 @@ func Parse(link string) (ShareUrl, error) {
 	}
 	if strings.HasPrefix(link, hysteriaPrefix) {
 		return parseHysteria(link)
+	}
+	if strings.HasPrefix(link, hysteria2Prefix) || strings.HasPrefix(link, hy2Prefix) {
+		return parseHysteria2(link)
 	}
 	return nil, e.New("not a supported share link").WithPrefix(tagShareurl)
 }

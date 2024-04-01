@@ -4,6 +4,7 @@ import (
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/shareurls/hysteria"
+	"XrayHelper/main/shareurls/hysteria2"
 	"XrayHelper/main/shareurls/shadowsocks"
 	"XrayHelper/main/shareurls/socks"
 	"XrayHelper/main/shareurls/trojan"
@@ -460,6 +461,64 @@ func parseHysteria(hysteriaUrl string) (ShareUrl, error) {
 			return nil, e.New("multiple hysteria obfsParam").WithPrefix(tagParser)
 		} else {
 			ht.ObfsParam = obfsParam[0]
+		}
+	}
+	return ht, nil
+}
+
+// parseHysteria2 parse hysteria2 url
+func parseHysteria2(hysteria2Url string) (ShareUrl, error) {
+	ht := new(hysteria2.Hysteria2)
+	htParse, err := url.Parse(hysteria2Url)
+	if err != nil {
+		return nil, e.New("hysteria2 url parse err, ", err).WithPrefix(tagParser)
+	}
+	ht.Remarks = htParse.Fragment
+	ht.Host = htParse.Hostname()
+	ht.Port = htParse.Port()
+	ht.Auth = htParse.User.String()
+	htQuery, err := url.ParseQuery(htParse.RawQuery)
+	if err != nil {
+		return nil, e.New("hysteria2 url parse query err, ", err).WithPrefix(tagParser)
+	}
+	//parse hysteria2 obfs
+	if obfs, ok := htQuery["obfs"]; ok {
+		if len(obfs) > 1 {
+			return nil, e.New("multiple hysteria2 obfs").WithPrefix(tagParser)
+		} else {
+			ht.Obfs = obfs[0]
+		}
+	}
+	//parse hysteria2 obfs-password
+	if obfsPasswords, ok := htQuery["obfs-password"]; ok {
+		if len(obfsPasswords) > 1 {
+			return nil, e.New("multiple hysteria2 obfs-password").WithPrefix(tagParser)
+		} else {
+			ht.ObfsPassword = obfsPasswords[0]
+		}
+	}
+	//parse hysteria2 sni
+	if snis, ok := htQuery["sni"]; ok {
+		if len(snis) > 1 {
+			return nil, e.New("multiple hysteria2 sni").WithPrefix(tagParser)
+		} else {
+			ht.Sni = snis[0]
+		}
+	}
+	//parse hysteria2 insecure
+	if insecure, ok := htQuery["insecure"]; ok {
+		if len(insecure) > 1 {
+			return nil, e.New("multiple hysteria2 insecure").WithPrefix(tagParser)
+		} else {
+			ht.Insecure = insecure[0]
+		}
+	}
+	//parse hysteria2 pinSHA256
+	if pinSHA256s, ok := htQuery["pinSHA256"]; ok {
+		if len(pinSHA256s) > 1 {
+			return nil, e.New("multiple hysteria2 pinSHA256").WithPrefix(tagParser)
+		} else {
+			ht.PinSHA256 = pinSHA256s[0]
 		}
 	}
 	return ht, nil
