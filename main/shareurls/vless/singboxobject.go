@@ -9,7 +9,9 @@ func getVLESSTlsObjectSingbox(vless *VLESS) map[string]interface{} {
 	tlsObject := make(map[string]interface{})
 	if len(vless.Security) > 0 {
 		tlsObject["enabled"] = true
-		tlsObject["server_name"] = vless.Sni
+		if len(vless.Sni) > 0 {
+			tlsObject["server_name"] = vless.Sni
+		}
 		var alpn []interface{}
 		alpnSlice := strings.Split(vless.Alpn, ",")
 		for _, v := range alpnSlice {
@@ -18,12 +20,6 @@ func getVLESSTlsObjectSingbox(vless *VLESS) map[string]interface{} {
 				tlsObject["alpn"] = alpn
 			}
 		}
-		//utlsObject := make(map[string]interface{})
-		//if len(vless.FingerPrint) > 0 {
-		//	utlsObject["enabled"] = true
-		//	utlsObject["fingerprint"] = vless.FingerPrint
-		//	tlsObject["utls"] = utlsObject
-		//}
 		if vless.Security == "reality" {
 			realityObject := make(map[string]interface{})
 			realityObject["enabled"] = true
@@ -43,22 +39,40 @@ func getVLESSTransportObjectSingbox(vless *VLESS) map[string]interface{} {
 	switch vless.Network {
 	case "tcp", "http", "h2":
 		transportObject["type"] = "http"
-		var host []interface{}
-		host = append(host, vless.Host)
-		transportObject["host"] = host
-		transportObject["path"] = vless.Path
+		if len(vless.Host) > 0 {
+			var host []interface{}
+			host = append(host, vless.Host)
+			transportObject["host"] = host
+		}
+		if len(vless.Path) > 0 {
+			transportObject["path"] = vless.Path
+		}
 	case "ws":
 		transportObject["type"] = "ws"
-		transportObject["path"] = vless.Path
-		headersObject := make(map[string]interface{})
-		headersObject["Host"] = vless.Host
-		transportObject["headers"] = headersObject
+		if len(vless.Path) > 0 {
+			transportObject["path"] = vless.Path
+		}
+		if len(vless.Host) > 0 {
+			headersObject := make(map[string]interface{})
+			headersObject["Host"] = vless.Host
+			transportObject["headers"] = headersObject
+		}
 		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
 	case "quic":
 		transportObject["type"] = "quic"
 	case "grpc":
 		transportObject["type"] = "grpc"
-		transportObject["service_name"] = vless.Path
+		if len(vless.Path) > 0 {
+			transportObject["service_name"] = vless.Path
+		}
+	case "httpupgrade":
+		transportObject["type"] = "httpupgrade"
+		if len(vless.Host) > 0 {
+			transportObject["host"] = vless.Host
+		}
+		if len(vless.Path) > 0 {
+			transportObject["path"] = vless.Path
+		}
 	}
 	return transportObject
 }

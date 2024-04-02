@@ -9,7 +9,9 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) map[string]interface{} {
 	tlsObject := make(map[string]interface{})
 	if len(trojan.Security) > 0 {
 		tlsObject["enabled"] = true
-		tlsObject["server_name"] = trojan.Sni
+		if len(trojan.Sni) > 0 {
+			tlsObject["server_name"] = trojan.Sni
+		}
 		var alpn []interface{}
 		alpnSlice := strings.Split(trojan.Alpn, ",")
 		for _, v := range alpnSlice {
@@ -18,12 +20,6 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) map[string]interface{} {
 				tlsObject["alpn"] = alpn
 			}
 		}
-		//utlsObject := make(map[string]interface{})
-		//if len(trojan.FingerPrint) > 0 {
-		//	utlsObject["enabled"] = true
-		//	utlsObject["fingerprint"] = trojan.FingerPrint
-		//	tlsObject["utls"] = utlsObject
-		//}
 		if trojan.Security == "reality" {
 			realityObject := make(map[string]interface{})
 			realityObject["enabled"] = true
@@ -43,22 +39,40 @@ func getTrojanTransportObjectSingbox(trojan *Trojan) map[string]interface{} {
 	switch trojan.Network {
 	case "tcp", "http", "h2":
 		transportObject["type"] = "http"
-		var host []interface{}
-		host = append(host, trojan.Host)
-		transportObject["host"] = host
-		transportObject["path"] = trojan.Path
+		if len(trojan.Host) > 0 {
+			var host []interface{}
+			host = append(host, trojan.Host)
+			transportObject["host"] = host
+		}
+		if len(trojan.Path) > 0 {
+			transportObject["path"] = trojan.Path
+		}
 	case "ws":
 		transportObject["type"] = "ws"
-		transportObject["path"] = trojan.Path
-		headersObject := make(map[string]interface{})
-		headersObject["Host"] = trojan.Host
-		transportObject["headers"] = headersObject
+		if len(trojan.Path) > 0 {
+			transportObject["path"] = trojan.Path
+		}
+		if len(trojan.Host) > 0 {
+			headersObject := make(map[string]interface{})
+			headersObject["Host"] = trojan.Host
+			transportObject["headers"] = headersObject
+		}
 		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
 	case "quic":
 		transportObject["type"] = "quic"
 	case "grpc":
 		transportObject["type"] = "grpc"
-		transportObject["service_name"] = trojan.Path
+		if len(trojan.Path) > 0 {
+			transportObject["service_name"] = trojan.Path
+		}
+	case "httpupgrade":
+		transportObject["type"] = "httpupgrade"
+		if len(trojan.Host) > 0 {
+			transportObject["host"] = trojan.Host
+		}
+		if len(trojan.Path) > 0 {
+			transportObject["path"] = trojan.Path
+		}
 	}
 	return transportObject
 }
