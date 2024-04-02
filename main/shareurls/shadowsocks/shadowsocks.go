@@ -9,11 +9,13 @@ import (
 const tagShadowsocks = "shadowsocks"
 
 type Shadowsocks struct {
-	Remarks  string
-	Server   string
-	Port     string
-	Method   string
-	Password string
+	Remarks   string
+	Server    string
+	Port      string
+	Method    string
+	Password  string
+	Plugin    string
+	PluginOpt string
 }
 
 func (this *Shadowsocks) GetNodeInfo() string {
@@ -38,6 +40,12 @@ func (this *Shadowsocks) ToOutboundWithTag(coreType string, tag string) (interfa
 		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
 		outboundObject["method"] = this.Method
 		outboundObject["password"] = this.Password
+		if len(this.Plugin) > 0 {
+			outboundObject["plugin"] = this.Plugin
+		}
+		if len(this.PluginOpt) > 0 {
+			outboundObject["plugin_opts"] = this.PluginOpt
+		}
 		return outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagShadowsocks).WithPathObj(*this)

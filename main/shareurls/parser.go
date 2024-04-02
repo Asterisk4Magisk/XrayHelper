@@ -47,6 +47,16 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 		methodAndPassword := strings.Split(info, ":")
 		ss.Method = methodAndPassword[0]
 		ss.Password = methodAndPassword[1]
+		ssQuery, err := url.ParseQuery(ssParse.RawQuery)
+		if err != nil {
+			return nil, e.New("shadowsocks url parse query err, ", err).WithPrefix(tagParser)
+		}
+		//parse shadowsocks SIP003 plugin
+		if plugins, ok := ssQuery["plugin"]; ok && len(plugins) == 1 {
+			plugin := strings.Split(plugins[0], ";")
+			ss.Plugin = plugin[0]
+			ss.PluginOpt = strings.TrimPrefix(plugins[0], plugin[0]+";")
+		}
 	}
 	return ss, nil
 }
