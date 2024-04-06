@@ -2,6 +2,7 @@ package trojan
 
 import (
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"fmt"
 	"strconv"
 )
@@ -39,26 +40,27 @@ func (this *Trojan) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Trojan, Server: %+v, Port: %+v, Network: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Password)
 }
 
-func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {
 	switch coreType {
 	case "xray":
-		outboundObject := make(map[string]interface{})
-		outboundObject["mux"] = getMuxObjectXray(false)
-		outboundObject["protocol"] = "trojan"
-		outboundObject["settings"] = getTrojanSettingsObjectXray(this)
-		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
-		outboundObject["tag"] = tag
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("protocol", "trojan")
+		outboundObject.Set("settings", getTrojanSettingsObjectXray(this))
+		outboundObject.Set("streamSettings", getStreamSettingsObjectXray(this))
+		outboundObject.Set("tag", tag)
+		return &outboundObject, nil
 	case "sing-box":
-		outboundObject := make(map[string]interface{})
-		outboundObject["type"] = "trojan"
-		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Server
-		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
-		outboundObject["password"] = this.Password
-		outboundObject["tls"] = getTrojanTlsObjectSingbox(this)
-		outboundObject["transport"] = getTrojanTransportObjectSingbox(this)
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("type", "trojan")
+		outboundObject.Set("tag", tag)
+		outboundObject.Set("server", this.Server)
+		serverPort, _ := strconv.Atoi(this.Port)
+		outboundObject.Set("server_port", serverPort)
+		outboundObject.Set("password", this.Password)
+		outboundObject.Set("tls", getTrojanTlsObjectSingbox(this))
+		outboundObject.Set("transport", getTrojanTransportObjectSingbox(this))
+		return &outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagTrojan).WithPathObj(*this)
 	}

@@ -2,6 +2,7 @@ package vmess
 
 import (
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"fmt"
 	"strconv"
 	"strings"
@@ -38,31 +39,33 @@ func (this *Vmess) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Vmess, Server: %+v, Port: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
 }
 
-func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {
 	if version, _ := strconv.Atoi(string(this.Version)); version < 2 {
 		return nil, e.New("unsupported vmess share link version " + this.Version).WithPrefix(tagVmess).WithPathObj(*this)
 	}
 	switch coreType {
 	case "xray":
-		outboundObject := make(map[string]interface{})
-		outboundObject["mux"] = getMuxObjectXray(false)
-		outboundObject["protocol"] = "vmess"
-		outboundObject["settings"] = getVmessSettingsObjectXray(this)
-		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
-		outboundObject["tag"] = tag
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("protocol", "vmess")
+		outboundObject.Set("settings", getVmessSettingsObjectXray(this))
+		outboundObject.Set("streamSettings", getStreamSettingsObjectXray(this))
+		outboundObject.Set("tag", tag)
+		return &outboundObject, nil
 	case "sing-box":
-		outboundObject := make(map[string]interface{})
-		outboundObject["type"] = "vmess"
-		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Server
-		outboundObject["server_port"], _ = strconv.Atoi(string(this.Port))
-		outboundObject["uuid"] = this.Id
-		outboundObject["security"] = "auto"
-		outboundObject["alter_id"], _ = strconv.Atoi(string(this.AlterId))
-		outboundObject["tls"] = getVmessTlsObjectSingbox(this)
-		outboundObject["transport"] = getVmessTransportObjectSingbox(this)
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("type", "vmess")
+		outboundObject.Set("tag", tag)
+		outboundObject.Set("server", this.Server)
+		serverPort, _ := strconv.Atoi(string(this.Port))
+		outboundObject.Set("server_port", serverPort)
+		outboundObject.Set("uuid", this.Id)
+		outboundObject.Set("security", "auto")
+		alterId, _ := strconv.Atoi(string(this.AlterId))
+		outboundObject.Set("alter_id", alterId)
+		outboundObject.Set("tls", getVmessTlsObjectSingbox(this))
+		outboundObject.Set("transport", getVmessTransportObjectSingbox(this))
+		return &outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagVmess).WithPathObj(*this)
 	}

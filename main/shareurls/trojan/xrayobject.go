@@ -1,184 +1,186 @@
 package trojan
 
 import (
+	"XrayHelper/main/serial"
 	"strconv"
 	"strings"
 )
 
 // getMuxObjectXray get xray MuxObject
-func getMuxObjectXray(enabled bool) map[string]interface{} {
-	mux := make(map[string]interface{})
-	mux["enabled"] = enabled
+func getMuxObjectXray(enabled bool) serial.OrderedMap {
+	var mux serial.OrderedMap
+	mux.Set("enabled", enabled)
 	return mux
 }
 
 // getTrojanSettingsObjectXray get xray Trojan SettingsObject
-func getTrojanSettingsObjectXray(trojan *Trojan) map[string]interface{} {
-	var serversObject []interface{}
-	server := make(map[string]interface{})
-	server["address"] = trojan.Server
-	server["port"], _ = strconv.Atoi(trojan.Port)
-	server["password"] = trojan.Password
-	server["level"] = 0
-	serversObject = append(serversObject, server)
+func getTrojanSettingsObjectXray(trojan *Trojan) serial.OrderedMap {
+	var serverArray serial.OrderedArray
+	var server serial.OrderedMap
+	server.Set("address", trojan.Server)
+	port, _ := strconv.Atoi(trojan.Port)
+	server.Set("port", port)
+	server.Set("password", trojan.Password)
+	server.Set("level", 0)
+	serverArray = append(serverArray, server)
 
-	settingsObject := make(map[string]interface{})
-	settingsObject["servers"] = serversObject
+	var settingsObject serial.OrderedMap
+	settingsObject.Set("servers", serverArray)
 	return settingsObject
 }
 
 // getStreamSettingsObjectXray get xray StreamSettingsObject
-func getStreamSettingsObjectXray(trojan *Trojan) map[string]interface{} {
-	streamSettingsObject := make(map[string]interface{})
-	streamSettingsObject["network"] = trojan.Network
+func getStreamSettingsObjectXray(trojan *Trojan) serial.OrderedMap {
+	var streamSettingsObject serial.OrderedMap
+	streamSettingsObject.Set("network", trojan.Network)
 	switch trojan.Network {
 	case "tcp":
-		tcpSettingsObject := make(map[string]interface{})
-		headerObject := make(map[string]interface{})
+		var tcpSettingsObject serial.OrderedMap
+		var headerObject serial.OrderedMap
 		switch trojan.Type {
 		case "http":
-			headerObject["type"] = trojan.Type
+			headerObject.Set("type", trojan.Type)
 			if len(trojan.Host) > 0 {
-				requestObject := make(map[string]interface{})
-				headers := make(map[string]interface{})
-				var host []interface{}
+				var requestObject serial.OrderedMap
+				var headers serial.OrderedMap
+				var host serial.OrderedArray
 				host = append(host, trojan.Host)
-				var connection []interface{}
+				var connection serial.OrderedArray
 				connection = append(connection, "keep-alive")
-				var acceptEncoding []interface{}
+				var acceptEncoding serial.OrderedArray
 				acceptEncoding = append(acceptEncoding, "gzip, deflate")
-				var userAgent []interface{}
+				var userAgent serial.OrderedArray
 				userAgent = append(userAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
 					"Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Mobile/15E148 Safari/604.1")
-				headers["Host"] = host
-				headers["Connection"] = connection
-				headers["Pragma"] = "no-cache"
-				headers["Accept-Encoding"] = acceptEncoding
-				headers["User-Agent"] = userAgent
-				requestObject["headers"] = headers
-				headerObject["request"] = requestObject
+				headers.Set("Host", host)
+				headers.Set("Connection", connection)
+				headers.Set("Pragma", "no-cache")
+				headers.Set("Accept-Encoding", acceptEncoding)
+				headers.Set("User-Agent", userAgent)
+				requestObject.Set("headers", headers)
+				headerObject.Set("request", requestObject)
 			}
 		default:
-			headerObject["type"] = "none"
+			headerObject.Set("type", "none")
 		}
-		tcpSettingsObject["header"] = headerObject
-		streamSettingsObject["tcpSettings"] = tcpSettingsObject
+		tcpSettingsObject.Set("header", headerObject)
+		streamSettingsObject.Set("tcpSettings", tcpSettingsObject)
 	case "kcp":
-		kcpSettingsObject := make(map[string]interface{})
+		var kcpSettingsObject serial.OrderedMap
 		if len(trojan.Type) > 0 {
-			headerObject := make(map[string]interface{})
-			headerObject["type"] = trojan.Type
-			kcpSettingsObject["header"] = headerObject
+			var headerObject serial.OrderedMap
+			headerObject.Set("type", trojan.Type)
+			kcpSettingsObject.Set("header", headerObject)
 		}
-		kcpSettingsObject["congestion"] = false
-		kcpSettingsObject["downlinkCapacity"] = 100
-		kcpSettingsObject["mtu"] = 1350
-		kcpSettingsObject["readBufferSize"] = 1
+		kcpSettingsObject.Set("congestion", false)
+		kcpSettingsObject.Set("downlinkCapacity", 100)
+		kcpSettingsObject.Set("mtu", 1350)
+		kcpSettingsObject.Set("readBufferSize", 1)
 		if len(trojan.Path) > 0 {
-			kcpSettingsObject["seed"] = trojan.Path
+			kcpSettingsObject.Set("seed", trojan.Path)
 		}
-		kcpSettingsObject["tti"] = 50
-		kcpSettingsObject["uplinkCapacity"] = 12
-		kcpSettingsObject["writeBufferSize"] = 1
-		streamSettingsObject["kcpSettings"] = kcpSettingsObject
+		kcpSettingsObject.Set("tti", 50)
+		kcpSettingsObject.Set("uplinkCapacity", 12)
+		kcpSettingsObject.Set("writeBufferSize", 1)
+		streamSettingsObject.Set("kcpSettings", kcpSettingsObject)
 	case "ws":
-		wsSettingsObject := make(map[string]interface{})
+		var wsSettingsObject serial.OrderedMap
 		if len(trojan.Host) > 0 {
-			headersObject := make(map[string]interface{})
-			headersObject["Host"] = trojan.Host
-			wsSettingsObject["headers"] = headersObject
+			var headersObject serial.OrderedMap
+			headersObject.Set("Host", trojan.Host)
+			wsSettingsObject.Set("headers", headersObject)
 		}
 		if len(trojan.Path) > 0 {
-			wsSettingsObject["path"] = trojan.Path
+			wsSettingsObject.Set("path", trojan.Path)
 		}
-		streamSettingsObject["wsSettings"] = wsSettingsObject
+		streamSettingsObject.Set("wsSettings", wsSettingsObject)
 	case "http", "h2":
-		httpSettingsObject := make(map[string]interface{})
+		var httpSettingsObject serial.OrderedMap
 		if len(trojan.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, trojan.Host)
-			httpSettingsObject["host"] = host
+			httpSettingsObject.Set("host", host)
 		}
 		if len(trojan.Path) > 0 {
-			httpSettingsObject["path"] = trojan.Path
+			httpSettingsObject.Set("path", trojan.Path)
 		}
-		streamSettingsObject["httpSettings"] = httpSettingsObject
+		streamSettingsObject.Set("httpSettings", httpSettingsObject)
 	case "httpupgrade":
-		httpupgradeSettingsObject := make(map[string]interface{})
+		var httpupgradeSettingsObject serial.OrderedMap
 		if len(trojan.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, trojan.Host)
-			httpupgradeSettingsObject["host"] = host
+			httpupgradeSettingsObject.Set("host", host)
 		}
 		if len(trojan.Path) > 0 {
-			httpupgradeSettingsObject["path"] = trojan.Path
+			httpupgradeSettingsObject.Set("path", trojan.Path)
 		}
-		streamSettingsObject["httpupgrade"] = httpupgradeSettingsObject
+		streamSettingsObject.Set("httpupgrade", httpupgradeSettingsObject)
 	case "quic":
-		quicSettingsObject := make(map[string]interface{})
+		var quicSettingsObject serial.OrderedMap
 		if len(trojan.Type) > 0 {
-			headerObject := make(map[string]interface{})
-			headerObject["type"] = trojan.Type
-			quicSettingsObject["header"] = headerObject
+			var headerObject serial.OrderedMap
+			headerObject.Set("type", trojan.Type)
+			quicSettingsObject.Set("header", headerObject)
 		}
 		if len(trojan.Path) > 0 {
-			quicSettingsObject["key"] = trojan.Path
+			quicSettingsObject.Set("key", trojan.Path)
 		}
 		if len(trojan.Host) > 0 {
-			quicSettingsObject["security"] = trojan.Host
+			quicSettingsObject.Set("security", trojan.Host)
 		}
-		streamSettingsObject["quicSettings"] = quicSettingsObject
+		streamSettingsObject.Set("quicSettings", quicSettingsObject)
 	case "grpc":
-		grpcSettingsObject := make(map[string]interface{})
+		var grpcSettingsObject serial.OrderedMap
 		if trojan.Type == "multi" {
-			grpcSettingsObject["multiMode"] = true
+			grpcSettingsObject.Set("multiMode", true)
 		} else {
-			grpcSettingsObject["multiMode"] = false
+			grpcSettingsObject.Set("multiMode", false)
 		}
 		if len(trojan.Host) > 0 {
-			grpcSettingsObject["authority"] = trojan.Host
+			grpcSettingsObject.Set("authority", trojan.Host)
 		}
 		if len(trojan.Path) > 0 {
-			grpcSettingsObject["serviceName"] = trojan.Path
+			grpcSettingsObject.Set("serviceName", trojan.Path)
 		}
-		streamSettingsObject["grpcSettings"] = grpcSettingsObject
+		streamSettingsObject.Set("grpcSettings", grpcSettingsObject)
 	}
-	streamSettingsObject["security"] = trojan.Security
+	streamSettingsObject.Set("security", trojan.Security)
 	switch trojan.Security {
 	case "tls":
-		tlsSettingsObject := make(map[string]interface{})
-		var alpn []interface{}
+		var tlsSettingsObject serial.OrderedMap
+		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(trojan.Alpn, ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
-				tlsSettingsObject["alpn"] = alpn
+				tlsSettingsObject.Set("alpn", alpn)
 			}
 		}
-		tlsSettingsObject["allowInsecure"] = false
+		tlsSettingsObject.Set("allowInsecure", false)
 		if len(trojan.FingerPrint) > 0 {
-			tlsSettingsObject["fingerprint"] = trojan.FingerPrint
+			tlsSettingsObject.Set("fingerprint", trojan.FingerPrint)
 		}
 		if len(trojan.Sni) > 0 {
-			tlsSettingsObject["serverName"] = trojan.Sni
+			tlsSettingsObject.Set("serverName", trojan.Sni)
 		}
-		streamSettingsObject["tlsSettings"] = tlsSettingsObject
+		streamSettingsObject.Set("tlsSettings", tlsSettingsObject)
 	case "reality":
-		realitySettingsObject := make(map[string]interface{})
-		realitySettingsObject["allowInsecure"] = false
+		var realitySettingsObject serial.OrderedMap
+		realitySettingsObject.Set("allowInsecure", false)
 		if len(trojan.FingerPrint) > 0 {
-			realitySettingsObject["fingerprint"] = trojan.FingerPrint
+			realitySettingsObject.Set("fingerprint", trojan.FingerPrint)
 		}
 		if len(trojan.Sni) > 0 {
-			realitySettingsObject["serverName"] = trojan.Sni
+			realitySettingsObject.Set("serverName", trojan.Sni)
 		}
-		realitySettingsObject["publicKey"] = trojan.PublicKey
-		realitySettingsObject["shortId"] = trojan.ShortId
-		realitySettingsObject["spiderX"] = trojan.SpiderX
-		streamSettingsObject["realitySettings"] = realitySettingsObject
+		realitySettingsObject.Set("publicKey", trojan.PublicKey)
+		realitySettingsObject.Set("shortId", trojan.ShortId)
+		realitySettingsObject.Set("spiderX", trojan.SpiderX)
+		streamSettingsObject.Set("realitySettings", realitySettingsObject)
 	}
-	sockoptObject := make(map[string]interface{})
-	sockoptObject["domainStrategy"] = "UseIP"
-	streamSettingsObject["sockopt"] = sockoptObject
+	var sockoptObject serial.OrderedMap
+	sockoptObject.Set("domainStrategy", "UseIP")
+	streamSettingsObject.Set("sockopt", sockoptObject)
 	return streamSettingsObject
 }

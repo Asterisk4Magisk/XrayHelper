@@ -1,77 +1,78 @@
 package vless
 
 import (
+	"XrayHelper/main/serial"
 	"strings"
 )
 
 // getVLESSTlsObjectSingbox get sing-box VLESS tls Object
-func getVLESSTlsObjectSingbox(vless *VLESS) map[string]interface{} {
-	tlsObject := make(map[string]interface{})
+func getVLESSTlsObjectSingbox(vless *VLESS) serial.OrderedMap {
+	var tlsObject serial.OrderedMap
 	if len(vless.Security) > 0 {
-		tlsObject["enabled"] = true
+		tlsObject.Set("enabled", true)
 		if len(vless.Sni) > 0 {
-			tlsObject["server_name"] = vless.Sni
+			tlsObject.Set("server_name", vless.Sni)
 		}
-		var alpn []interface{}
+		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(vless.Alpn, ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
-				tlsObject["alpn"] = alpn
+				tlsObject.Set("alpn", alpn)
 			}
 		}
 		if vless.Security == "reality" {
-			realityObject := make(map[string]interface{})
-			realityObject["enabled"] = true
-			realityObject["public_key"] = vless.PublicKey
-			realityObject["short_id"] = vless.ShortId
-			tlsObject["reality"] = realityObject
+			var realityObject serial.OrderedMap
+			realityObject.Set("enabled", true)
+			realityObject.Set("public_key", vless.PublicKey)
+			realityObject.Set("short_id", vless.ShortId)
+			tlsObject.Set("reality", realityObject)
 		}
 	} else {
-		tlsObject["enabled"] = false
+		tlsObject.Set("enabled", false)
 	}
 	return tlsObject
 }
 
 // getVLESSTransportObjectSingbox get sing-box VLESS transport Object
-func getVLESSTransportObjectSingbox(vless *VLESS) map[string]interface{} {
-	transportObject := make(map[string]interface{})
+func getVLESSTransportObjectSingbox(vless *VLESS) serial.OrderedMap {
+	var transportObject serial.OrderedMap
 	switch vless.Network {
 	case "tcp", "http", "h2":
-		transportObject["type"] = "http"
+		transportObject.Set("type", "http")
 		if len(vless.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, vless.Host)
-			transportObject["host"] = host
+			transportObject.Set("host", host)
 		}
 		if len(vless.Path) > 0 {
-			transportObject["path"] = vless.Path
+			transportObject.Set("path", vless.Path)
 		}
 	case "ws":
-		transportObject["type"] = "ws"
+		transportObject.Set("type", "ws")
 		if len(vless.Path) > 0 {
-			transportObject["path"] = vless.Path
+			transportObject.Set("path", vless.Path)
 		}
 		if len(vless.Host) > 0 {
-			headersObject := make(map[string]interface{})
-			headersObject["Host"] = vless.Host
-			transportObject["headers"] = headersObject
+			var headersObject serial.OrderedMap
+			headersObject.Set("Host", vless.Host)
+			transportObject.Set("headers", headersObject)
 		}
-		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
+		transportObject.Set("early_data_header_name", "Sec-WebSocket-Protocol")
 	case "quic":
-		transportObject["type"] = "quic"
+		transportObject.Set("type", "quic")
 	case "grpc":
-		transportObject["type"] = "grpc"
+		transportObject.Set("type", "grpc")
 		if len(vless.Path) > 0 {
-			transportObject["service_name"] = vless.Path
+			transportObject.Set("service_name", vless.Path)
 		}
 	case "httpupgrade":
-		transportObject["type"] = "httpupgrade"
+		transportObject.Set("type", "httpupgrade")
 		if len(vless.Host) > 0 {
-			transportObject["host"] = vless.Host
+			transportObject.Set("host", vless.Host)
 		}
 		if len(vless.Path) > 0 {
-			transportObject["path"] = vless.Path
+			transportObject.Set("path", vless.Path)
 		}
 	}
 	return transportObject

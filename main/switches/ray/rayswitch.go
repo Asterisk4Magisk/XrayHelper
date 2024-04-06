@@ -4,11 +4,11 @@ import (
 	"XrayHelper/main/builds"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"XrayHelper/main/serial"
 	"XrayHelper/main/shareurls"
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/tailscale/hujson"
 	"os"
 	"path"
 	"strings"
@@ -126,48 +126,38 @@ func printProxyNode() {
 }
 
 func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
-	// standardize origin json (remove comment)
-	standardize, err := hujson.Standardize(conf)
-	if err != nil {
-		return nil, e.New("standardize config json failed, ", err).WithPrefix(tagRayswitch)
-	}
 	// unmarshal
-	var jsonValue interface{}
-	err = json.Unmarshal(standardize, &jsonValue)
+	var jsonMap serial.OrderedMap
+	err = json.Unmarshal(conf, &jsonMap)
 	if err != nil {
 		return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
 	}
-	// assert json to map
-	jsonMap, ok := jsonValue.(map[string]interface{})
-	if !ok {
-		return nil, e.New("assert config json to map failed").WithPrefix(tagRayswitch)
-	}
-	outbounds, ok := jsonMap["outbounds"]
+	outbounds, ok := jsonMap.Get("outbounds")
 	if !ok {
 		return nil, e.New("cannot find outbounds").WithPrefix(tagRayswitch)
 	}
 	// assert outbounds
-	outboundsMap, ok := outbounds.([]interface{})
+	outboundArray, ok := outbounds.Value.(serial.OrderedArray)
 	if !ok {
-		return nil, e.New("assert outbounds to []interface failed").WithPrefix(tagRayswitch)
+		return nil, e.New("assert outbounds to serial.OrderedArray failed").WithPrefix(tagRayswitch)
 	}
-	for i, outbound := range outboundsMap {
-		outboundMap, ok := outbound.(map[string]interface{})
+	for i, outbound := range outboundArray {
+		outboundMap, ok := outbound.(serial.OrderedMap)
 		if !ok {
 			continue
 		}
-		tag, ok := outboundMap["tag"].(string)
+		tag, ok := outboundMap.Get("tag")
 		if !ok {
 			continue
 		}
-		if tag == builds.Config.XrayHelper.ProxyTag {
+		if tag.Value == builds.Config.XrayHelper.ProxyTag {
 			// replace
 			outbound, err = shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
 			if err != nil {
 				return nil, err
 			}
-			outboundsMap[i] = outbound
-			jsonMap["outbounds"] = outboundsMap
+			outboundArray[i] = outbound
+			jsonMap.Set("outbounds", outboundArray)
 			// marshal
 			marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 			if err != nil {

@@ -1,8 +1,9 @@
 package hysteria_test
 
 import (
-	"XrayHelper/main/log"
 	"XrayHelper/main/shareurls"
+	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -13,5 +14,8 @@ func TestHysteria(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	log.HandleInfo(hysteriaShareUrl.GetNodeInfo())
+	tag, err := hysteriaShareUrl.ToOutboundWithTag("sing-box", "proxy")
+	indent, err := json.MarshalIndent(tag, "", "    ")
+	fmt.Println(hysteriaShareUrl.GetNodeInfo())
+	fmt.Println(string(indent))
 }

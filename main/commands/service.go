@@ -5,8 +5,8 @@ import (
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"XrayHelper/main/serial"
 	"encoding/json"
-	"github.com/tailscale/hujson"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
@@ -236,55 +236,45 @@ func handleRayDNS(ipv6 bool) error {
 }
 
 func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
-	// standardize origin json (remove comment)
-	standardize, err := hujson.Standardize(conf)
-	if err != nil {
-		return nil, e.New("standardize config json failed, ", err).WithPrefix(tagService)
-	}
 	// unmarshal
-	var jsonValue interface{}
-	err = json.Unmarshal(standardize, &jsonValue)
+	var jsonMap serial.OrderedMap
+	err = json.Unmarshal(conf, &jsonMap)
 	if err != nil {
 		return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagService)
 	}
-	// assert json to map
-	jsonMap, ok := jsonValue.(map[string]interface{})
-	if !ok {
-		return nil, e.New("assert config json to map failed").WithPrefix(tagService)
-	}
-	dns, ok := jsonMap["dns"]
+	dns, ok := jsonMap.Get("dns")
 	if !ok {
 		return nil, e.New("cannot find dns object from your core config").WithPrefix(tagService)
 	}
 	// assert dns
-	dnsMap, ok := dns.(map[string]interface{})
+	dnsMap, ok := dns.Value.(serial.OrderedMap)
 	if !ok {
 		return nil, e.New("assert dns to map failed").WithPrefix(tagService)
 	}
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
 		if ipv6 {
-			dnsMap["queryStrategy"] = "UseIP"
+			dnsMap.Set("queryStrategy", "UseIP")
 		} else {
-			dnsMap["queryStrategy"] = "UseIPv4"
+			dnsMap.Set("queryStrategy", "UseIPv4")
 		}
 	case "v2ray":
 		if ipv6 {
-			dnsMap["queryStrategy"] = "USE_IP"
+			dnsMap.Set("queryStrategy", "USE_IP")
 		} else {
-			dnsMap["queryStrategy"] = "USE_IP4"
+			dnsMap.Set("queryStrategy", "USE_IP4")
 		}
 	case "sing-box":
 		if ipv6 {
-			dnsMap["strategy"] = "prefer_ipv4"
+			dnsMap.Set("strategy", "prefer_ipv4")
 		} else {
-			dnsMap["strategy"] = "ipv4_only"
+			dnsMap.Set("strategy", "ipv4_only")
 		}
 	default:
 		return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
 	}
 	// replace
-	jsonMap["dns"] = dnsMap
+	jsonMap.Set("dns", dnsMap)
 	// marshal
 	marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 	if err != nil {
@@ -302,57 +292,48 @@ func overrideClashConfig(template string, target string) error {
 	if err != nil {
 		return e.New("load clash config failed, ", err).WithPrefix(tagService)
 	}
-	var targetYamlValue interface{}
-	if err := yaml.Unmarshal(targetFile, &targetYamlValue); err != nil {
+	var targetYamlMap serial.OrderedMap
+	if err := yaml.Unmarshal(targetFile, &targetYamlMap); err != nil {
 		return e.New("unmarshal clash config failed, ", err).WithPrefix(tagService)
 	}
-	targetYamlMap, ok := targetYamlValue.(map[string]interface{})
-	if !ok {
-		return e.New("assert clash config to map failed").WithPrefix(tagService)
-	}
 	// delete origin config
-	delete(targetYamlMap, "port")
-	delete(targetYamlMap, "socks-port")
-	delete(targetYamlMap, "redir-port")
-	delete(targetYamlMap, "tproxy-port")
-	delete(targetYamlMap, "mixed-port")
-	delete(targetYamlMap, "authentication")
-	delete(targetYamlMap, "external-controller")
-	delete(targetYamlMap, "external-ui")
-	delete(targetYamlMap, "secret")
-	delete(targetYamlMap, "allow-lan")
-	delete(targetYamlMap, "bind-address")
-	delete(targetYamlMap, "tun")
+	targetYamlMap.Delete("port")
+	targetYamlMap.Delete("socks-port")
+	targetYamlMap.Delete("redir-port")
+	targetYamlMap.Delete("tproxy-port")
+	targetYamlMap.Delete("mixed-port")
+	targetYamlMap.Delete("authentication")
+	targetYamlMap.Delete("external-controller")
+	targetYamlMap.Delete("external-ui")
+	targetYamlMap.Delete("secret")
+	targetYamlMap.Delete("allow-lan")
+	targetYamlMap.Delete("bind-address")
+	targetYamlMap.Delete("tun")
 	// mihomo
-	delete(targetYamlMap, "ebpf")
-	delete(targetYamlMap, "sniffer")
-	delete(targetYamlMap, "external-controller-tls")
-	delete(targetYamlMap, "tls")
-	delete(targetYamlMap, "experimental")
+	targetYamlMap.Delete("ebpf")
+	targetYamlMap.Delete("sniffer")
+	targetYamlMap.Delete("external-controller-tls")
+	targetYamlMap.Delete("tls")
+	targetYamlMap.Delete("experimental")
 	// open template config and replace target value with it
 	templateFile, err := os.ReadFile(template)
 	if err != nil {
 		return e.New("load clash template config failed, ", err).WithPrefix(tagService)
 	}
-	var templateYamlValue interface{}
-	if err := yaml.Unmarshal(templateFile, &templateYamlValue); err != nil {
+	var templateYamlMap serial.OrderedMap
+	if err := yaml.Unmarshal(templateFile, &templateYamlMap); err != nil {
 		return e.New("unmarshal clash template config failed, ", err).WithPrefix(tagService)
-	}
-	templateYamlMap, ok := templateYamlValue.(map[string]interface{})
-	if !ok {
-		return e.New("assert clash template config to map failed").WithPrefix(tagService)
-	}
-	// if enable AutoDNSStrategy
+	} // if enable AutoDNSStrategy
 	if builds.Config.Proxy.AutoDNSStrategy {
-		templateYamlMap["ipv6"] = builds.Config.Proxy.EnableIPv6
-		dns, ok := templateYamlMap["dns"]
+		templateYamlMap.Set("ipv6", builds.Config.Proxy.EnableIPv6)
+		dns, ok := templateYamlMap.Get("dns")
 		if ok {
 			// assert dns
-			dnsMap, ok := dns.(map[string]interface{})
+			dnsMap, ok := dns.Value.(serial.OrderedMap)
 			if ok {
-				dnsMap["listen"] = "127.0.0.1:" + builds.Config.Clash.DNSPort
+				dnsMap.Set("listen", "127.0.0.1:"+builds.Config.Clash.DNSPort)
 			}
-			templateYamlMap["dns"] = dnsMap
+			templateYamlMap.Set("dns", dnsMap)
 		}
 	}
 	// save template
@@ -365,8 +346,8 @@ func overrideClashConfig(template string, target string) error {
 		return e.New("write clash template config failed, ", err).WithPrefix(tagService)
 	}
 	// replace target
-	for key, value := range templateYamlMap {
-		targetYamlMap[key] = value
+	for _, val := range templateYamlMap.Values {
+		targetYamlMap.Set(val.Key, val.Value)
 	}
 	// save target
 	marshal, err = yaml.Marshal(targetYamlMap)

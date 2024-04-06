@@ -1,191 +1,193 @@
 package vless
 
 import (
+	"XrayHelper/main/serial"
 	"strconv"
 	"strings"
 )
 
 // getMuxObjectXray get xray MuxObject
-func getMuxObjectXray(enabled bool) map[string]interface{} {
-	mux := make(map[string]interface{})
-	mux["enabled"] = enabled
+func getMuxObjectXray(enabled bool) serial.OrderedMap {
+	var mux serial.OrderedMap
+	mux.Set("enabled", enabled)
 	return mux
 }
 
 // getVLESSSettingsObjectXray get xray VLESS SettingsObject
-func getVLESSSettingsObjectXray(vless *VLESS) map[string]interface{} {
-	var vnextsObject []interface{}
-	vnext := make(map[string]interface{})
-	vnext["address"] = vless.Server
-	vnext["port"], _ = strconv.Atoi(vless.Port)
+func getVLESSSettingsObjectXray(vless *VLESS) serial.OrderedMap {
+	var vnextArray serial.OrderedArray
+	var vnext serial.OrderedMap
+	vnext.Set("address", vless.Server)
+	port, _ := strconv.Atoi(vless.Port)
+	vnext.Set("port", port)
 
-	var usersObject []interface{}
-	user := make(map[string]interface{})
-	user["id"] = vless.Id
-	user["flow"] = vless.Flow
-	user["encryption"] = vless.Encryption
-	user["level"] = 0
-	usersObject = append(usersObject, user)
+	var userArray serial.OrderedArray
+	var user serial.OrderedMap
+	user.Set("id", vless.Id)
+	user.Set("flow", vless.Flow)
+	user.Set("encryption", vless.Encryption)
+	user.Set("level", 0)
+	userArray = append(userArray, user)
 
-	vnext["users"] = usersObject
-	vnextsObject = append(vnextsObject, vnext)
-	settingsObject := make(map[string]interface{})
-	settingsObject["vnext"] = vnextsObject
+	vnext.Set("users", userArray)
+	vnextArray = append(vnextArray, vnext)
+	var settingsObject serial.OrderedMap
+	settingsObject.Set("vnext", vnextArray)
 	return settingsObject
 }
 
 // getStreamSettingsObjectXray get xray StreamSettingsObject
-func getStreamSettingsObjectXray(vless *VLESS) map[string]interface{} {
-	streamSettingsObject := make(map[string]interface{})
-	streamSettingsObject["network"] = vless.Network
+func getStreamSettingsObjectXray(vless *VLESS) serial.OrderedMap {
+	var streamSettingsObject serial.OrderedMap
+	streamSettingsObject.Set("network", vless.Network)
 	switch vless.Network {
 	case "tcp":
-		tcpSettingsObject := make(map[string]interface{})
-		headerObject := make(map[string]interface{})
+		var tcpSettingsObject serial.OrderedMap
+		var headerObject serial.OrderedMap
 		switch vless.Type {
 		case "http":
-			headerObject["type"] = vless.Type
+			headerObject.Set("type", vless.Type)
 			if len(vless.Host) > 0 {
-				requestObject := make(map[string]interface{})
-				headers := make(map[string]interface{})
-				var host []interface{}
+				var requestObject serial.OrderedMap
+				var headers serial.OrderedMap
+				var host serial.OrderedArray
 				host = append(host, vless.Host)
-				var connection []interface{}
+				var connection serial.OrderedArray
 				connection = append(connection, "keep-alive")
-				var acceptEncoding []interface{}
+				var acceptEncoding serial.OrderedArray
 				acceptEncoding = append(acceptEncoding, "gzip, deflate")
-				var userAgent []interface{}
+				var userAgent serial.OrderedArray
 				userAgent = append(userAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
 					"Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Mobile/15E148 Safari/604.1")
-				headers["Host"] = host
-				headers["Connection"] = connection
-				headers["Pragma"] = "no-cache"
-				headers["Accept-Encoding"] = acceptEncoding
-				headers["User-Agent"] = userAgent
-				requestObject["headers"] = headers
-				headerObject["request"] = requestObject
+				headers.Set("Host", host)
+				headers.Set("Connection", connection)
+				headers.Set("Pragma", "no-cache")
+				headers.Set("Accept-Encoding", acceptEncoding)
+				headers.Set("User-Agent", userAgent)
+				requestObject.Set("headers", headers)
+				headerObject.Set("request", requestObject)
 			}
 		default:
-			headerObject["type"] = "none"
+			headerObject.Set("type", "none")
 		}
-		tcpSettingsObject["header"] = headerObject
-		streamSettingsObject["tcpSettings"] = tcpSettingsObject
+		tcpSettingsObject.Set("header", headerObject)
+		streamSettingsObject.Set("tcpSettings", tcpSettingsObject)
 	case "kcp":
-		kcpSettingsObject := make(map[string]interface{})
+		var kcpSettingsObject serial.OrderedMap
 		if len(vless.Type) > 0 {
-			headerObject := make(map[string]interface{})
-			headerObject["type"] = vless.Type
-			kcpSettingsObject["header"] = headerObject
+			var headerObject serial.OrderedMap
+			headerObject.Set("type", vless.Type)
+			kcpSettingsObject.Set("header", headerObject)
 		}
-		kcpSettingsObject["congestion"] = false
-		kcpSettingsObject["downlinkCapacity"] = 100
-		kcpSettingsObject["mtu"] = 1350
-		kcpSettingsObject["readBufferSize"] = 1
+		kcpSettingsObject.Set("congestion", false)
+		kcpSettingsObject.Set("downlinkCapacity", 100)
+		kcpSettingsObject.Set("mtu", 1350)
+		kcpSettingsObject.Set("readBufferSize", 1)
 		if len(vless.Path) > 0 {
-			kcpSettingsObject["seed"] = vless.Path
+			kcpSettingsObject.Set("seed", vless.Path)
 		}
-		kcpSettingsObject["tti"] = 50
-		kcpSettingsObject["uplinkCapacity"] = 12
-		kcpSettingsObject["writeBufferSize"] = 1
-		streamSettingsObject["kcpSettings"] = kcpSettingsObject
+		kcpSettingsObject.Set("tti", 50)
+		kcpSettingsObject.Set("uplinkCapacity", 12)
+		kcpSettingsObject.Set("writeBufferSize", 1)
+		streamSettingsObject.Set("kcpSettings", kcpSettingsObject)
 	case "ws":
-		wsSettingsObject := make(map[string]interface{})
+		var wsSettingsObject serial.OrderedMap
 		if len(vless.Host) > 0 {
-			headersObject := make(map[string]interface{})
-			headersObject["Host"] = vless.Host
-			wsSettingsObject["headers"] = headersObject
+			var headersObject serial.OrderedMap
+			headersObject.Set("Host", vless.Host)
+			wsSettingsObject.Set("headers", headersObject)
 		}
 		if len(vless.Path) > 0 {
-			wsSettingsObject["path"] = vless.Path
+			wsSettingsObject.Set("path", vless.Path)
 		}
-		streamSettingsObject["wsSettings"] = wsSettingsObject
+		streamSettingsObject.Set("wsSettings", wsSettingsObject)
 	case "http", "h2":
-		httpSettingsObject := make(map[string]interface{})
+		var httpSettingsObject serial.OrderedMap
 		if len(vless.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, vless.Host)
-			httpSettingsObject["host"] = host
+			httpSettingsObject.Set("host", host)
 		}
 		if len(vless.Path) > 0 {
-			httpSettingsObject["path"] = vless.Path
+			httpSettingsObject.Set("path", vless.Path)
 		}
-		streamSettingsObject["httpSettings"] = httpSettingsObject
+		streamSettingsObject.Set("httpSettings", httpSettingsObject)
 	case "httpupgrade":
-		httpupgradeSettingsObject := make(map[string]interface{})
+		var httpupgradeSettingsObject serial.OrderedMap
 		if len(vless.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, vless.Host)
-			httpupgradeSettingsObject["host"] = host
+			httpupgradeSettingsObject.Set("host", host)
 		}
 		if len(vless.Path) > 0 {
-			httpupgradeSettingsObject["path"] = vless.Path
+			httpupgradeSettingsObject.Set("path", vless.Path)
 		}
-		streamSettingsObject["httpupgrade"] = httpupgradeSettingsObject
+		streamSettingsObject.Set("httpupgrade", httpupgradeSettingsObject)
 	case "quic":
-		quicSettingsObject := make(map[string]interface{})
+		var quicSettingsObject serial.OrderedMap
 		if len(vless.Type) > 0 {
-			headerObject := make(map[string]interface{})
-			headerObject["type"] = vless.Type
-			quicSettingsObject["header"] = headerObject
+			var headerObject serial.OrderedMap
+			headerObject.Set("type", vless.Type)
+			quicSettingsObject.Set("header", headerObject)
 		}
 		if len(vless.Path) > 0 {
-			quicSettingsObject["key"] = vless.Path
+			quicSettingsObject.Set("key", vless.Path)
 		}
 		if len(vless.Host) > 0 {
-			quicSettingsObject["security"] = vless.Host
+			quicSettingsObject.Set("security", vless.Host)
 		}
-		streamSettingsObject["quicSettings"] = quicSettingsObject
+		streamSettingsObject.Set("quicSettings", quicSettingsObject)
 	case "grpc":
-		grpcSettingsObject := make(map[string]interface{})
+		var grpcSettingsObject serial.OrderedMap
 		if vless.Type == "multi" {
-			grpcSettingsObject["multiMode"] = true
+			grpcSettingsObject.Set("multiMode", true)
 		} else {
-			grpcSettingsObject["multiMode"] = false
+			grpcSettingsObject.Set("multiMode", false)
 		}
 		if len(vless.Host) > 0 {
-			grpcSettingsObject["authority"] = vless.Host
+			grpcSettingsObject.Set("authority", vless.Host)
 		}
 		if len(vless.Path) > 0 {
-			grpcSettingsObject["serviceName"] = vless.Path
+			grpcSettingsObject.Set("serviceName", vless.Path)
 		}
-		streamSettingsObject["grpcSettings"] = grpcSettingsObject
+		streamSettingsObject.Set("grpcSettings", grpcSettingsObject)
 	}
-	streamSettingsObject["security"] = vless.Security
+	streamSettingsObject.Set("security", vless.Security)
 	switch vless.Security {
 	case "tls":
-		tlsSettingsObject := make(map[string]interface{})
-		var alpn []interface{}
+		var tlsSettingsObject serial.OrderedMap
+		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(vless.Alpn, ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
-				tlsSettingsObject["alpn"] = alpn
+				tlsSettingsObject.Set("alpn", alpn)
 			}
 		}
-		tlsSettingsObject["allowInsecure"] = false
+		tlsSettingsObject.Set("allowInsecure", false)
 		if len(vless.FingerPrint) > 0 {
-			tlsSettingsObject["fingerprint"] = vless.FingerPrint
+			tlsSettingsObject.Set("fingerprint", vless.FingerPrint)
 		}
 		if len(vless.Sni) > 0 {
-			tlsSettingsObject["serverName"] = vless.Sni
+			tlsSettingsObject.Set("serverName", vless.Sni)
 		}
-		streamSettingsObject["tlsSettings"] = tlsSettingsObject
+		streamSettingsObject.Set("tlsSettings", tlsSettingsObject)
 	case "reality":
-		realitySettingsObject := make(map[string]interface{})
-		realitySettingsObject["allowInsecure"] = false
+		var realitySettingsObject serial.OrderedMap
+		realitySettingsObject.Set("allowInsecure", false)
 		if len(vless.FingerPrint) > 0 {
-			realitySettingsObject["fingerprint"] = vless.FingerPrint
+			realitySettingsObject.Set("fingerprint", vless.FingerPrint)
 		}
 		if len(vless.Sni) > 0 {
-			realitySettingsObject["serverName"] = vless.Sni
+			realitySettingsObject.Set("serverName", vless.Sni)
 		}
-		realitySettingsObject["publicKey"] = vless.PublicKey
-		realitySettingsObject["shortId"] = vless.ShortId
-		realitySettingsObject["spiderX"] = vless.SpiderX
-		streamSettingsObject["realitySettings"] = realitySettingsObject
+		realitySettingsObject.Set("publicKey", vless.PublicKey)
+		realitySettingsObject.Set("shortId", vless.ShortId)
+		realitySettingsObject.Set("spiderX", vless.SpiderX)
+		streamSettingsObject.Set("realitySettings", realitySettingsObject)
 	}
-	sockoptObject := make(map[string]interface{})
-	sockoptObject["domainStrategy"] = "UseIP"
-	streamSettingsObject["sockopt"] = sockoptObject
+	var sockoptObject serial.OrderedMap
+	sockoptObject.Set("domainStrategy", "UseIP")
+	streamSettingsObject.Set("sockopt", sockoptObject)
 	return streamSettingsObject
 }

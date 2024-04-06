@@ -2,6 +2,7 @@ package hysteria2
 
 import (
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"fmt"
 	"strconv"
 )
@@ -24,20 +25,21 @@ func (this *Hysteria2) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Hysteria2, Server: %+v, Port: %+v, Auth: %+v, Obfs: %+v, ObfsPassword: %+v, PinSHA256: %+v", this.Remarks, this.Host, this.Port, this.Auth, this.Obfs, this.ObfsPassword, this.PinSHA256)
 }
 
-func (this *Hysteria2) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Hysteria2) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {
 	switch coreType {
 	case "xray":
 		return nil, e.New("xray core not support hysteria2").WithPrefix(tagHysteria2).WithPathObj(*this)
 	case "sing-box":
-		outboundObject := make(map[string]interface{})
-		outboundObject["type"] = "hysteria2"
-		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Host
-		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
-		outboundObject["obfs"] = getHysteria2ObfsObjectSingbox(this)
-		outboundObject["users"] = getHysteria2UsersObjectSingbox(this)
-		outboundObject["tls"] = getHysteriaTlsObjectSingbox(this)
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("type", "hysteria2")
+		outboundObject.Set("tag", tag)
+		outboundObject.Set("server", this.Host)
+		port, _ := strconv.Atoi(this.Port)
+		outboundObject.Set("server_port", port)
+		outboundObject.Set("obfs", getHysteria2ObfsObjectSingbox(this))
+		outboundObject.Set("users", getHysteria2UsersObjectSingbox(this))
+		outboundObject.Set("tls", getHysteriaTlsObjectSingbox(this))
+		return &outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagHysteria2).WithPathObj(*this)
 	}

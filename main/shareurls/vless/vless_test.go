@@ -1,8 +1,9 @@
 package vless_test
 
 import (
-	"XrayHelper/main/log"
 	"XrayHelper/main/shareurls"
+	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -13,5 +14,8 @@ func TestVLESS(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	log.HandleInfo(vlessShareUrl.GetNodeInfo())
+	fmt.Println(vlessShareUrl.GetNodeInfo())
+	tag, err := vlessShareUrl.ToOutboundWithTag("xray", "proxy")
+	indent, err := json.MarshalIndent(tag, "", "    ")
+	fmt.Println(string(indent))
 }

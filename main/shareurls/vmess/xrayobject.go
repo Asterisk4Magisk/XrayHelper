@@ -1,177 +1,180 @@
 package vmess
 
 import (
+	"XrayHelper/main/serial"
 	"strconv"
 	"strings"
 )
 
 // getMuxObjectXray get xray MuxObject
-func getMuxObjectXray(enabled bool) map[string]interface{} {
-	mux := make(map[string]interface{})
-	mux["enabled"] = enabled
+func getMuxObjectXray(enabled bool) serial.OrderedMap {
+	var mux serial.OrderedMap
+	mux.Set("enabled", enabled)
 	return mux
 }
 
 // getVmessSettingsObjectXray get xray Vmess SettingsObject
-func getVmessSettingsObjectXray(vmess *Vmess) map[string]interface{} {
-	var vnextsObject []interface{}
-	vnext := make(map[string]interface{})
-	vnext["address"] = vmess.Server
-	vnext["port"], _ = strconv.Atoi(string(vmess.Port))
+func getVmessSettingsObjectXray(vmess *Vmess) serial.OrderedMap {
+	var vnextArray serial.OrderedArray
+	var vnext serial.OrderedMap
+	vnext.Set("address", vmess.Server)
+	port, _ := strconv.Atoi(string(vmess.Port))
+	vnext.Set("port", port)
 
-	var usersObject []interface{}
-	user := make(map[string]interface{})
-	user["id"] = vmess.Id
-	user["alterId"], _ = strconv.Atoi(string(vmess.AlterId))
-	user["security"] = vmess.Security
-	user["level"] = 0
-	usersObject = append(usersObject, user)
+	var userArray serial.OrderedArray
+	var user serial.OrderedMap
+	user.Set("id", vmess.Id)
+	alterId, _ := strconv.Atoi(string(vmess.AlterId))
+	user.Set("alterId", alterId)
+	user.Set("security", vmess.Security)
+	user.Set("level", 0)
+	userArray = append(userArray, user)
 
-	vnext["users"] = usersObject
-	vnextsObject = append(vnextsObject, vnext)
-	settingsObject := make(map[string]interface{})
-	settingsObject["vnext"] = vnextsObject
+	vnext.Set("users", userArray)
+	vnextArray = append(vnextArray, vnext)
+	var settingsObject serial.OrderedMap
+	settingsObject.Set("vnext", vnextArray)
 	return settingsObject
 }
 
 // getStreamSettingsObjectXray get xray StreamSettingsObject
-func getStreamSettingsObjectXray(vmess *Vmess) map[string]interface{} {
-	streamSettingsObject := make(map[string]interface{})
-	streamSettingsObject["network"] = vmess.Network
+func getStreamSettingsObjectXray(vmess *Vmess) serial.OrderedMap {
+	var streamSettingsObject serial.OrderedMap
+	streamSettingsObject.Set("network", vmess.Network)
 	switch vmess.Network {
 	case "tcp":
-		tcpSettingsObject := make(map[string]interface{})
-		headerObject := make(map[string]interface{})
+		var tcpSettingsObject serial.OrderedMap
+		var headerObject serial.OrderedMap
 		switch vmess.Type {
 		case "http":
-			headerObject["type"] = vmess.Type
+			headerObject.Set("type", vmess.Type)
 			if len(vmess.Host) > 0 {
-				requestObject := make(map[string]interface{})
-				headers := make(map[string]interface{})
-				var host []interface{}
+				var requestObject serial.OrderedMap
+				var headers serial.OrderedMap
+				var host serial.OrderedArray
 				host = append(host, vmess.Host)
-				var connection []interface{}
+				var connection serial.OrderedArray
 				connection = append(connection, "keep-alive")
-				var acceptEncoding []interface{}
+				var acceptEncoding serial.OrderedArray
 				acceptEncoding = append(acceptEncoding, "gzip, deflate")
-				var userAgent []interface{}
+				var userAgent serial.OrderedArray
 				userAgent = append(userAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
 					"Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Mobile/15E148 Safari/604.1")
-				headers["Host"] = host
-				headers["Connection"] = connection
-				headers["Pragma"] = "no-cache"
-				headers["Accept-Encoding"] = acceptEncoding
-				headers["User-Agent"] = userAgent
-				requestObject["headers"] = headers
-				headerObject["request"] = requestObject
+				headers.Set("Host", host)
+				headers.Set("Connection", connection)
+				headers.Set("Pragma", "no-cache")
+				headers.Set("Accept-Encoding", acceptEncoding)
+				headers.Set("User-Agent", userAgent)
+				requestObject.Set("headers", headers)
+				headerObject.Set("request", requestObject)
 			}
 		default:
-			headerObject["type"] = "none"
+			headerObject.Set("type", "none")
 		}
-		tcpSettingsObject["header"] = headerObject
-		streamSettingsObject["tcpSettings"] = tcpSettingsObject
+		tcpSettingsObject.Set("header", headerObject)
+		streamSettingsObject.Set("tcpSettings", tcpSettingsObject)
 	case "kcp":
-		kcpSettingsObject := make(map[string]interface{})
+		var kcpSettingsObject serial.OrderedMap
 		if len(vmess.Type) > 0 {
-			headerObject := make(map[string]interface{})
-			headerObject["type"] = vmess.Type
-			kcpSettingsObject["header"] = headerObject
+			var headerObject serial.OrderedMap
+			headerObject.Set("type", vmess.Type)
+			kcpSettingsObject.Set("header", headerObject)
 		}
-		kcpSettingsObject["congestion"] = false
-		kcpSettingsObject["downlinkCapacity"] = 100
-		kcpSettingsObject["mtu"] = 1350
-		kcpSettingsObject["readBufferSize"] = 1
+		kcpSettingsObject.Set("congestion", false)
+		kcpSettingsObject.Set("downlinkCapacity", 100)
+		kcpSettingsObject.Set("mtu", 1350)
+		kcpSettingsObject.Set("readBufferSize", 1)
 		if len(vmess.Path) > 0 {
-			kcpSettingsObject["seed"] = vmess.Path
+			kcpSettingsObject.Set("seed", vmess.Path)
 		}
-		kcpSettingsObject["tti"] = 50
-		kcpSettingsObject["uplinkCapacity"] = 12
-		kcpSettingsObject["writeBufferSize"] = 1
-		streamSettingsObject["kcpSettings"] = kcpSettingsObject
+		kcpSettingsObject.Set("tti", 50)
+		kcpSettingsObject.Set("uplinkCapacity", 12)
+		kcpSettingsObject.Set("writeBufferSize", 1)
+		streamSettingsObject.Set("kcpSettings", kcpSettingsObject)
 	case "ws":
-		wsSettingsObject := make(map[string]interface{})
+		var wsSettingsObject serial.OrderedMap
 		if len(vmess.Host) > 0 {
-			headersObject := make(map[string]interface{})
-			headersObject["Host"] = vmess.Host
-			wsSettingsObject["headers"] = headersObject
+			var headersObject serial.OrderedMap
+			headersObject.Set("Host", vmess.Host)
+			wsSettingsObject.Set("headers", headersObject)
 		}
 		if len(vmess.Path) > 0 {
-			wsSettingsObject["path"] = vmess.Path
+			wsSettingsObject.Set("path", vmess.Path)
 		}
-		streamSettingsObject["wsSettings"] = wsSettingsObject
+		streamSettingsObject.Set("wsSettings", wsSettingsObject)
 	case "http", "h2":
-		httpSettingsObject := make(map[string]interface{})
+		var httpSettingsObject serial.OrderedMap
 		if len(vmess.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, vmess.Host)
-			httpSettingsObject["host"] = host
+			httpSettingsObject.Set("host", host)
 		}
 		if len(vmess.Path) > 0 {
-			httpSettingsObject["path"] = vmess.Path
+			httpSettingsObject.Set("path", vmess.Path)
 		}
-		streamSettingsObject["httpSettings"] = httpSettingsObject
+		streamSettingsObject.Set("httpSettings", httpSettingsObject)
 	case "httpupgrade":
-		httpupgradeSettingsObject := make(map[string]interface{})
+		var httpupgradeSettingsObject serial.OrderedMap
 		if len(vmess.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, vmess.Host)
-			httpupgradeSettingsObject["host"] = host
+			httpupgradeSettingsObject.Set("host", host)
 		}
 		if len(vmess.Path) > 0 {
-			httpupgradeSettingsObject["path"] = vmess.Path
+			httpupgradeSettingsObject.Set("path", vmess.Path)
 		}
-		streamSettingsObject["httpupgrade"] = httpupgradeSettingsObject
+		streamSettingsObject.Set("httpupgrade", httpupgradeSettingsObject)
 	case "quic":
-		quicSettingsObject := make(map[string]interface{})
+		var quicSettingsObject serial.OrderedMap
 		if len(vmess.Type) > 0 {
-			headerObject := make(map[string]interface{})
-			headerObject["type"] = vmess.Type
-			quicSettingsObject["header"] = headerObject
+			var headerObject serial.OrderedMap
+			headerObject.Set("type", vmess.Type)
+			quicSettingsObject.Set("header", headerObject)
 		}
 		if len(vmess.Path) > 0 {
-			quicSettingsObject["key"] = vmess.Path
+			quicSettingsObject.Set("key", vmess.Path)
 		}
 		if len(vmess.Host) > 0 {
-			quicSettingsObject["security"] = vmess.Host
+			quicSettingsObject.Set("security", vmess.Host)
 		}
-		streamSettingsObject["quicSettings"] = quicSettingsObject
+		streamSettingsObject.Set("quicSettings", quicSettingsObject)
 	case "grpc":
-		grpcSettingsObject := make(map[string]interface{})
+		var grpcSettingsObject serial.OrderedMap
 		if vmess.Type == "multi" {
-			grpcSettingsObject["multiMode"] = true
+			grpcSettingsObject.Set("multiMode", true)
 		} else {
-			grpcSettingsObject["multiMode"] = false
+			grpcSettingsObject.Set("multiMode", false)
 		}
 		if len(vmess.Host) > 0 {
-			grpcSettingsObject["authority"] = vmess.Host
+			grpcSettingsObject.Set("authority", vmess.Host)
 		}
 		if len(vmess.Path) > 0 {
-			grpcSettingsObject["serviceName"] = vmess.Path
+			grpcSettingsObject.Set("serviceName", vmess.Path)
 		}
-		streamSettingsObject["grpcSettings"] = grpcSettingsObject
+		streamSettingsObject.Set("grpcSettings", grpcSettingsObject)
 	}
-	streamSettingsObject["security"] = vmess.Tls
+	streamSettingsObject.Set("security", vmess.Tls)
 	if len(vmess.Tls) > 0 {
-		tlsSettingsObject := make(map[string]interface{})
-		var alpn []interface{}
+		var tlsSettingsObject serial.OrderedMap
+		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(string(vmess.Alpn), ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
-				tlsSettingsObject["alpn"] = alpn
+				tlsSettingsObject.Set("alpn", alpn)
 			}
 		}
-		tlsSettingsObject["allowInsecure"] = false
+		tlsSettingsObject.Set("allowInsecure", false)
 		if len(vmess.FingerPrint) > 0 {
-			tlsSettingsObject["fingerprint"] = vmess.FingerPrint
+			tlsSettingsObject.Set("fingerprint", vmess.FingerPrint)
 		}
 		if len(vmess.Sni) > 0 {
-			tlsSettingsObject["serverName"] = vmess.Sni
+			tlsSettingsObject.Set("serverName", vmess.Sni)
 		}
-		streamSettingsObject["tlsSettings"] = tlsSettingsObject
+		streamSettingsObject.Set("tlsSettings", tlsSettingsObject)
 	}
-	sockoptObject := make(map[string]interface{})
-	sockoptObject["domainStrategy"] = "UseIP"
-	streamSettingsObject["sockopt"] = sockoptObject
+	var sockoptObject serial.OrderedMap
+	sockoptObject.Set("domainStrategy", "UseIP")
+	streamSettingsObject.Set("sockopt", sockoptObject)
 	return streamSettingsObject
 }

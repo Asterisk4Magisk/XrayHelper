@@ -2,6 +2,7 @@ package vless
 
 import (
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"fmt"
 	"strconv"
 )
@@ -41,27 +42,28 @@ func (this *VLESS) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: VLESS, Server: %+v, Port: %+v, Flow: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Flow, this.Network, this.Id)
 }
 
-func (this *VLESS) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *VLESS) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {
 	switch coreType {
 	case "xray":
-		outboundObject := make(map[string]interface{})
-		outboundObject["mux"] = getMuxObjectXray(false)
-		outboundObject["protocol"] = "vless"
-		outboundObject["settings"] = getVLESSSettingsObjectXray(this)
-		outboundObject["streamSettings"] = getStreamSettingsObjectXray(this)
-		outboundObject["tag"] = tag
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("protocol", "vless")
+		outboundObject.Set("settings", getVLESSSettingsObjectXray(this))
+		outboundObject.Set("streamSettings", getStreamSettingsObjectXray(this))
+		outboundObject.Set("tag", tag)
+		return &outboundObject, nil
 	case "sing-box":
-		outboundObject := make(map[string]interface{})
-		outboundObject["type"] = "vless"
-		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Server
-		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
-		outboundObject["uuid"] = this.Id
-		outboundObject["flow"] = this.Flow
-		outboundObject["tls"] = getVLESSTlsObjectSingbox(this)
-		outboundObject["transport"] = getVLESSTransportObjectSingbox(this)
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("type", "vless")
+		outboundObject.Set("tag", tag)
+		outboundObject.Set("server", this.Server)
+		serverPort, _ := strconv.Atoi(this.Port)
+		outboundObject.Set("server_port", serverPort)
+		outboundObject.Set("uuid", this.Id)
+		outboundObject.Set("flow", this.Flow)
+		outboundObject.Set("tls", getVLESSTlsObjectSingbox(this))
+		outboundObject.Set("transport", getVLESSTransportObjectSingbox(this))
+		return &outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagVless).WithPathObj(*this)
 	}

@@ -1,8 +1,9 @@
 package trojan_test
 
 import (
-	"XrayHelper/main/log"
 	"XrayHelper/main/shareurls"
+	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -13,5 +14,8 @@ func TestTrojan(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	log.HandleInfo(trojanShareUrl.GetNodeInfo())
+	fmt.Println(trojanShareUrl.GetNodeInfo())
+	tag, err := trojanShareUrl.ToOutboundWithTag("xray", "proxy")
+	indent, err := json.MarshalIndent(tag, "", "    ")
+	fmt.Println(string(indent))
 }

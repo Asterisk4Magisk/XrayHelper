@@ -2,6 +2,7 @@ package socks
 
 import (
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"fmt"
 	"strconv"
 )
@@ -20,27 +21,28 @@ func (this *Socks) GetNodeInfo() string {
 	return fmt.Sprintf("Remarks: %+v, Type: Socks, Server: %+v, Port: %+v, User: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.User, this.Password)
 }
 
-func (this *Socks) ToOutboundWithTag(coreType string, tag string) (interface{}, error) {
+func (this *Socks) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {
 	switch coreType {
 	case "xray":
-		outboundObject := make(map[string]interface{})
-		outboundObject["mux"] = getMuxObjectXray(false)
-		outboundObject["protocol"] = "socks"
-		outboundObject["settings"] = getSocksSettingsObjectXray(this)
-		outboundObject["streamSettings"] = getStreamSettingsObjectXray("tcp")
-		outboundObject["tag"] = tag
-		return outboundObject, nil
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("protocol", "socks")
+		outboundObject.Set("settings", getSocksSettingsObjectXray(this))
+		outboundObject.Set("streamSettings", getStreamSettingsObjectXray("tcp"))
+		outboundObject.Set("tag", tag)
+		return &outboundObject, nil
 	case "sing-box":
-		outboundObject := make(map[string]interface{})
-		outboundObject["type"] = "socks"
-		outboundObject["tag"] = tag
-		outboundObject["server"] = this.Server
-		outboundObject["server_port"], _ = strconv.Atoi(this.Port)
+		var outboundObject serial.OrderedMap
+		outboundObject.Set("type", "socks")
+		outboundObject.Set("tag", tag)
+		outboundObject.Set("server", this.Server)
+		serverPort, _ := strconv.Atoi(this.Port)
+		outboundObject.Set("server_port", serverPort)
 		if this.User != "null" {
-			outboundObject["username"] = this.User
-			outboundObject["password"] = this.Password
+			outboundObject.Set("username", this.User)
+			outboundObject.Set("password", this.Password)
 		}
-		return outboundObject, nil
+		return &outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagSocks).WithPathObj(*this)
 	}

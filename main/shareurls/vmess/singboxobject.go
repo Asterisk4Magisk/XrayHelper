@@ -1,70 +1,71 @@
 package vmess
 
 import (
+	"XrayHelper/main/serial"
 	"strings"
 )
 
 // getVmessTlsObjectSingbox get sing-box Vmess tls Object
-func getVmessTlsObjectSingbox(vmess *Vmess) map[string]interface{} {
-	tlsObject := make(map[string]interface{})
+func getVmessTlsObjectSingbox(vmess *Vmess) serial.OrderedMap {
+	var tlsObject serial.OrderedMap
 	if len(vmess.Tls) > 0 {
-		tlsObject["enabled"] = true
+		tlsObject.Set("enabled", true)
 		if len(vmess.Sni) > 0 {
-			tlsObject["server_name"] = vmess.Sni
+			tlsObject.Set("server_name", vmess.Sni)
 		}
-		var alpn []interface{}
+		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(string(vmess.Alpn), ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
-				tlsObject["alpn"] = alpn
+				tlsObject.Set("alpn", alpn)
 			}
 		}
 	} else {
-		tlsObject["enabled"] = false
+		tlsObject.Set("enabled", false)
 	}
 	return tlsObject
 }
 
 // getVmessTransportObjectSingbox get sing-box Vmess transport Object
-func getVmessTransportObjectSingbox(vmess *Vmess) map[string]interface{} {
-	transportObject := make(map[string]interface{})
+func getVmessTransportObjectSingbox(vmess *Vmess) serial.OrderedMap {
+	var transportObject serial.OrderedMap
 	switch vmess.Network {
 	case "tcp", "http", "h2":
-		transportObject["type"] = "http"
+		transportObject.Set("type", "http")
 		if len(vmess.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, vmess.Host)
-			transportObject["host"] = host
+			transportObject.Set("host", host)
 		}
 		if len(vmess.Path) > 0 {
-			transportObject["path"] = vmess.Path
+			transportObject.Set("path", vmess.Path)
 		}
 	case "ws":
-		transportObject["type"] = "ws"
+		transportObject.Set("type", "ws")
 		if len(vmess.Path) > 0 {
-			transportObject["path"] = vmess.Path
+			transportObject.Set("path", vmess.Path)
 		}
 		if len(vmess.Host) > 0 {
-			headersObject := make(map[string]interface{})
-			headersObject["Host"] = vmess.Host
-			transportObject["headers"] = headersObject
+			var headersObject serial.OrderedMap
+			headersObject.Set("Host", vmess.Host)
+			transportObject.Set("headers", headersObject)
 		}
-		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
+		transportObject.Set("early_data_header_name", "Sec-WebSocket-Protocol")
 	case "quic":
-		transportObject["type"] = "quic"
+		transportObject.Set("type", "quic")
 	case "grpc":
-		transportObject["type"] = "grpc"
+		transportObject.Set("type", "grpc")
 		if len(vmess.Path) > 0 {
-			transportObject["service_name"] = vmess.Path
+			transportObject.Set("service_name", vmess.Path)
 		}
 	case "httpupgrade":
-		transportObject["type"] = "httpupgrade"
+		transportObject.Set("type", "httpupgrade")
 		if len(vmess.Host) > 0 {
-			transportObject["host"] = vmess.Host
+			transportObject.Set("host", vmess.Host)
 		}
 		if len(vmess.Path) > 0 {
-			transportObject["path"] = vmess.Path
+			transportObject.Set("path", vmess.Path)
 		}
 	}
 	return transportObject

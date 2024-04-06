@@ -1,37 +1,41 @@
 package shadowsocks
 
-import "strconv"
+import (
+	"XrayHelper/main/serial"
+	"strconv"
+)
 
 // getMuxObjectXray get xray MuxObject
-func getMuxObjectXray(enabled bool) map[string]interface{} {
-	mux := make(map[string]interface{})
-	mux["enabled"] = enabled
+func getMuxObjectXray(enabled bool) serial.OrderedMap {
+	var mux serial.OrderedMap
+	mux.Set("enabled", enabled)
 	return mux
 }
 
 // getStreamSettingsObjectXray get xray StreamSettingsObject
-func getStreamSettingsObjectXray(network string) map[string]interface{} {
-	sockoptObject := make(map[string]interface{})
-	sockoptObject["domainStrategy"] = "UseIP"
+func getStreamSettingsObjectXray(network string) serial.OrderedMap {
+	var sockoptObject serial.OrderedMap
+	sockoptObject.Set("domainStrategy", "UseIP")
 
-	streamSettingsObject := make(map[string]interface{})
-	streamSettingsObject["network"] = network
-	streamSettingsObject["sockopt"] = sockoptObject
+	var streamSettingsObject serial.OrderedMap
+	streamSettingsObject.Set("network", network)
+	streamSettingsObject.Set("sockopt", sockoptObject)
 	return streamSettingsObject
 }
 
 // getShadowsocksSettingsObjectXray get xray Shadowsocks SettingsObject
-func getShadowsocksSettingsObjectXray(ss *Shadowsocks) map[string]interface{} {
-	var serversObject []interface{}
-	server := make(map[string]interface{})
-	server["address"] = ss.Server
-	server["port"], _ = strconv.Atoi(ss.Port)
-	server["method"] = ss.Method
-	server["password"] = ss.Password
-	server["level"] = 0
-	serversObject = append(serversObject, server)
+func getShadowsocksSettingsObjectXray(ss *Shadowsocks) serial.OrderedMap {
+	var serverArray serial.OrderedArray
+	var server serial.OrderedMap
+	server.Set("address", ss.Server)
+	port, _ := strconv.Atoi(ss.Port)
+	server.Set("port", port)
+	server.Set("method", ss.Method)
+	server.Set("password", ss.Password)
+	server.Set("level", 0)
+	serverArray = append(serverArray, server)
 
-	settingsObject := make(map[string]interface{})
-	settingsObject["servers"] = serversObject
+	var settingsObject serial.OrderedMap
+	settingsObject.Set("servers", serverArray)
 	return settingsObject
 }

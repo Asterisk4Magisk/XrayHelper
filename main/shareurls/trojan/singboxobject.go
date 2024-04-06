@@ -1,77 +1,78 @@
 package trojan
 
 import (
+	"XrayHelper/main/serial"
 	"strings"
 )
 
 // getTrojanTlsObjectSingbox get sing-box Trojan tls Object
-func getTrojanTlsObjectSingbox(trojan *Trojan) map[string]interface{} {
-	tlsObject := make(map[string]interface{})
+func getTrojanTlsObjectSingbox(trojan *Trojan) serial.OrderedMap {
+	var tlsObject serial.OrderedMap
 	if len(trojan.Security) > 0 {
-		tlsObject["enabled"] = true
+		tlsObject.Set("enabled", true)
 		if len(trojan.Sni) > 0 {
-			tlsObject["server_name"] = trojan.Sni
+			tlsObject.Set("server_name", trojan.Sni)
 		}
-		var alpn []interface{}
+		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(trojan.Alpn, ",")
 		for _, v := range alpnSlice {
 			if len(v) > 0 {
 				alpn = append(alpn, v)
-				tlsObject["alpn"] = alpn
+				tlsObject.Set("alpn", alpn)
 			}
 		}
 		if trojan.Security == "reality" {
-			realityObject := make(map[string]interface{})
-			realityObject["enabled"] = true
-			realityObject["public_key"] = trojan.PublicKey
-			realityObject["short_id"] = trojan.ShortId
-			tlsObject["reality"] = realityObject
+			var realityObject serial.OrderedMap
+			realityObject.Set("enabled", true)
+			realityObject.Set("public_key", trojan.PublicKey)
+			realityObject.Set("short_id", trojan.ShortId)
+			tlsObject.Set("reality", realityObject)
 		}
 	} else {
-		tlsObject["enabled"] = false
+		tlsObject.Set("enabled", false)
 	}
 	return tlsObject
 }
 
 // getTrojanTransportObjectSingbox get sing-box Trojan transport Object
-func getTrojanTransportObjectSingbox(trojan *Trojan) map[string]interface{} {
-	transportObject := make(map[string]interface{})
+func getTrojanTransportObjectSingbox(trojan *Trojan) serial.OrderedMap {
+	var transportObject serial.OrderedMap
 	switch trojan.Network {
 	case "tcp", "http", "h2":
-		transportObject["type"] = "http"
+		transportObject.Set("type", "http")
 		if len(trojan.Host) > 0 {
-			var host []interface{}
+			var host serial.OrderedArray
 			host = append(host, trojan.Host)
-			transportObject["host"] = host
+			transportObject.Set("host", host)
 		}
 		if len(trojan.Path) > 0 {
-			transportObject["path"] = trojan.Path
+			transportObject.Set("path", trojan.Path)
 		}
 	case "ws":
-		transportObject["type"] = "ws"
+		transportObject.Set("type", "ws")
 		if len(trojan.Path) > 0 {
-			transportObject["path"] = trojan.Path
+			transportObject.Set("path", trojan.Path)
 		}
 		if len(trojan.Host) > 0 {
-			headersObject := make(map[string]interface{})
-			headersObject["Host"] = trojan.Host
-			transportObject["headers"] = headersObject
+			var headersObject serial.OrderedMap
+			headersObject.Set("Host", trojan.Host)
+			transportObject.Set("headers", headersObject)
 		}
-		transportObject["early_data_header_name"] = "Sec-WebSocket-Protocol"
+		transportObject.Set("early_data_header_name", "Sec-WebSocket-Protocol")
 	case "quic":
-		transportObject["type"] = "quic"
+		transportObject.Set("type", "quic")
 	case "grpc":
-		transportObject["type"] = "grpc"
+		transportObject.Set("type", "grpc")
 		if len(trojan.Path) > 0 {
-			transportObject["service_name"] = trojan.Path
+			transportObject.Set("service_name", trojan.Path)
 		}
 	case "httpupgrade":
-		transportObject["type"] = "httpupgrade"
+		transportObject.Set("type", "httpupgrade")
 		if len(trojan.Host) > 0 {
-			transportObject["host"] = trojan.Host
+			transportObject.Set("host", trojan.Host)
 		}
 		if len(trojan.Path) > 0 {
-			transportObject["path"] = trojan.Path
+			transportObject.Set("path", trojan.Path)
 		}
 	}
 	return transportObject

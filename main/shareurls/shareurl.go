@@ -2,6 +2,7 @@ package shareurls
 
 import (
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"strings"
 )
 
@@ -20,7 +21,7 @@ const (
 // ShareUrl implement this interface, that node can be converted to core OutoundObject
 type ShareUrl interface {
 	GetNodeInfo() string
-	ToOutboundWithTag(coreType string, tag string) (interface{}, error)
+	ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error)
 }
 
 // Parse return a ShareUrl

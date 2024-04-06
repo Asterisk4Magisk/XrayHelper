@@ -1,8 +1,9 @@
 package socks_test
 
 import (
-	"XrayHelper/main/log"
 	"XrayHelper/main/shareurls"
+	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -13,5 +14,8 @@ func TestSocks(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	log.HandleInfo(socksShareUrl.GetNodeInfo())
+	fmt.Println(socksShareUrl.GetNodeInfo())
+	tag, err := socksShareUrl.ToOutboundWithTag("xray", "proxy")
+	indent, err := json.MarshalIndent(tag, "", "    ")
+	fmt.Println(string(indent))
 }

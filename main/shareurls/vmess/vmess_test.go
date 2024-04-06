@@ -1,8 +1,9 @@
 package vmess_test
 
 import (
-	"XrayHelper/main/log"
 	"XrayHelper/main/shareurls"
+	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -13,5 +14,8 @@ func TestVmess(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	log.HandleInfo(vmessShareUrl.GetNodeInfo())
+	fmt.Println(vmessShareUrl.GetNodeInfo())
+	tag, err := vmessShareUrl.ToOutboundWithTag("xray", "proxy")
+	indent, err := json.MarshalIndent(tag, "", "    ")
+	fmt.Println(string(indent))
 }
