@@ -140,9 +140,8 @@ func deleteRoute(ipv6 bool) {
 
 // createProxyChain Create PROXY chain for local applications
 func createProxyChain(ipv6 bool) error {
-	var currentProto string
 	currentIpt := common.Ipt
-	currentProto = "ipv4"
+	currentProto := "ipv4"
 	if ipv6 {
 		currentIpt = common.Ipt6
 		currentProto = "ipv6"
@@ -268,7 +267,7 @@ func createProxyChain(ipv6 bool) error {
 		}
 	}
 	// apply rules to OUTPUT
-	if err := currentIpt.Append("mangle", "OUTPUT", "-j", "PROXY"); err != nil {
+	if err := currentIpt.Insert("mangle", "OUTPUT", 1, "-j", "PROXY"); err != nil {
 		return e.New("apply mangle chain PROXY to OUTPUT failed, ", err).WithPrefix(tagTproxy)
 	}
 	return nil
@@ -276,9 +275,8 @@ func createProxyChain(ipv6 bool) error {
 
 // createMangleChain Create XRAY chain for AP interface
 func createMangleChain(ipv6 bool) error {
-	var currentProto string
 	currentIpt := common.Ipt
-	currentProto = "ipv4"
+	currentProto := "ipv4"
 	if ipv6 {
 		currentIpt = common.Ipt6
 		currentProto = "ipv6"
@@ -321,12 +319,12 @@ func createMangleChain(ipv6 bool) error {
 			}
 		}
 	}
-	// mark all traffic
-	if err := currentIpt.Append("mangle", "XRAY", "-p", "tcp", "-m", "mark", "--mark", common.TproxyMarkId, "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
-		return e.New("create all traffic proxy on "+currentProto+" tcp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
+	// mark all lo traffic
+    if err := currentIpt.Append("mangle", "XRAY", "-p", "tcp", "-i", "lo", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
+		return e.New("create lo interface proxy on "+currentProto+" tcp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
 	}
-	if err := currentIpt.Append("mangle", "XRAY", "-p", "udp", "-m", "mark", "--mark", common.TproxyMarkId, "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
-		return e.New("create all traffic proxy on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
+	if err := currentIpt.Append("mangle", "XRAY", "-p", "udp", "-i", "lo", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
+		return e.New("create lo interface proxy on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
 	}
 	// trans ApList to chain XRAY
 	for _, ap := range builds.Config.Proxy.ApList {
@@ -355,7 +353,7 @@ func createMangleChain(ipv6 bool) error {
 		}
 	}
 	// apply rules to PREROUTING
-	if err := currentIpt.Append("mangle", "PREROUTING", "-j", "XRAY"); err != nil {
+	if err := currentIpt.Insert("mangle", "PREROUTING", 1, "-j", "XRAY"); err != nil {
 		return e.New("apply mangle chain XRAY to PREROUTING failed, ", err).WithPrefix(tagTproxy)
 	}
 	return nil
