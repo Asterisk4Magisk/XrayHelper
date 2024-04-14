@@ -201,13 +201,11 @@ func createProxyChain(ipv6 bool) error {
 	} else if builds.Config.Proxy.Mode == "blacklist" {
 		// bypass PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
-			uid, err := tools.GetUid(pkg)
-			if err != nil {
-				log.HandleDebug(err)
-				continue
-			}
-			if err := currentIpt.Insert("mangle", "PROXY", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
-				return e.New("bypass package "+pkg+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
+			uidSlice := tools.GetUid(pkg)
+			for _, uid := range uidSlice {
+				if err := currentIpt.Insert("mangle", "PROXY", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
+					return e.New("bypass package "+pkg+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
+				}
 			}
 		}
 		// allow others
@@ -220,16 +218,14 @@ func createProxyChain(ipv6 bool) error {
 	} else if builds.Config.Proxy.Mode == "whitelist" {
 		// allow PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
-			uid, err := tools.GetUid(pkg)
-			if err != nil {
-				log.HandleDebug(err)
-				continue
-			}
-			if err := currentIpt.Append("mangle", "PROXY", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
-				return e.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
-			}
-			if err := currentIpt.Append("mangle", "PROXY", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
-				return e.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
+			uidSlice := tools.GetUid(pkg)
+			for _, uid := range uidSlice {
+				if err := currentIpt.Append("mangle", "PROXY", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
+					return e.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
+				}
+				if err := currentIpt.Append("mangle", "PROXY", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-mark", common.TproxyMarkId); err != nil {
+					return e.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
+				}
 			}
 		}
 		// allow root user(eg: magisk, ksud, netd...)
@@ -320,7 +316,7 @@ func createMangleChain(ipv6 bool) error {
 		}
 	}
 	// mark all lo traffic
-    if err := currentIpt.Append("mangle", "XRAY", "-p", "tcp", "-i", "lo", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
+	if err := currentIpt.Append("mangle", "XRAY", "-p", "tcp", "-i", "lo", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
 		return e.New("create lo interface proxy on "+currentProto+" tcp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
 	}
 	if err := currentIpt.Append("mangle", "XRAY", "-p", "udp", "-i", "lo", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {

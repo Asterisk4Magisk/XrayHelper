@@ -291,13 +291,11 @@ func createProxyChain(ipv6 bool) error {
 	} else if builds.Config.Proxy.Mode == "blacklist" {
 		// bypass PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
-			uid, err := tools.GetUid(pkg)
-			if err != nil {
-				log.HandleDebug(err)
-				continue
-			}
-			if err := currentIpt.Insert("mangle", "XT", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
-				return e.New("bypass package "+pkg+" on "+currentProto+" mangle chain XT failed, ", err).WithPrefix(tagTun)
+			uidSlice := tools.GetUid(pkg)
+			for _, uid := range uidSlice {
+				if err := currentIpt.Insert("mangle", "XT", 1, "-m", "owner", "--uid-owner", uid, "-j", "RETURN"); err != nil {
+					return e.New("bypass package "+pkg+" on "+currentProto+" mangle chain XT failed, ", err).WithPrefix(tagTun)
+				}
 			}
 		}
 		// allow others
@@ -310,16 +308,14 @@ func createProxyChain(ipv6 bool) error {
 	} else if builds.Config.Proxy.Mode == "whitelist" {
 		// allow PkgList
 		for _, pkg := range builds.Config.Proxy.PkgList {
-			uid, err := tools.GetUid(pkg)
-			if err != nil {
-				log.HandleDebug(err)
-				continue
-			}
-			if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "TUN2SOCKS"); err != nil {
-				return e.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
-			}
-			if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "TUN2SOCKS"); err != nil {
-				return e.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
+			uidSlice := tools.GetUid(pkg)
+			for _, uid := range uidSlice {
+				if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "TUN2SOCKS"); err != nil {
+					return e.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
+				}
+				if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "TUN2SOCKS"); err != nil {
+					return e.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
+				}
 			}
 		}
 		// allow root user(eg: magisk, ksud, netd...)
@@ -357,7 +353,7 @@ func createProxyChain(ipv6 bool) error {
 		}
 	}
 	// apply rules to OUTPUT
-	if err := currentIpt.Append("mangle", "OUTPUT", "-j", "XT"); err != nil {
+	if err := currentIpt.Insert("mangle", "OUTPUT", 1, "-j", "XT"); err != nil {
 		return e.New("apply mangle chain XT to OUTPUT failed, ", err).WithPrefix(tagTun)
 	}
 	return nil
@@ -437,7 +433,7 @@ func createMangleChain(ipv6 bool) error {
 		}
 	}
 	// apply rules to PREROUTING
-	if err := currentIpt.Append("mangle", "PREROUTING", "-j", "TUN2SOCKS"); err != nil {
+	if err := currentIpt.Insert("mangle", "PREROUTING", 1, "-j", "TUN2SOCKS"); err != nil {
 		return e.New("apply mangle chain TUN2SOCKS to PREROUTING failed, ", err).WithPrefix(tagTun)
 	}
 	return nil

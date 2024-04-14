@@ -10,18 +10,21 @@ import (
 
 const tagTools = "tools"
 
-func GetUid(pkgInfo string) (string, error) {
-	var appId, userId int
+func GetUid(pkgInfo string) []string {
+	var userId int
+	var pkgUserId []string
 	info := strings.Split(pkgInfo, ":")
-	if pkgId, ok := builds.PackageMap[info[0]]; ok {
-		appId, _ = strconv.Atoi(pkgId)
-	} else {
-		return "", e.New("cannot get uid from " + pkgInfo).WithPrefix(tagTools)
-	}
 	if len(info) == 2 {
 		userId, _ = strconv.Atoi(info[1])
 	}
-	return strconv.Itoa(userId*100000 + appId), nil
+	for pkgStr, pkgIdStr := range builds.PackageMap {
+		if common.WildcardMatch(pkgStr, info[0]) {
+			pkgId, _ := strconv.Atoi(pkgIdStr)
+			pkgUserIdStr := strconv.Itoa(userId*100000 + pkgId)
+			pkgUserId = append(pkgUserId, pkgUserIdStr)
+		}
+	}
+	return pkgUserId
 }
 
 func DisableIPV6DNS() error {

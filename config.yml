@@ -39,9 +39,9 @@ proxy:
     # whitelist mode, application traffic in pkgList will be marked, others will be bypassed
     # Special, if pkgList is empty, all application traffic will be marked whatever which proxy mode you use
     mode: whitelist
-    # Optional, application package list, format is "apk_package_name:user", if the user value is omitted, it will be "0", aka the phone owner
+    # Optional, application package list, format is "apk_package_name:user", the apk_package_name support wildcard matching, if the user value is omitted, it will be "0", aka the phone owner
     pkgList:
-        - com.kiwibrowser.browser
+        - cn.*
         - com.termux:20
     # Optional, ap interface list, external traffic from apList will be marked
     apList:
