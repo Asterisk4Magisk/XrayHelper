@@ -4,6 +4,7 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"fmt"
+	"github.com/fatih/color"
 	"strconv"
 	"strings"
 )
@@ -36,7 +37,7 @@ type Vmess struct {
 }
 
 func (this *Vmess) GetNodeInfo() string {
-	return fmt.Sprintf("Remarks: %+v, Type: Vmess, Server: %+v, Port: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
+	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Vmess"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Id: ")+"%+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
 }
 
 func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {

@@ -4,6 +4,7 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"fmt"
+	"github.com/fatih/color"
 	"strconv"
 )
 
@@ -20,7 +21,7 @@ type Shadowsocks struct {
 }
 
 func (this *Shadowsocks) GetNodeInfo() string {
-	return fmt.Sprintf("Remarks: %+v, Type: Shadowsocks, Server: %+v, Port: %+v, Method: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Method, this.Password)
+	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Shadowsocks"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Method: ")+"%+v"+color.BlueString(", Password: ")+"%+v", this.Remarks, this.Server, this.Port, this.Method, this.Password)
 }
 
 func (this *Shadowsocks) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {

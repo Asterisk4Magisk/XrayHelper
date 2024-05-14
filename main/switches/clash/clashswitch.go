@@ -5,6 +5,7 @@ import (
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"fmt"
+	"github.com/fatih/color"
 	"os"
 	"path"
 	"strconv"
@@ -41,7 +42,7 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 		}
 		if len(clashUrl) > 0 {
 			for index, clashSubUrl := range clashUrl {
-				fmt.Printf("[%d] %s\n", index, clashSubUrl)
+				fmt.Printf(color.GreenString("[%d]")+" %s\n", index, clashSubUrl)
 			}
 			fmt.Print("Please choose a clash subscribe: ")
 			index := 0

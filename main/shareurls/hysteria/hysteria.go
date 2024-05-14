@@ -4,6 +4,7 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"fmt"
+	"github.com/fatih/color"
 	"strconv"
 )
 
@@ -25,7 +26,7 @@ type Hysteria struct {
 }
 
 func (this *Hysteria) GetNodeInfo() string {
-	return fmt.Sprintf("Remarks: %+v, Type: Hysteria, Server: %+v, Port: %+v, UpMBPS: %+v, DownMBPS: %+v, ObfsParam: %+v", this.Remarks, this.Host, this.Port, this.UpMBPS, this.DownMBPS, this.ObfsParam)
+	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Hysteria"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", UpMBPS: ")+"%+v"+color.BlueString(", DownMBPS: ")+"%+v"+color.BlueString(", ObfsParam: ")+"%+v", this.Remarks, this.Host, this.Port, this.UpMBPS, this.DownMBPS, this.ObfsParam)
 }
 
 func (this *Hysteria) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {

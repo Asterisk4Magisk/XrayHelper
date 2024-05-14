@@ -4,11 +4,11 @@ import "github.com/coreos/go-iptables/iptables"
 
 const (
 	CoreGid             = "3005"
-	TproxyTableId       = "233"
-	TproxyMarkId        = "1111"
+	TproxyTableId       = "160"
+	TproxyMarkId        = "0x1000000/0x1000000"
 	DummyDevice         = "xdummy"
 	DummyIp             = "fd01:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd/128"
-	DummyMarkId         = "164"
+	DummyMarkId         = "0x2000000/0x2000000"
 	DummyTableId        = "164"
 	Tun2socksIPv4       = "10.10.12.1"
 	Tun2socksIPv6       = "fd02:5ca1:ab1e:8d97:497f:8b48:b9aa:85cd"
@@ -16,7 +16,7 @@ const (
 	Tun2socksMultiQueue = false
 	Tun2socksUdpMode    = "udp"
 	TunTableId          = "168"
-	TunMarkId           = "168"
+	TunMarkId           = "0x4000000/0x4000000"
 )
 
 var (

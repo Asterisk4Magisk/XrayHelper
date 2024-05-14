@@ -73,10 +73,10 @@ func createDummyOutputChain() error {
 	if err := common.Ipt6.NewChain("mangle", "DUMMY"); err != nil {
 		return e.New("create ipv6 mangle chain DUMMY failed, ", err).WithPrefix(tagDummy)
 	}
-	if err := common.Ipt6.Append("mangle", "DUMMY", "-p", "tcp", "-j", "MARK", "--set-mark", common.DummyMarkId); err != nil {
+	if err := common.Ipt6.Append("mangle", "DUMMY", "-p", "tcp", "-j", "MARK", "--set-xmark", common.DummyMarkId); err != nil {
 		return e.New("set mark on tcp mangle chain DUMMY failed, ", err).WithPrefix(tagDummy)
 	}
-	if err := common.Ipt6.Append("mangle", "DUMMY", "-p", "udp", "-j", "MARK", "--set-mark", common.DummyMarkId); err != nil {
+	if err := common.Ipt6.Append("mangle", "DUMMY", "-p", "udp", "-j", "MARK", "--set-xmark", common.DummyMarkId); err != nil {
 		return e.New("set mark on udp mangle chain DUMMY failed, ", err).WithPrefix(tagDummy)
 	}
 	if err := common.Ipt6.Append("mangle", "OUTPUT", "-j", "DUMMY"); err != nil {
