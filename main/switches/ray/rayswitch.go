@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/fatih/color"
 	"os"
 	"path"
 	"strings"
@@ -121,7 +122,7 @@ func loadShareUrl(custom bool) error {
 
 func printProxyNode() {
 	for index, shareUrl := range shareUrls {
-		fmt.Printf("[%d] %s\n", index, shareUrl.GetNodeInfo())
+		fmt.Printf(color.GreenString("[%d]")+" %s\n", index, shareUrl.GetNodeInfo())
 	}
 }
 

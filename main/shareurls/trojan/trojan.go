@@ -4,6 +4,7 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"fmt"
+	"github.com/fatih/color"
 	"strconv"
 )
 
@@ -37,7 +38,7 @@ type Trojan struct {
 }
 
 func (this *Trojan) GetNodeInfo() string {
-	return fmt.Sprintf("Remarks: %+v, Type: Trojan, Server: %+v, Port: %+v, Network: %+v, Password: %+v", this.Remarks, this.Server, this.Port, this.Network, this.Password)
+	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Trojan"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Password: ")+"%+v", this.Remarks, this.Server, this.Port, this.Network, this.Password)
 }
 
 func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {

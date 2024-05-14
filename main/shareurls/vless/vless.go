@@ -4,6 +4,7 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"fmt"
+	"github.com/fatih/color"
 	"strconv"
 )
 
@@ -39,7 +40,7 @@ type VLESS struct {
 }
 
 func (this *VLESS) GetNodeInfo() string {
-	return fmt.Sprintf("Remarks: %+v, Type: VLESS, Server: %+v, Port: %+v, Flow: %+v, Network: %+v, Id: %+v", this.Remarks, this.Server, this.Port, this.Flow, this.Network, this.Id)
+	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"VLESS"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Flow: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Id: ")+"%+v", this.Remarks, this.Server, this.Port, this.Flow, this.Network, this.Id)
 }
 
 func (this *VLESS) ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error) {
