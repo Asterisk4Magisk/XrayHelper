@@ -44,7 +44,7 @@ func getVLESSTlsObjectSingbox(vless *VLESS) serial.OrderedMap {
 func getVLESSTransportObjectSingbox(vless *VLESS) serial.OrderedMap {
 	var transportObject serial.OrderedMap
 	switch vless.Network {
-	case "tcp", "http", "h2":
+	case "http", "h2":
 		transportObject.Set("type", "http")
 		if len(vless.Host) > 0 {
 			var host serial.OrderedArray

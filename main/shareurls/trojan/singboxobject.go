@@ -44,7 +44,7 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) serial.OrderedMap {
 func getTrojanTransportObjectSingbox(trojan *Trojan) serial.OrderedMap {
 	var transportObject serial.OrderedMap
 	switch trojan.Network {
-	case "tcp", "http", "h2":
+	case "http", "h2":
 		transportObject.Set("type", "http")
 		if len(trojan.Host) > 0 {
 			var host serial.OrderedArray
