@@ -21,6 +21,12 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) serial.OrderedMap {
 				tlsObject.Set("alpn", alpn)
 			}
 		}
+		var utlsObject serial.OrderedMap
+		if len(trojan.FingerPrint) > 0 {
+			utlsObject.Set("enabled", true)
+			utlsObject.Set("fingerprint", trojan.FingerPrint)
+			tlsObject.Set("utls", utlsObject)
+		}
 		if trojan.Security == "reality" {
 			var realityObject serial.OrderedMap
 			realityObject.Set("enabled", true)
@@ -38,7 +44,7 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) serial.OrderedMap {
 func getTrojanTransportObjectSingbox(trojan *Trojan) serial.OrderedMap {
 	var transportObject serial.OrderedMap
 	switch trojan.Network {
-	case "tcp", "http", "h2":
+	case "http", "h2":
 		transportObject.Set("type", "http")
 		if len(trojan.Host) > 0 {
 			var host serial.OrderedArray
