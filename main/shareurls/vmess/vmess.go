@@ -13,8 +13,14 @@ const tagVmess = "vmess"
 
 type String string
 
-func (this *String) UnmarshalJSON(port []byte) error {
-	*this = String(strings.ReplaceAll(string(port), "\"", ""))
+func (this *String) UnmarshalJSON(str []byte) error {
+	if unquote, err := strconv.Unquote(string(str)); err == nil {
+		*this = String(unquote)
+	} else {
+		s := strings.Trim(string(str), "\"")
+		s = strings.Replace(s, `\/`, `/`, -1)
+		*this = String(s)
+	}
 	return nil
 }
 
