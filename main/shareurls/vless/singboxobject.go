@@ -21,6 +21,12 @@ func getVLESSTlsObjectSingbox(vless *VLESS) serial.OrderedMap {
 				tlsObject.Set("alpn", alpn)
 			}
 		}
+		var utlsObject serial.OrderedMap
+		if len(vless.FingerPrint) > 0 {
+			utlsObject.Set("enabled", true)
+			utlsObject.Set("fingerprint", vless.FingerPrint)
+			tlsObject.Set("utls", utlsObject)
+		}
 		if vless.Security == "reality" {
 			var realityObject serial.OrderedMap
 			realityObject.Set("enabled", true)

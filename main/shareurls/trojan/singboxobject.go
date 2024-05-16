@@ -21,6 +21,12 @@ func getTrojanTlsObjectSingbox(trojan *Trojan) serial.OrderedMap {
 				tlsObject.Set("alpn", alpn)
 			}
 		}
+		var utlsObject serial.OrderedMap
+		if len(trojan.FingerPrint) > 0 {
+			utlsObject.Set("enabled", true)
+			utlsObject.Set("fingerprint", trojan.FingerPrint)
+			tlsObject.Set("utls", utlsObject)
+		}
 		if trojan.Security == "reality" {
 			var realityObject serial.OrderedMap
 			realityObject.Set("enabled", true)
