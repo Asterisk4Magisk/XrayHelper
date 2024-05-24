@@ -28,7 +28,7 @@ func getSocksSettingsObjectXray(socks *Socks) serial.OrderedMap {
 	var serverArray serial.OrderedArray
 	var server serial.OrderedMap
 	// v2rayNg share "null" user for no auth socks server
-	if socks.User != "null" {
+	if len(socks.User) > 0 && socks.User != "null" {
 		var userArray serial.OrderedArray
 		var user serial.OrderedMap
 		user.Set("user", socks.User)
