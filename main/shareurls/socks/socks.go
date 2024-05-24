@@ -39,7 +39,7 @@ func (this *Socks) ToOutboundWithTag(coreType string, tag string) (*serial.Order
 		outboundObject.Set("server", this.Server)
 		serverPort, _ := strconv.Atoi(this.Port)
 		outboundObject.Set("server_port", serverPort)
-		if this.User != "null" {
+		if len(this.User) > 0 && this.User != "null" {
 			outboundObject.Set("username", this.User)
 			outboundObject.Set("password", this.Password)
 		}
