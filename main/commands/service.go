@@ -9,15 +9,15 @@ import (
 	"encoding/json"
 	"gopkg.in/yaml.v3"
 	"os"
+	"os/signal"
 	"path"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
 const tagService = "service"
-
-var service common.External
 
 type ServiceCommand struct{}
 
@@ -66,47 +66,24 @@ func (this *ServiceCommand) Execute(args []string) error {
 // startService start core service
 func startService() error {
 	listenFlag := false
+	// check current core status
 	servicePid := getServicePid()
 	if len(servicePid) > 0 {
 		return e.New("core is running, pid is " + servicePid).WithPrefix(tagService)
 	}
+	// get core service log file
 	serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "error.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
 	if err != nil {
 		return e.New("open core log file failed, ", err).WithPrefix(tagService)
 	}
-	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
-		return e.New("open core config file failed, ", err).WithPrefix(tagService)
-	} else {
-		if confInfo.IsDir() {
-			switch builds.Config.XrayHelper.CoreType {
-			case "xray":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig)
-			case "v2ray":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
-			case "sing-box":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
-			case "clash.meta", "mihomo":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig)
-			default:
-				return e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
-			}
-		} else {
-			switch builds.Config.XrayHelper.CoreType {
-			case "xray":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig)
-			case "v2ray":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5")
-			case "sing-box":
-				service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color")
-			case "clash.meta", "mihomo":
-				return e.New("mihomo CoreConfig should be a directory").WithPrefix(tagService)
-			default:
-				return e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
-			}
-		}
+	// get core service
+	service, err := newServices(serviceLogFile)
+	if err != nil {
+		return err
 	}
+	// add core env variable and prepare core config
 	switch builds.Config.XrayHelper.CoreType {
-	case "xray", "v2ray", "sing-box":
+	case "xray", "v2ray":
 		service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 		service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 		// if enable AutoDNSStrategy
@@ -120,32 +97,33 @@ func startService() error {
 			return err
 		}
 	}
-	if err := service.SetUidGid("0", common.CoreGid); err != nil {
-		return err
-	}
+	service.SetUidGid("0", common.CoreGid)
+	ignoreSignals()
 	service.Start()
 	if service.Err() != nil {
 		return e.New("start core service failed, ", service.Err()).WithPrefix(tagService)
 	}
+OUT:
 	for i := 0; i < *builds.CoreStartTimeout; i++ {
 		time.Sleep(1 * time.Second)
-		if builds.Config.Proxy.Method == "tproxy" {
+		switch builds.Config.Proxy.Method {
+		case "tproxy":
 			if common.CheckLocalPort(builds.Config.Proxy.TproxyPort) {
 				listenFlag = true
-				break
+				break OUT
 			}
-		} else if builds.Config.Proxy.Method == "tun" {
+		case "tun":
 			// tun don't need check any local port
 			listenFlag = true
-			break
-		} else if builds.Config.Proxy.Method == "tun2socks" {
+			break OUT
+		case "tun2socks":
 			if common.CheckLocalPort(builds.Config.Proxy.SocksPort) {
 				listenFlag = true
-				break
+				break OUT
 			}
-		} else {
+		default:
 			listenFlag = false
-			break
+			break OUT
 		}
 	}
 	if listenFlag {
@@ -158,6 +136,59 @@ func startService() error {
 		return e.New("core service not listen, please check error.log").WithPrefix(tagService)
 	}
 	return nil
+}
+
+// ignoreSignals start a goroutine to ignore some terminal signals
+func ignoreSignals() {
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan,
+		os.Interrupt, syscall.SIGINT, syscall.SIGQUIT, // keyboard
+		syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM, // os termination
+		syscall.SIGUSR1, syscall.SIGUSR2, // user
+		syscall.SIGPIPE, syscall.SIGCHLD, syscall.SIGSEGV) // os other
+	go func() {
+		for {
+			select {
+			case sign := <-signalChan:
+				log.HandleDebug("ignore signal " + sign.String() + " since core starting")
+			}
+		}
+	}()
+}
+
+// newServices get core service
+func newServices(serviceLogFile *os.File) (service common.External, err error) {
+	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
+		return nil, e.New("open core config file failed, ", err).WithPrefix(tagService)
+	} else {
+		if confInfo.IsDir() {
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig), nil
+			case "v2ray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
+			case "sing-box":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
+			case "clash.meta", "mihomo":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig), nil
+			default:
+				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
+			}
+		} else {
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig), nil
+			case "v2ray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
+			case "sing-box":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
+			case "clash.meta", "mihomo":
+				return nil, e.New("mihomo CoreConfig should be a directory").WithPrefix(tagService)
+			default:
+				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
+			}
+		}
+	}
 }
 
 // stopService stop core service

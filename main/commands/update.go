@@ -50,7 +50,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 	log.HandleDebug("CurrentGid: " + strconv.Itoa(os.Getgid()))
 	if *builds.BypassSelf && strconv.Itoa(os.Getgid()) != common.CoreGid {
 		self := common.NewExternal(0, os.Stdout, os.Stderr, os.Args[0], os.Args[1:]...)
-		_ = self.SetUidGid("0", common.CoreGid)
+		self.SetUidGid("0", common.CoreGid)
 		log.HandleDebug("will exec update command in new xrayhelper process, waiting")
 		self.Run()
 		var exitError *exec.ExitError
