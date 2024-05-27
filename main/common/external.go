@@ -6,12 +6,14 @@ import (
 	"errors"
 	"io"
 	"os/exec"
+	"strconv"
+	"syscall"
 	"time"
 )
 
 type External interface {
 	Err() error
-	SetUidGid(uid string, gid string) error
+	SetUidGid(uid string, gid string)
 	AppendEnv(env string)
 	Run()
 	Start()
@@ -44,7 +46,16 @@ func NewExternal(timeout time.Duration, out io.Writer, err io.Writer, name strin
 		ex.cmd.Stdout = out
 		ex.cmd.Stderr = err
 	}
+	ex.cmd.SysProcAttr = &syscall.SysProcAttr{}
+	ex.cmd.SysProcAttr.Setpgid = true
 	return &ex
+}
+
+// SetUidGid implement in linux
+func (this *external) SetUidGid(uid string, gid string) {
+	uidInt, _ := strconv.Atoi(uid)
+	gidInt, _ := strconv.Atoi(gid)
+	this.cmd.SysProcAttr.Credential = &syscall.Credential{Uid: uint32(uidInt), Gid: uint32(gidInt)}
 }
 
 // AppendEnv add env variable, eg: JAVA_HOME=/usr/local/java/

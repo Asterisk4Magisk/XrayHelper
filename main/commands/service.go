@@ -97,9 +97,7 @@ func startService() error {
 			return err
 		}
 	}
-	if err := service.SetUidGid("0", common.CoreGid); err != nil {
-		return err
-	}
+	service.SetUidGid("0", common.CoreGid)
 	ignoreSignals()
 	service.Start()
 	if service.Err() != nil {
