@@ -14,6 +14,8 @@ import (
 
 const tagClashswitch = "clashswitch"
 
+var clashUrl []string
+
 type ClashSwitch struct{}
 
 func (this *ClashSwitch) Execute(args []string) (bool, error) {
@@ -34,27 +36,17 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 			return false, err
 		}
 	} else {
-		var clashUrl []string
-		for _, subUrl := range builds.Config.XrayHelper.SubList {
-			if strings.HasPrefix(subUrl, "clash+") {
-				clashUrl = append(clashUrl, strings.TrimPrefix(subUrl, "clash+"))
-			}
-		}
+		loadClashUrl()
 		if len(clashUrl) > 0 {
 			for index, clashSubUrl := range clashUrl {
 				fmt.Printf(color.GreenString("[%d]")+" %s\n", index, clashSubUrl)
 			}
 			fmt.Print("Please choose a clash subscribe: ")
 			index := 0
-			_, err := fmt.Scanln(&index)
-			if err != nil {
+			if _, err := fmt.Scanln(&index); err != nil {
 				return false, e.New("invalid input, ", err).WithPrefix(tagClashswitch).WithPathObj(*this)
 			}
-			if index < 0 || index >= len(builds.Config.XrayHelper.SubList) {
-				return false, e.New("invalid node number").WithPrefix(tagClashswitch).WithPathObj(*this)
-			}
-			_ = os.Remove(clashConfig)
-			if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), clashConfig); err != nil {
+			if err := change(index); err != nil {
 				return false, err
 			}
 		} else {
@@ -62,4 +54,40 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+func (this *ClashSwitch) Get(custom bool) []string {
+	var result []string
+	loadClashUrl()
+	if len(clashUrl) > 0 {
+		for _, url := range clashUrl {
+			result = append(result, url)
+		}
+	}
+	return result
+}
+
+func (this *ClashSwitch) Set(custom bool, index int) error {
+	loadClashUrl()
+	return change(index)
+}
+
+func loadClashUrl() {
+	for _, subUrl := range builds.Config.XrayHelper.SubList {
+		if strings.HasPrefix(subUrl, "clash+") {
+			clashUrl = append(clashUrl, strings.TrimPrefix(subUrl, "clash+"))
+		}
+	}
+}
+
+func change(index int) error {
+	clashConfig := path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")
+	if index < 0 || index >= len(builds.Config.XrayHelper.SubList) {
+		return e.New("invalid number").WithPrefix(tagClashswitch)
+	}
+	_ = os.Remove(clashConfig)
+	if _, err := common.CopyFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), clashConfig); err != nil {
+		return err
+	}
+	return nil
 }

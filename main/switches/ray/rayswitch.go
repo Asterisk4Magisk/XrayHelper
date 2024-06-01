@@ -37,26 +37,51 @@ func (this *RaySwitch) Execute(args []string) (bool, error) {
 	printProxyNode()
 	fmt.Print("Please choose a node: ")
 	index := 0
-	_, err := fmt.Scanln(&index)
-	if err != nil {
+	if _, err := fmt.Scanln(&index); err != nil {
 		return false, e.New("invalid input, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
 	}
+	if err := change(index); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (this *RaySwitch) Get(custom bool) []string {
+	var result []string
+	err := loadShareUrl(custom)
+	if err == nil {
+		for _, url := range shareUrls {
+			result = append(result, url.GetNodeInfo())
+		}
+	}
+	return result
+}
+
+func (this *RaySwitch) Set(custom bool, index int) error {
+	err := loadShareUrl(custom)
+	if err == nil {
+		return change(index)
+	}
+	return err
+}
+
+func change(index int) error {
 	if index < 0 || index >= len(shareUrls) {
-		return false, e.New("invalid node number").WithPrefix(tagRayswitch).WithPathObj(*this)
+		return e.New("invalid number").WithPrefix(tagRayswitch)
 	}
 	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
-		return false, e.New("open core config file failed, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
+		return e.New("open core config file failed, ", err).WithPrefix(tagRayswitch)
 	} else {
 		if confInfo.IsDir() {
 			confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig)
 			if err != nil {
-				return false, e.New("open config dir failed, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
+				return e.New("open config dir failed, ", err).WithPrefix(tagRayswitch)
 			}
 			for _, conf := range confDir {
 				if !conf.IsDir() {
 					confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()))
 					if err != nil {
-						return false, e.New("read config file failed, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
+						return e.New("read config file failed, ", err).WithPrefix(tagRayswitch)
 					}
 					newConfByte, err := replaceProxyNode(confByte, index)
 					if err != nil {
@@ -64,27 +89,27 @@ func (this *RaySwitch) Execute(args []string) (bool, error) {
 						continue
 					}
 					if err := os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), newConfByte, 0644); err != nil {
-						return false, e.New("write new config failed, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
+						return e.New("write new config failed, ", err).WithPrefix(tagRayswitch)
 					}
-					return true, nil
+					return nil
 				}
 			}
 		} else {
 			confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig)
 			if err != nil {
-				return false, e.New("read config file failed, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
+				return e.New("read config file failed, ", err).WithPrefix(tagRayswitch)
 			}
 			newConfByte, err := replaceProxyNode(confByte, index)
 			if err != nil {
-				return false, err
+				return err
 			}
 			if err := os.WriteFile(builds.Config.XrayHelper.CoreConfig, newConfByte, 0644); err != nil {
-				return false, e.New("write new config failed, ", err).WithPrefix(tagRayswitch).WithPathObj(*this)
+				return e.New("write new config failed, ", err).WithPrefix(tagRayswitch)
 			}
-			return true, nil
+			return nil
 		}
 	}
-	return false, e.New("write new config failed, ").WithPrefix(tagRayswitch).WithPathObj(*this)
+	return e.New("write new config failed, ").WithPrefix(tagRayswitch)
 }
 
 func loadShareUrl(custom bool) error {

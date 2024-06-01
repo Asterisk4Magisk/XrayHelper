@@ -21,6 +21,7 @@ var Option struct {
 	Proxy   commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
 	Update  commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd-meta or subscribe"`
 	Switch  commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
+	Api     commands.ApiCommand     `command:"api" description:"xrayhelper api for webui"`
 }
 
 // LoadOption load Option, the program entry

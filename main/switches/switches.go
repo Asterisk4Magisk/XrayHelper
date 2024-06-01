@@ -11,6 +11,8 @@ const tagSwitches = "switches"
 // Switch implement this interface, that program can deal different core config switch
 type Switch interface {
 	Execute(args []string) (bool, error)
+	Get(custom bool) []string
+	Set(custom bool, index int) error
 }
 
 func NewSwitch(coreType string) (Switch, error) {
