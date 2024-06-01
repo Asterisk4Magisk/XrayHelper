@@ -22,7 +22,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 		return e.New("not specify operation, available operation [enable|disable|refresh]").WithPrefix(tagProxy).WithPathObj(*this)
 	}
 	if len(args) > 1 {
-		return e.New("too many arguments").WithPrefix(tagService).WithPathObj(*this)
+		return e.New("too many arguments").WithPrefix(tagProxy).WithPathObj(*this)
 	}
 	log.HandleInfo("proxy: current proxy method is " + builds.Config.Proxy.Method)
 	proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
