@@ -14,7 +14,7 @@ const tagTproxy = "tproxy"
 var useDummy bool
 
 func init() {
-	if common.ExternalIPv6 != nil && common.CheckIPv6Connection() {
+	if len(common.ExternalIPv6) > 0 {
 		useDummy = false
 	} else {
 		useDummy = true
