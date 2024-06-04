@@ -83,7 +83,7 @@ func startService() error {
 	}
 	// add core env variable and prepare core config
 	switch builds.Config.XrayHelper.CoreType {
-	case "xray", "v2ray":
+	case "xray", "v2ray", "sing-box":
 		service.AppendEnv("XRAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 		service.AppendEnv("V2RAY_LOCATION_ASSET=" + builds.Config.XrayHelper.DataDir)
 		// if enable AutoDNSStrategy
