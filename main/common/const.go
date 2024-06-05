@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-	if ext, err := getExternalIPv6Addr(); err != nil {
+	if ext, err := getExternalIPv6Addr(); err == nil {
 		ExternalIPv6 = append(ExternalIPv6, ext...)
 	}
 }
