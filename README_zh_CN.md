@@ -14,6 +14,7 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `runDir`必填，用于存储运行时所产生的文件，例如核心的 pid 值，核心日志等
     - `proxyTag`默认值`proxy`，使用 XrayHelper 进行节点切换时，将进行替换的出站代理 Tag
     - `subList`可选，数组，节点订阅链接（SIP002/v2rayNg/Hysteria/Hysteria2），也支持 clash 订阅链接(需要在订阅链接前添加`clash+`前缀)
+    - `userAgent`可选，自定义 XrayHelper http 请求的 User-Agent
 - proxy
     - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`、`tun2socks`，使用 tun 模式时，请确保你的核心支持 tun 并正确配置它；使用 tun2socks 模式时，需要提前下载 tun2socks 二进制文件（可使用命令`xrayhelper update tun2socks`）
     - `tproxyPort`默认值`65535`，透明代理端口，该值需要与核心的 tproxy 入站代理端口相对应，`tproxy`模式需要

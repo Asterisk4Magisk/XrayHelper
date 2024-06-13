@@ -28,6 +28,7 @@ var Config struct {
 		RunDir     string   `yaml:"runDir"`
 		ProxyTag   string   `default:"proxy" yaml:"proxyTag"`
 		SubList    []string `yaml:"subList"`
+		UserAgent  string   `yaml:"userAgent"`
 	} `yaml:"xrayHelper"`
 	Proxy struct {
 		Method          string   `default:"tproxy" yaml:"method"`

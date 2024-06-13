@@ -1,6 +1,7 @@
 package common
 
 import (
+	"XrayHelper/main/builds"
 	e "XrayHelper/main/errors"
 	"bytes"
 	"context"
@@ -141,7 +142,12 @@ func getExternalIPv6Addr() ([]string, error) {
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
 	// get file from url
-	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
+	client := getHttpClient(dns, timeout*time.Millisecond)
+	request, _ := http.NewRequest("GET", url, nil)
+	if len(builds.Config.XrayHelper.UserAgent) > 0 {
+		request.Header.Set("User-Agent", builds.Config.XrayHelper.UserAgent)
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		return e.New("cannot get file "+url+", ", err).WithPrefix(tagNetwork)
 	}
@@ -168,7 +174,12 @@ func DownloadFile(filepath string, url string) error {
 
 // GetRawData get raw data from a url
 func GetRawData(url string) ([]byte, error) {
-	response, err := getHttpClient(dns, timeout*time.Millisecond).Get(url)
+	client := getHttpClient(dns, timeout*time.Millisecond)
+	request, _ := http.NewRequest("GET", url, nil)
+	if len(builds.Config.XrayHelper.UserAgent) > 0 {
+		request.Header.Set("User-Agent", builds.Config.XrayHelper.UserAgent)
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		return nil, e.New("cannot get url "+url+", ", err).WithPrefix(tagNetwork)
 	}

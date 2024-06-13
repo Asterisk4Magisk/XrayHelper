@@ -18,6 +18,8 @@ xrayHelper:
     subList:
         - https://testsuburl.com
         - clash+https://testclashsuburl.com
+    # Optional, custom User-Agent for http requests send by xrayhelper
+    userAgent: 'ClashMeta'
 proxy:
     # Required, Default value: tproxy, proxy method you want to use, support tproxy, tun, tun2socks
     # If you use tun mode, please make sure your core support tun, and configure it correctly
