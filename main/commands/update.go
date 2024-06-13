@@ -340,15 +340,16 @@ func updateSubscribe() error {
 	for _, subUrl := range v2rayNgUrl {
 		rawData, err := common.GetRawData(subUrl)
 		if err != nil {
-			log.HandleError(err)
+			log.HandleError("get data from " + subUrl + " failed, " + err.Error())
 			continue
 		}
 		subData, err := common.DecodeBase64(string(rawData))
 		if err != nil {
-			log.HandleError(err)
-			continue
+			log.HandleDebug("try decode base64 data from " + subUrl + " failed, will save raw data")
+			builder.WriteString(strings.TrimSpace(string(rawData)) + "\n")
+		} else {
+			builder.WriteString(strings.TrimSpace(subData) + "\n")
 		}
-		builder.WriteString(strings.TrimSpace(subData) + "\n")
 	}
 	if builder.Len() > 0 {
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "sub.txt"), []byte(builder.String()), 0644); err != nil {
@@ -359,7 +360,7 @@ func updateSubscribe() error {
 	for index, subUrl := range clashUrl {
 		rawData, err := common.GetRawData(subUrl)
 		if err != nil {
-			log.HandleError(err)
+			log.HandleError("get data from " + subUrl + " failed, " + err.Error())
 			continue
 		}
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
