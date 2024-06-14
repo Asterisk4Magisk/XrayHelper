@@ -254,7 +254,7 @@ func updateHysteria() (bool, error) {
 		serviceRunFlag = true
 		_ = os.Remove(builds.Config.XrayHelper.CorePath)
 	}
-	hysteriaFile, err := os.OpenFile(hysteriaPath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+	hysteriaFile, err := os.Open(hysteriaPath)
 	if err != nil {
 		return serviceRunFlag, e.New("cannot open file "+hysteriaPath+", ", err).WithPrefix(tagUpdate)
 	}
