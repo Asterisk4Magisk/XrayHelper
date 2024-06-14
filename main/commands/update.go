@@ -270,6 +270,7 @@ func updateHysteria() (bool, error) {
 	if err != nil {
 		return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
 	}
+	_ = saveFile.Close()
 	return serviceRunFlag, nil
 }
 
