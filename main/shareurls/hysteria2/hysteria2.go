@@ -39,8 +39,16 @@ func (this *Hysteria2) ToOutboundWithTag(coreType string, tag string) (*serial.O
 		outboundObject.Set("server_port", port)
 		outboundObject.Set("obfs", getHysteria2ObfsObjectSingbox(this))
 		outboundObject.Set("users", getHysteria2UsersObjectSingbox(this))
-		outboundObject.Set("tls", getHysteriaTlsObjectSingbox(this))
+		outboundObject.Set("tls", getHysteria2TlsObjectSingbox(this))
 		return &outboundObject, nil
+	case "hysteria2":
+		// hysteria2 will ignore tag
+		var clientObject serial.OrderedMap
+		clientObject.Set("server", this.Host+":"+this.Port)
+		clientObject.Set("auth", this.Auth)
+		clientObject.Set("obfs", getHysteria2ObfsObjectHysteria2(this))
+		clientObject.Set("tls", getHysteria2TlsObjectHysteria2(this))
+		return &clientObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagHysteria2).WithPathObj(*this)
 	}

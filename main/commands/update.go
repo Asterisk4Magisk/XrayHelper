@@ -28,6 +28,7 @@ const (
 	yacdMetaDownloadUrl  = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
 	xrayCoreDownloadUrl  = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
+	hysteria2DownloadUrl = "https://github.com/apernet/hysteria/releases/latest/download/hysteria-android-arm64"
 	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
 	geositeDownloadUrl   = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
 	tun2socksDownloadUrl = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
@@ -97,184 +98,40 @@ func (this *UpdateCommand) Execute(args []string) error {
 	return nil
 }
 
-// updateCore update core, support xray, singbox
+// updateCore update core, support xray, v2ray, sing-box, mihomo, hysteria2
 func updateCore() error {
 	if runtime.GOARCH != "arm64" {
 		return e.New("this feature only support arm64 device").WithPrefix(tagUpdate)
 	}
-	serviceRunFlag := false
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return e.New("create run dir failed, ", err).WithPrefix(tagUpdate)
 	}
 	if err := os.MkdirAll(path.Dir(builds.Config.XrayHelper.CorePath), 0644); err != nil {
 		return e.New("create core path dir failed, ", err).WithPrefix(tagUpdate)
 	}
+	var err error
+	serviceRunFlag := false
 	switch builds.Config.XrayHelper.CoreType {
 	case "xray":
-		xrayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "xray.zip")
-		if err := common.DownloadFile(xrayZipPath, xrayCoreDownloadUrl); err != nil {
+		if serviceRunFlag, err = updateXray(); err != nil {
 			return err
-		}
-		// update core need stop core service first
-		if len(getServicePid()) > 0 {
-			log.HandleInfo("update: detect core is running, stop it")
-			stopService()
-			serviceRunFlag = true
-			_ = os.Remove(builds.Config.XrayHelper.CorePath)
-		}
-		zipReader, err := zip.OpenReader(xrayZipPath)
-		if err != nil {
-			return e.New("open xray.zip failed, ", err).WithPrefix(tagUpdate)
-		}
-		defer func(zipReader *zip.ReadCloser) {
-			_ = zipReader.Close()
-			_ = os.Remove(xrayZipPath)
-		}(zipReader)
-		for _, file := range zipReader.File {
-			if file.Name == "xray" {
-				fileReader, err := file.Open()
-				if err != nil {
-					return e.New("cannot get file reader "+file.Name+", ", err).WithPrefix(tagUpdate)
-				}
-				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
-				if err != nil {
-					return e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
-				}
-				_, err = io.Copy(saveFile, fileReader)
-				if err != nil {
-					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
-				}
-				_ = saveFile.Close()
-				_ = fileReader.Close()
-				break
-			}
 		}
 	case "v2ray":
-		v2rayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "v2ray.zip")
-		if err := common.DownloadFile(v2rayZipPath, v2rayCoreDownloadUrl); err != nil {
+		if serviceRunFlag, err = updateV2ray(); err != nil {
 			return err
-		}
-		// update core need stop core service first
-		if len(getServicePid()) > 0 {
-			log.HandleInfo("update: detect core is running, stop it")
-			stopService()
-			serviceRunFlag = true
-			_ = os.Remove(builds.Config.XrayHelper.CorePath)
-		}
-		zipReader, err := zip.OpenReader(v2rayZipPath)
-		if err != nil {
-			return e.New("open v2ray.zip failed, ", err).WithPrefix(tagUpdate)
-		}
-		defer func(zipReader *zip.ReadCloser) {
-			_ = zipReader.Close()
-			_ = os.Remove(v2rayZipPath)
-		}(zipReader)
-		for _, file := range zipReader.File {
-			if file.Name == "v2ray" {
-				fileReader, err := file.Open()
-				if err != nil {
-					return e.New("cannot get file reader "+file.Name+", ", err).WithPrefix(tagUpdate)
-				}
-				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
-				if err != nil {
-					return e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
-				}
-				_, err = io.Copy(saveFile, fileReader)
-				if err != nil {
-					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
-				}
-				_ = saveFile.Close()
-				_ = fileReader.Close()
-				break
-			}
 		}
 	case "sing-box":
-		singboxDownloadUrl, err := getDownloadUrl(singboxUrl, "android-arm64.tar.gz")
-		if err != nil {
+		if serviceRunFlag, err = updateSingbox(); err != nil {
 			return err
 		}
-		singboxGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "sing-box.tar.gz")
-		if err := common.DownloadFile(singboxGzipPath, singboxDownloadUrl); err != nil {
+	case "mihomo":
+		if serviceRunFlag, err = updateMihomo(); err != nil {
 			return err
 		}
-		// update core need stop core service first
-		if len(getServicePid()) > 0 {
-			log.HandleInfo("update: detect core is running, stop it")
-			stopService()
-			serviceRunFlag = true
-			_ = os.Remove(builds.Config.XrayHelper.CorePath)
-		}
-		singboxGzip, err := os.Open(singboxGzipPath)
-		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
-		}
-		defer func(singboxGzip *os.File) {
-			_ = singboxGzip.Close()
-			_ = os.Remove(singboxGzipPath)
-		}(singboxGzip)
-		gzipReader, err := gzip.NewReader(singboxGzip)
-		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
-		}
-		defer func(gzipReader *gzip.Reader) {
-			_ = gzipReader.Close()
-		}(gzipReader)
-		tarReader := tar.NewReader(gzipReader)
-		for {
-			fileHeader, err := tarReader.Next()
-			if err != nil {
-				if err == io.EOF {
-					return e.New("cannot find sing-box binary").WithPrefix(tagUpdate)
-				}
-				continue
-			}
-			if filepath.Base(fileHeader.Name) == "sing-box" {
-				saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
-				_, err = io.Copy(saveFile, tarReader)
-				if err != nil {
-					return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
-				}
-				_ = saveFile.Close()
-				break
-			}
-		}
-	case "clash.meta", "mihomo":
-		mihomoDownloadUrl, err := getDownloadUrl(mihomoUrl, "mihomo-android-arm64-v")
-		if err != nil {
+	case "hysteria2":
+		if serviceRunFlag, err = updateHysteria2(); err != nil {
 			return err
 		}
-		mihomoGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "mihomo.gz")
-		if err := common.DownloadFile(mihomoGzipPath, mihomoDownloadUrl); err != nil {
-			return err
-		}
-		// update core need stop core service first
-		if len(getServicePid()) > 0 {
-			log.HandleInfo("update: detect core is running, stop it")
-			stopService()
-			serviceRunFlag = true
-			_ = os.Remove(builds.Config.XrayHelper.CorePath)
-		}
-		mihomoGzip, err := os.Open(mihomoGzipPath)
-		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
-		}
-		defer func(mihomoGzip *os.File) {
-			_ = mihomoGzip.Close()
-			_ = os.Remove(mihomoGzipPath)
-		}(mihomoGzip)
-		gzipReader, err := gzip.NewReader(mihomoGzip)
-		if err != nil {
-			return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
-		}
-		defer func(gzipReader *gzip.Reader) {
-			_ = gzipReader.Close()
-		}(gzipReader)
-		saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
-		_, err = io.Copy(saveFile, gzipReader)
-		if err != nil {
-			return e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
-		}
-		_ = saveFile.Close()
 	default:
 		return e.New("unknown core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagUpdate)
 	}
@@ -294,6 +151,230 @@ func updateCore() error {
 		}
 	}
 	return nil
+}
+
+// updateXray update xray core
+func updateXray() (bool, error) {
+	serviceRunFlag := false
+	xrayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "xray.zip")
+	if err := common.DownloadFile(xrayZipPath, xrayCoreDownloadUrl); err != nil {
+		return false, err
+	}
+	// update core need stop core service first
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
+		stopService()
+		serviceRunFlag = true
+		_ = os.Remove(builds.Config.XrayHelper.CorePath)
+	}
+	zipReader, err := zip.OpenReader(xrayZipPath)
+	if err != nil {
+		return serviceRunFlag, e.New("open xray.zip failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(zipReader *zip.ReadCloser) {
+		_ = zipReader.Close()
+		_ = os.Remove(xrayZipPath)
+	}(zipReader)
+	for _, file := range zipReader.File {
+		if file.Name == "xray" {
+			fileReader, err := file.Open()
+			if err != nil {
+				return serviceRunFlag, e.New("cannot get file reader "+file.Name+", ", err).WithPrefix(tagUpdate)
+			}
+			saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+			if err != nil {
+				return serviceRunFlag, e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
+			}
+			_, err = io.Copy(saveFile, fileReader)
+			if err != nil {
+				return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
+			}
+			_ = saveFile.Close()
+			_ = fileReader.Close()
+			break
+		}
+	}
+	return serviceRunFlag, nil
+}
+
+// updateV2ray update v2ray core
+func updateV2ray() (bool, error) {
+	serviceRunFlag := false
+	v2rayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "v2ray.zip")
+	if err := common.DownloadFile(v2rayZipPath, v2rayCoreDownloadUrl); err != nil {
+		return false, err
+	}
+	// update core need stop core service first
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
+		stopService()
+		serviceRunFlag = true
+		_ = os.Remove(builds.Config.XrayHelper.CorePath)
+	}
+	zipReader, err := zip.OpenReader(v2rayZipPath)
+	if err != nil {
+		return serviceRunFlag, e.New("open v2ray.zip failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(zipReader *zip.ReadCloser) {
+		_ = zipReader.Close()
+		_ = os.Remove(v2rayZipPath)
+	}(zipReader)
+	for _, file := range zipReader.File {
+		if file.Name == "v2ray" {
+			fileReader, err := file.Open()
+			if err != nil {
+				return serviceRunFlag, e.New("cannot get file reader "+file.Name+", ", err).WithPrefix(tagUpdate)
+			}
+			saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+			if err != nil {
+				return serviceRunFlag, e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
+			}
+			_, err = io.Copy(saveFile, fileReader)
+			if err != nil {
+				return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
+			}
+			_ = saveFile.Close()
+			_ = fileReader.Close()
+			break
+		}
+	}
+	return serviceRunFlag, nil
+}
+
+func updateHysteria2() (bool, error) {
+	serviceRunFlag := false
+	hysteria2Path := path.Join(builds.Config.XrayHelper.DataDir, "hysteria2")
+	if err := common.DownloadFile(hysteria2Path, hysteria2DownloadUrl); err != nil {
+		return false, err
+	}
+	// update core need stop core service first
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
+		stopService()
+		serviceRunFlag = true
+		_ = os.Remove(builds.Config.XrayHelper.CorePath)
+	}
+	hysteria2File, err := os.Open(hysteria2Path)
+	if err != nil {
+		return serviceRunFlag, e.New("cannot open file "+hysteria2Path+", ", err).WithPrefix(tagUpdate)
+	}
+	defer func(hysteria2File *os.File) {
+		_ = hysteria2File.Close()
+		_ = os.Remove(hysteria2Path)
+	}(hysteria2File)
+	saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+	if err != nil {
+		return serviceRunFlag, e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
+	}
+	_, err = io.Copy(saveFile, hysteria2File)
+	if err != nil {
+		return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
+	}
+	_ = saveFile.Close()
+	return serviceRunFlag, nil
+}
+
+// updateSingbox update sing-box core
+func updateSingbox() (bool, error) {
+	serviceRunFlag := false
+	singboxDownloadUrl, err := getDownloadUrl(singboxUrl, "android-arm64.tar.gz")
+	if err != nil {
+		return false, err
+	}
+	singboxGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "sing-box.tar.gz")
+	if err := common.DownloadFile(singboxGzipPath, singboxDownloadUrl); err != nil {
+		return false, err
+	}
+	// update core need stop core service first
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
+		stopService()
+		serviceRunFlag = true
+		_ = os.Remove(builds.Config.XrayHelper.CorePath)
+	}
+	singboxGzip, err := os.Open(singboxGzipPath)
+	if err != nil {
+		return serviceRunFlag, e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(singboxGzip *os.File) {
+		_ = singboxGzip.Close()
+		_ = os.Remove(singboxGzipPath)
+	}(singboxGzip)
+	gzipReader, err := gzip.NewReader(singboxGzip)
+	if err != nil {
+		return serviceRunFlag, e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(gzipReader *gzip.Reader) {
+		_ = gzipReader.Close()
+	}(gzipReader)
+	tarReader := tar.NewReader(gzipReader)
+	for {
+		fileHeader, err := tarReader.Next()
+		if err != nil {
+			if err == io.EOF {
+				return serviceRunFlag, e.New("cannot find sing-box binary").WithPrefix(tagUpdate)
+			}
+			continue
+		}
+		if filepath.Base(fileHeader.Name) == "sing-box" {
+			saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+			if err != nil {
+				return serviceRunFlag, e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
+			}
+			_, err = io.Copy(saveFile, tarReader)
+			if err != nil {
+				return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
+			}
+			_ = saveFile.Close()
+			break
+		}
+	}
+	return serviceRunFlag, nil
+}
+
+// updateMihomo update mihomo core
+func updateMihomo() (bool, error) {
+	serviceRunFlag := false
+	mihomoDownloadUrl, err := getDownloadUrl(mihomoUrl, "mihomo-android-arm64-v")
+	if err != nil {
+		return false, err
+	}
+	mihomoGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "mihomo.gz")
+	if err := common.DownloadFile(mihomoGzipPath, mihomoDownloadUrl); err != nil {
+		return false, err
+	}
+	// update core need stop core service first
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
+		stopService()
+		serviceRunFlag = true
+		_ = os.Remove(builds.Config.XrayHelper.CorePath)
+	}
+	mihomoGzip, err := os.Open(mihomoGzipPath)
+	if err != nil {
+		return serviceRunFlag, e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(mihomoGzip *os.File) {
+		_ = mihomoGzip.Close()
+		_ = os.Remove(mihomoGzipPath)
+	}(mihomoGzip)
+	gzipReader, err := gzip.NewReader(mihomoGzip)
+	if err != nil {
+		return serviceRunFlag, e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(gzipReader *gzip.Reader) {
+		_ = gzipReader.Close()
+	}(gzipReader)
+	saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+	if err != nil {
+		return serviceRunFlag, e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
+	}
+	_, err = io.Copy(saveFile, gzipReader)
+	if err != nil {
+		return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
+	}
+	_ = saveFile.Close()
+	return serviceRunFlag, nil
 }
 
 // updateTun2socks update tun2socks

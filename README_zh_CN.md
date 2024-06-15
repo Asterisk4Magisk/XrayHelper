@@ -7,7 +7,7 @@
 XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhelper.yml`，当然你可以使用`-c`选项自定义配置文件路径  
 [配置示例](config.yml)
 - xrayHelper
-    - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`、`mihomo(clash.meta)`
+    - `coreType`默认值`xray`，指定所使用的核心类型，可选`xray`、`v2ray`、`sing-box`、`mihomo`、`hysteria2`
     - `corePath`必填，指定核心路径
     - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令
     - `dataDir`必填，指定 XrayHelper 的数据目录，用于存储 GEO 数据文件、自定义节点和订阅节点信息等
@@ -28,8 +28,8 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `ignoreList`，可选，数组，需要忽略的接口名，例如`wlan+`可以实现连上 wifi 不走代理
     - `intraList`，可选，数组，CIDR，默认情况下，内网地址不会被标记，若需要将部分内网地址标记，可配置此项
 - clash
-  - `dnsPort`默认值`65533`，mihomo(clash.meta) 监听的 dns 端口
-  - `template`可选，mihomo(clash.meta) 配置模板，指定配置模板后，该模板会**覆盖（或注入）** mihomo(clash.meta) 配置文件对应内容
+  - `dnsPort`默认值`65533`，mihomo 监听的 dns 端口
+  - `template`可选，mihomo 配置模板，指定配置模板后，该模板会**覆盖（或注入）** mihomo 配置文件对应内容
 
 ## 命令
 - service
@@ -47,11 +47,11 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `subscribe`更新订阅节点（或 clash 订阅）到`${xrayHelper.dataDir}/sub.txt`（或`${xrayHelper.dataDir}/clashSub#{index}.yaml`），需要指定 **xrayHelper.subList**
     - `tun2socks`从 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) 更新 tun2socks
     - `yacd-meta`更新 [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta) 到`${xrayHelper.dataDir}/Yacd-meta-gh-pages`
-### xray、sing-box
+### xray、sing-box、hysteria2
 - switch
     - 不带任何参数时，从订阅`${xrayHelper.dataDir}/sub.txt`获取节点信息并选择
     - `custom`从`${xrayHelper.dataDir}/custom.txt`获取节点信息并选择，因此，可将自定义节点的分享链接放置于此方便选择
-### mihomo(clash.meta)
+### mihomo
 - switch
   - 不带任何参数时，使用`${xrayHelper.dataDir}/clashSub#{index}.yaml`作为配置文件
   - `example.yaml`使用`${xrayHelper.coreConfig}/example.yaml`作为配置文件

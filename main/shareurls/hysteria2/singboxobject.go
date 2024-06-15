@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// getHysteriaTlsObjectSingbox get sing-box Hysteria tls Object
-func getHysteriaTlsObjectSingbox(hysteria2 *Hysteria2) serial.OrderedMap {
+// getHysteria2TlsObjectSingbox get sing-box Hysteria2 tls Object
+func getHysteria2TlsObjectSingbox(hysteria2 *Hysteria2) serial.OrderedMap {
 	var tlsObject serial.OrderedMap
 	tlsObject.Set("enabled", true)
 	if len(hysteria2.Sni) == 0 {

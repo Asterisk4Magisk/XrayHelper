@@ -52,7 +52,7 @@ func (this *Tproxy) Enable() error {
 	}
 	// handleDns, some core not support sniffing(eg: clash), need redirect dns request to local dns port
 	switch builds.Config.XrayHelper.CoreType {
-	case "clash.meta", "mihomo":
+	case "mihomo":
 		if err := tools.RedirectDNS(builds.Config.Clash.DNSPort); err != nil {
 			this.Disable()
 			return err
@@ -256,10 +256,14 @@ func createProxyChain(ipv6 bool) error {
 			}
 		}
 	}
-	// mark all dns request (except mihomo)
-	if builds.Config.XrayHelper.CoreType != "mihomo" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+	// mark all dns request (except mihomo/hysteria2)
+	if builds.Config.XrayHelper.CoreType != "mihomo" && builds.Config.XrayHelper.CoreType != "hysteria2" {
 		if err := currentIpt.Insert("mangle", "PROXY", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "MARK", "--set-xmark", common.TproxyMarkId); err != nil {
 			return e.New("mark all dns request on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
+		}
+	} else {
+		if err := currentIpt.Insert("mangle", "PROXY", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "RETURN"); err != nil {
+			return e.New("bypass all dns request on "+currentProto+" udp mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
 		}
 	}
 	// apply rules to OUTPUT
@@ -342,10 +346,14 @@ func createMangleChain(ipv6 bool) error {
 			return e.New("create ap interface "+ap+" proxy on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
 		}
 	}
-	// mark all dns request(except mihomo)
-	if builds.Config.XrayHelper.CoreType != "mihomo" && builds.Config.XrayHelper.CoreType != "clash.meta" {
+	// mark all dns request(except mihomo/hysteria2)
+	if builds.Config.XrayHelper.CoreType != "mihomo" && builds.Config.XrayHelper.CoreType != "hysteria2" {
 		if err := currentIpt.Insert("mangle", "XRAY", 1, "-p", "udp", "--dport", "53", "-j", "TPROXY", "--on-port", builds.Config.Proxy.TproxyPort, "--tproxy-mark", common.TproxyMarkId); err != nil {
 			return e.New("mark all dns request on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
+		}
+	} else {
+		if err := currentIpt.Insert("mangle", "XRAY", 1, "-p", "udp", "--dport", "53", "-j", "RETURN"); err != nil {
+			return e.New("bypass all dns request on "+currentProto+" udp mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
 		}
 	}
 	// apply rules to PREROUTING
