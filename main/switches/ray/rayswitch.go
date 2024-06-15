@@ -210,16 +210,16 @@ func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
 		}
 		// replace
 		if server, ok := clientObject.Get("server"); ok {
-			yamlMap.Set("server", server)
+			yamlMap.Set("server", server.Value)
 		}
 		if auth, ok := clientObject.Get("auth"); ok {
-			yamlMap.Set("auth", auth)
+			yamlMap.Set("auth", auth.Value)
 		}
 		if obfs, ok := clientObject.Get("obfs"); ok {
-			yamlMap.Set("obfs", obfs)
+			yamlMap.Set("obfs", obfs.Value)
 		}
 		if tls, ok := clientObject.Get("tls"); ok {
-			yamlMap.Set("tls", tls)
+			yamlMap.Set("tls", tls.Value)
 		}
 		// marshal
 		marshal, err := yaml.Marshal(yamlMap)
