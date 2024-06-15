@@ -352,7 +352,7 @@ func createProxyChain(ipv6 bool) error {
 			return e.New("mark all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 	} else {
-		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "RETURN"); err != nil {
+		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "--dport", "53", "-j", "RETURN"); err != nil {
 			return e.New("bypass all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 	}
