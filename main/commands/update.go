@@ -28,7 +28,7 @@ const (
 	yacdMetaDownloadUrl  = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
 	xrayCoreDownloadUrl  = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
-	hysteriaDownloadUrl  = "https://github.com/apernet/hysteria/releases/latest/download/hysteria-android-arm64"
+	hysteria2DownloadUrl = "https://github.com/apernet/hysteria/releases/latest/download/hysteria-android-arm64"
 	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
 	geositeDownloadUrl   = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
 	tun2socksDownloadUrl = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
@@ -98,7 +98,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 	return nil
 }
 
-// updateCore update core, support xray, v2ray, sing-box, mihomo, hysteria
+// updateCore update core, support xray, v2ray, sing-box, mihomo, hysteria2
 func updateCore() error {
 	if runtime.GOARCH != "arm64" {
 		return e.New("this feature only support arm64 device").WithPrefix(tagUpdate)
@@ -124,12 +124,12 @@ func updateCore() error {
 		if serviceRunFlag, err = updateSingbox(); err != nil {
 			return err
 		}
-	case "clash.meta", "mihomo":
+	case "mihomo":
 		if serviceRunFlag, err = updateMihomo(); err != nil {
 			return err
 		}
-	case "hysteria":
-		if serviceRunFlag, err = updateHysteria(); err != nil {
+	case "hysteria2":
+		if serviceRunFlag, err = updateHysteria2(); err != nil {
 			return err
 		}
 	default:
@@ -241,10 +241,10 @@ func updateV2ray() (bool, error) {
 	return serviceRunFlag, nil
 }
 
-func updateHysteria() (bool, error) {
+func updateHysteria2() (bool, error) {
 	serviceRunFlag := false
-	hysteriaPath := path.Join(builds.Config.XrayHelper.DataDir, "hysteria")
-	if err := common.DownloadFile(hysteriaPath, hysteriaDownloadUrl); err != nil {
+	hysteria2Path := path.Join(builds.Config.XrayHelper.DataDir, "hysteria2")
+	if err := common.DownloadFile(hysteria2Path, hysteria2DownloadUrl); err != nil {
 		return false, err
 	}
 	// update core need stop core service first
@@ -254,19 +254,19 @@ func updateHysteria() (bool, error) {
 		serviceRunFlag = true
 		_ = os.Remove(builds.Config.XrayHelper.CorePath)
 	}
-	hysteriaFile, err := os.Open(hysteriaPath)
+	hysteria2File, err := os.Open(hysteria2Path)
 	if err != nil {
-		return serviceRunFlag, e.New("cannot open file "+hysteriaPath+", ", err).WithPrefix(tagUpdate)
+		return serviceRunFlag, e.New("cannot open file "+hysteria2Path+", ", err).WithPrefix(tagUpdate)
 	}
-	defer func(hysteriaFile *os.File) {
-		_ = hysteriaFile.Close()
-		_ = os.Remove(hysteriaPath)
-	}(hysteriaFile)
+	defer func(hysteria2File *os.File) {
+		_ = hysteria2File.Close()
+		_ = os.Remove(hysteria2Path)
+	}(hysteria2File)
 	saveFile, err := os.OpenFile(builds.Config.XrayHelper.CorePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
 	if err != nil {
 		return serviceRunFlag, e.New("cannot open file "+builds.Config.XrayHelper.CorePath+", ", err).WithPrefix(tagUpdate)
 	}
-	_, err = io.Copy(saveFile, hysteriaFile)
+	_, err = io.Copy(saveFile, hysteria2File)
 	if err != nil {
 		return serviceRunFlag, e.New("save file "+builds.Config.XrayHelper.CorePath+" failed, ", err).WithPrefix(tagUpdate)
 	}

@@ -92,10 +92,12 @@ func startService() error {
 				return err
 			}
 		}
-	case "clash.meta", "mihomo":
+	case "mihomo":
 		if err := overrideClashConfig(builds.Config.Clash.Template, path.Join(builds.Config.XrayHelper.CoreConfig, "config.yaml")); err != nil {
 			return err
 		}
+	case "hysteria2":
+		service.AppendEnv("HYSTERIA_DISABLE_UPDATE_CHECK=1")
 	}
 	service.SetUidGid("0", common.CoreGid)
 	ignoreSignals()
@@ -169,8 +171,10 @@ func newServices(serviceLogFile *os.File) (service common.External, err error) {
 				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
 			case "sing-box":
 				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
-			case "clash.meta", "mihomo":
+			case "mihomo":
 				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig), nil
+			case "hysteria2":
+				return nil, e.New("hysteria2 CoreConfig should be a file").WithPrefix(tagService)
 			default:
 				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
 			}
@@ -182,8 +186,10 @@ func newServices(serviceLogFile *os.File) (service common.External, err error) {
 				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
 			case "sing-box":
 				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
-			case "clash.meta", "mihomo":
+			case "mihomo":
 				return nil, e.New("mihomo CoreConfig should be a directory").WithPrefix(tagService)
+			case "hysteria2":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-c", builds.Config.XrayHelper.CoreConfig), nil
 			default:
 				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
 			}

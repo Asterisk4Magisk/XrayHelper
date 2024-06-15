@@ -1,6 +1,6 @@
 # Example of xrayhelper config
 xrayHelper:
-    # Required, Default value: xray, your core type, support xray, v2ray, sing-box, mihomo(clash.meta)
+    # Required, Default value: xray, your core type, support xray, v2ray, sing-box, mihomo, hysteria2
     coreType: xray
     # Required, absolute path to your core
     corePath: /data/adb/xray/bin/xray
@@ -57,7 +57,7 @@ proxy:
         - 192.168.123.0/24
         - fd12:3456:789a:bcde::/64
 clash:
-    # Required for mihomo(clash.meta), Default value: 65533, all dns request will be redirected to the port which listen by mihomo(clash.meta)
+    # Required for mihomo, Default value: 65533, all dns request will be redirected to the port which listen by mihomo
     dnsPort: 65533
-    # Optional, if not empty, the template config will replace (or inject to) the actual mihomo(clash.meta) config
+    # Optional, if not empty, the template config will replace (or inject to) the actual mihomo config
     template: /data/adb/xray/mihomoconfs/template.yaml

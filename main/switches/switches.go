@@ -17,9 +17,9 @@ type Switch interface {
 
 func NewSwitch(coreType string) (Switch, error) {
 	switch coreType {
-	case "xray", "sing-box":
+	case "xray", "sing-box", "hysteria2":
 		return new(ray.RaySwitch), nil
-	case "clash.meta", "mihomo":
+	case "mihomo":
 		return new(clash.ClashSwitch), nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagSwitches)
