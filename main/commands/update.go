@@ -6,6 +6,7 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"XrayHelper/main/proxies"
+	"XrayHelper/main/serial"
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
@@ -23,12 +24,12 @@ import (
 
 const (
 	tagUpdate            = "update"
-	singboxUrl           = "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
-	mihomoUrl            = "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest"
+	singboxUrl           = "https://api.github.com/repos/SagerNet/sing-box/releases"
+	mihomoUrl            = "https://api.github.com/repos/MetaCubeX/mihomo/releases"
+	hysteriaUrl          = "https://api.github.com/repos/apernet/hysteria/releases"
 	yacdMetaDownloadUrl  = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
 	xrayCoreDownloadUrl  = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
-	hysteria2DownloadUrl = "https://github.com/apernet/hysteria/releases/latest/download/hysteria-android-arm64"
 	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
 	geositeDownloadUrl   = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
 	tun2socksDownloadUrl = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
@@ -243,6 +244,10 @@ func updateV2ray() (bool, error) {
 
 func updateHysteria2() (bool, error) {
 	serviceRunFlag := false
+	hysteria2DownloadUrl, err := getDownloadUrl(hysteriaUrl, "app/v2", "android-arm64")
+	if err != nil {
+		return false, err
+	}
 	hysteria2Path := path.Join(builds.Config.XrayHelper.DataDir, "hysteria2")
 	if err := common.DownloadFile(hysteria2Path, hysteria2DownloadUrl); err != nil {
 		return false, err
@@ -277,7 +282,7 @@ func updateHysteria2() (bool, error) {
 // updateSingbox update sing-box core
 func updateSingbox() (bool, error) {
 	serviceRunFlag := false
-	singboxDownloadUrl, err := getDownloadUrl(singboxUrl, "android-arm64.tar.gz")
+	singboxDownloadUrl, err := getDownloadUrlLatest(singboxUrl, "android-arm64.tar.gz")
 	if err != nil {
 		return false, err
 	}
@@ -335,7 +340,7 @@ func updateSingbox() (bool, error) {
 // updateMihomo update mihomo core
 func updateMihomo() (bool, error) {
 	serviceRunFlag := false
-	mihomoDownloadUrl, err := getDownloadUrl(mihomoUrl, "mihomo-android-arm64-v")
+	mihomoDownloadUrl, err := getDownloadUrlLatest(mihomoUrl, "mihomo-android-arm64-v")
 	if err != nil {
 		return false, err
 	}
@@ -497,46 +502,94 @@ func updateYacdMeta() error {
 	return nil
 }
 
-// getDownloadUrl use github api to get download url
-func getDownloadUrl(githubApi string, nameContent string) (string, error) {
-	rawData, err := common.GetRawData(githubApi)
+// getDownloadUrlLatest use GitHub api to get latest download url
+func getDownloadUrlLatest(githubApi string, assetNameContent string) (string, error) {
+	rawData, err := common.GetRawData(githubApi + "/latest")
 	if err != nil {
 		return "", err
 	}
-	var jsonValue interface{}
-	err = json.Unmarshal(rawData, &jsonValue)
+	var jsonMap serial.OrderedMap
+	err = json.Unmarshal(rawData, &jsonMap)
 	if err != nil {
 		return "", e.New("unmarshal github json failed, ", err).WithPrefix(tagUpdate)
 	}
-	// assert json to map
-	jsonMap, ok := jsonValue.(map[string]interface{})
-	if !ok {
-		return "", e.New("assert github json to map failed").WithPrefix(tagUpdate)
-	}
-	assets, ok := jsonMap["assets"]
+	assets, ok := jsonMap.Get("assets")
 	if !ok {
 		return "", e.New("cannot find assets ").WithPrefix(tagUpdate)
 	}
 	// assert assets
-	assetsMap, ok := assets.([]interface{})
+	assetsArray, ok := assets.Value.(serial.OrderedArray)
 	if !ok {
-		return "", e.New("assert assets to []interface failed").WithPrefix(tagUpdate)
+		return "", e.New("assert assets to serial.OrderedArray failed").WithPrefix(tagUpdate)
 	}
-	for _, asset := range assetsMap {
-		assetMap, ok := asset.(map[string]interface{})
+	for _, asset := range assetsArray {
+		assetMap, ok := asset.(serial.OrderedMap)
 		if !ok {
 			continue
 		}
-		name, ok := assetMap["name"].(string)
+		name, ok := assetMap.Get("name")
 		if !ok {
 			continue
 		}
-		if strings.Contains(name, nameContent) {
-			downloadUrl, ok := assetMap["browser_download_url"].(string)
+		if strings.Contains(name.Value.(string), assetNameContent) {
+			downloadUrl, ok := assetMap.Get("browser_download_url")
 			if !ok {
 				return "", e.New("assert browser_download_url to string failed").WithPrefix(tagUpdate)
 			}
-			return downloadUrl, nil
+			return downloadUrl.Value.(string), nil
+		}
+	}
+	return "", e.New("cannot get download url from " + githubApi).WithPrefix(tagUpdate)
+}
+
+// getDownloadUrl use GitHub api to get download url
+func getDownloadUrl(githubApi string, tagNameContent string, assetNameContent string) (string, error) {
+	rawData, err := common.GetRawData(githubApi)
+	if err != nil {
+		return "", err
+	}
+	var jsonArray serial.OrderedArray
+	err = json.Unmarshal(rawData, &jsonArray)
+	if err != nil {
+		return "", e.New("unmarshal github json array failed, ", err).WithPrefix(tagUpdate)
+	}
+	var jsonMap serial.OrderedMap
+	for _, release := range jsonArray {
+		if releaseMap, ok := release.(serial.OrderedMap); ok {
+			if tagName, ok := releaseMap.Get("tag_name"); ok {
+				if strings.Contains(tagName.Value.(string), tagNameContent) {
+					jsonMap = releaseMap
+					break
+				}
+			}
+		}
+	}
+	if len(jsonMap.Values) > 0 {
+		assets, ok := jsonMap.Get("assets")
+		if !ok {
+			return "", e.New("cannot find assets ").WithPrefix(tagUpdate)
+		}
+		// assert assets
+		assetsArray, ok := assets.Value.(serial.OrderedArray)
+		if !ok {
+			return "", e.New("assert assets to serial.OrderedArray failed").WithPrefix(tagUpdate)
+		}
+		for _, asset := range assetsArray {
+			assetMap, ok := asset.(serial.OrderedMap)
+			if !ok {
+				continue
+			}
+			name, ok := assetMap.Get("name")
+			if !ok {
+				continue
+			}
+			if strings.Contains(name.Value.(string), assetNameContent) {
+				downloadUrl, ok := assetMap.Get("browser_download_url")
+				if !ok {
+					return "", e.New("assert browser_download_url to string failed").WithPrefix(tagUpdate)
+				}
+				return downloadUrl.Value.(string), nil
+			}
 		}
 	}
 	return "", e.New("cannot get download url from " + githubApi).WithPrefix(tagUpdate)
