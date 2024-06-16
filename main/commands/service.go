@@ -71,6 +71,13 @@ func startService() error {
 	if len(servicePid) > 0 {
 		return e.New("core is running, pid is " + servicePid).WithPrefix(tagService)
 	}
+	// start adguardhome before core, maybe core use adguardhome as upstream
+	if builds.Config.AdgHome.Enable {
+		if err := startAdgHome(); err != nil {
+			stopService()
+			return err
+		}
+	}
 	// get core service log file
 	serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "error.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
 	if err != nil {
@@ -133,13 +140,6 @@ OUT:
 			_ = service.Kill()
 			stopService()
 			return e.New("write core pid failed, ", err).WithPrefix(tagService)
-		}
-		if builds.Config.AdgHome.Enable {
-			if err := startAdgHome(); err != nil {
-				_ = service.Kill()
-				stopService()
-				return err
-			}
 		}
 	} else {
 		_ = service.Kill()
