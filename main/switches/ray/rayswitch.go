@@ -181,11 +181,12 @@ func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
 			}
 			if tag.Value == builds.Config.XrayHelper.ProxyTag {
 				// replace
-				outbound, err = shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
+				outbound, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
 				if err != nil {
 					return nil, err
 				}
 				outboundArray[i] = outbound
+				// array is a slice, need reset
 				jsonMap.Set("outbounds", outboundArray)
 				// marshal
 				marshal, err := json.MarshalIndent(jsonMap, "", "    ")
@@ -210,16 +211,16 @@ func replaceProxyNode(conf []byte, index int) (replacedConf []byte, err error) {
 		}
 		// replace
 		if server, ok := clientObject.Get("server"); ok {
-			yamlMap.Set("server", server.Value)
+			yamlMap.SetValue(server)
 		}
 		if auth, ok := clientObject.Get("auth"); ok {
-			yamlMap.Set("auth", auth.Value)
+			yamlMap.SetValue(auth)
 		}
 		if obfs, ok := clientObject.Get("obfs"); ok {
-			yamlMap.Set("obfs", obfs.Value)
+			yamlMap.SetValue(obfs)
 		}
 		if tls, ok := clientObject.Get("tls"); ok {
-			yamlMap.Set("tls", tls.Value)
+			yamlMap.SetValue(tls)
 		}
 		// marshal
 		marshal, err := yaml.Marshal(yamlMap)

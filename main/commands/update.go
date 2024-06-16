@@ -5,7 +5,6 @@ import (
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
-	"XrayHelper/main/proxies"
 	"XrayHelper/main/serial"
 	"archive/tar"
 	"archive/zip"
@@ -33,6 +32,7 @@ const (
 	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
 	geositeDownloadUrl   = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
 	tun2socksDownloadUrl = "https://github.com/heiher/hev-socks5-tunnel/releases/latest/download/hev-socks5-tunnel-linux-arm64"
+	adgHomeDownloadUrl   = "https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz"
 )
 
 type UpdateCommand struct{}
@@ -42,7 +42,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return e.New("not specify operation, available operation [core|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
+		return e.New("not specify operation, available operation [core|adghome|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return e.New("too many arguments").WithPrefix(tagUpdate).WithPathObj(*this)
@@ -66,6 +66,12 @@ func (this *UpdateCommand) Execute(args []string) error {
 	case "core":
 		log.HandleInfo("update: updating core")
 		if err := updateCore(); err != nil {
+			return err
+		}
+		log.HandleInfo("update: update success")
+	case "adghome":
+		log.HandleInfo("update: updating adghome")
+		if err := updateAdgHome(); err != nil {
 			return err
 		}
 		log.HandleInfo("update: update success")
@@ -94,7 +100,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		}
 		log.HandleInfo("update: update success")
 	default:
-		return e.New("unknown operation " + args[0] + ", available operation [core|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
+		return e.New("unknown operation " + args[0] + ", available operation [core|adghome|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	return nil
 }
@@ -139,17 +145,6 @@ func updateCore() error {
 	if serviceRunFlag {
 		log.HandleInfo("update: starting core with new version")
 		_ = startService()
-		if err := builds.LoadPackage(); err != nil {
-			log.HandleError("update: load package failed, " + err.Error())
-		} else {
-			proxy, err := proxies.NewProxy(builds.Config.Proxy.Method)
-			if err != nil {
-				log.HandleError("update: get proxy failed, " + err.Error())
-			} else {
-				proxy.Disable()
-				_ = proxy.Enable()
-			}
-		}
 	}
 	return nil
 }
@@ -380,6 +375,65 @@ func updateMihomo() (bool, error) {
 	}
 	_ = saveFile.Close()
 	return serviceRunFlag, nil
+}
+
+// updateAdgHome update AdgHome
+func updateAdgHome() error {
+	serviceRunFlag := false
+	adgHomePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "adguardhome")
+	adgHomeGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "adghome.tar.gz")
+	if err := common.DownloadFile(adgHomeGzipPath, adgHomeDownloadUrl); err != nil {
+		return err
+	}
+	// update core need stop core service first
+	if len(getServicePid()) > 0 {
+		log.HandleInfo("update: detect core is running, stop it")
+		stopService()
+		serviceRunFlag = true
+		_ = os.Remove(adgHomePath)
+	}
+	adgHomeGzip, err := os.Open(adgHomeGzipPath)
+	if err != nil {
+		return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(adgHomeGzip *os.File) {
+		_ = adgHomeGzip.Close()
+		_ = os.Remove(adgHomeGzipPath)
+	}(adgHomeGzip)
+	gzipReader, err := gzip.NewReader(adgHomeGzip)
+	if err != nil {
+		return e.New("open gzip file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func(gzipReader *gzip.Reader) {
+		_ = gzipReader.Close()
+	}(gzipReader)
+	tarReader := tar.NewReader(gzipReader)
+	for {
+		fileHeader, err := tarReader.Next()
+		if err != nil {
+			if err == io.EOF {
+				return e.New("cannot find adghome binary").WithPrefix(tagUpdate)
+			}
+			continue
+		}
+		if filepath.Base(fileHeader.Name) == "AdGuardHome" && fileHeader.Typeflag != tar.TypeDir {
+			saveFile, err := os.OpenFile(adgHomePath, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+			if err != nil {
+				return e.New("cannot open file "+adgHomePath+", ", err).WithPrefix(tagUpdate)
+			}
+			_, err = io.Copy(saveFile, tarReader)
+			if err != nil {
+				return e.New("save file "+adgHomePath+" failed, ", err).WithPrefix(tagUpdate)
+			}
+			_ = saveFile.Close()
+			break
+		}
+	}
+	if serviceRunFlag {
+		log.HandleInfo("update: starting core")
+		_ = startService()
+	}
+	return nil
 }
 
 // updateTun2socks update tun2socks

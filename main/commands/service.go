@@ -131,10 +131,19 @@ OUT:
 	if listenFlag {
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"), []byte(strconv.Itoa(service.Pid())), 0644); err != nil {
 			_ = service.Kill()
+			stopService()
 			return e.New("write core pid failed, ", err).WithPrefix(tagService)
+		}
+		if builds.Config.AdgHome.Enable {
+			if err := startAdgHome(); err != nil {
+				_ = service.Kill()
+				stopService()
+				return err
+			}
 		}
 	} else {
 		_ = service.Kill()
+		stopService()
 		return e.New("core service not listen, please check error.log").WithPrefix(tagService)
 	}
 	return nil
@@ -214,6 +223,7 @@ func stopService() {
 	} else {
 		log.HandleDebug(err)
 	}
+	stopAdgHome()
 }
 
 // getServicePid get core pid from pid file
@@ -310,8 +320,6 @@ func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err err
 	default:
 		return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
 	}
-	// replace
-	jsonMap.Set("dns", dnsMap)
 	// marshal
 	marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 	if err != nil {
@@ -363,14 +371,11 @@ func overrideClashConfig(template string, target string) error {
 	} // if enable AutoDNSStrategy
 	if builds.Config.Proxy.AutoDNSStrategy {
 		templateYamlMap.Set("ipv6", builds.Config.Proxy.EnableIPv6)
-		dns, ok := templateYamlMap.Get("dns")
-		if ok {
+		if dns, ok := templateYamlMap.Get("dns"); ok {
 			// assert dns
-			dnsMap, ok := dns.Value.(serial.OrderedMap)
-			if ok {
+			if dnsMap, ok := dns.Value.(serial.OrderedMap); ok {
 				dnsMap.Set("listen", "127.0.0.1:"+builds.Config.Clash.DNSPort)
 			}
-			templateYamlMap.Set("dns", dnsMap)
 		}
 	}
 	// save template
@@ -396,4 +401,69 @@ func overrideClashConfig(template string, target string) error {
 		return e.New("write overridden clash config failed, ", err).WithPrefix(tagService)
 	}
 	return nil
+}
+
+func startAdgHome() error {
+	adgHomePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "adguardhome")
+	adgHomeConfigPath := path.Join(builds.Config.AdgHome.WorkDir, "config.yaml")
+	adgHomeConfigFile, err := os.ReadFile(adgHomeConfigPath)
+	if err != nil {
+		return e.New("load adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	var adgHomeConfig serial.OrderedMap
+	if err := yaml.Unmarshal(adgHomeConfigFile, &adgHomeConfig); err != nil {
+		return e.New("unmarshal adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	if http, ok := adgHomeConfig.Get("http"); ok {
+		httpMap := http.Value.(serial.OrderedMap)
+		// set address
+		httpMap.Set("address", builds.Config.AdgHome.Address)
+	}
+	if dns, ok := adgHomeConfig.Get("dns"); ok {
+		dnsMap := dns.Value.(serial.OrderedMap)
+		// set dnsPort
+		dnsMap.Set("port", builds.Config.AdgHome.DNSPort)
+		// set dnsStrategy
+		if builds.Config.Proxy.AutoDNSStrategy {
+			dnsMap.Set("aaaa_disabled", !builds.Config.Proxy.EnableIPv6)
+		}
+	}
+	// save config
+	marshal, err := yaml.Marshal(adgHomeConfig)
+	if err != nil {
+		return e.New("marshal adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	// write new config
+	if err := os.WriteFile(adgHomeConfigPath, marshal, 0644); err != nil {
+		return e.New("write adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	// create adghome service
+	service := common.NewExternal(0, nil, nil, adgHomePath,
+		"--no-check-update",
+		"-w", builds.Config.AdgHome.WorkDir,
+		"-c", adgHomeConfigPath,
+		"--pidfile", path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"),
+		"-l", path.Join(builds.Config.XrayHelper.RunDir, "adghome.log"))
+	service.AppendEnv("SSL_CERT_DIR=/system/etc/security/cacerts/")
+	service.SetUidGid("0", common.CoreGid)
+	service.Start()
+	return nil
+}
+
+func stopAdgHome() {
+	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid")); err == nil {
+		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"))
+		if err != nil {
+			log.HandleDebug(err)
+		}
+		pid, _ := strconv.Atoi(string(pidFile))
+		if serviceProcess, err := os.FindProcess(pid); err == nil {
+			_ = serviceProcess.Kill()
+			_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"))
+		} else {
+			log.HandleDebug(err)
+		}
+	} else {
+		log.HandleDebug(err)
+	}
 }

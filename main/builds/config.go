@@ -30,6 +30,16 @@ var Config struct {
 		SubList    []string `yaml:"subList"`
 		UserAgent  string   `yaml:"userAgent"`
 	} `yaml:"xrayHelper"`
+	Clash struct {
+		DNSPort  string `default:"65533" yaml:"dnsPort"`
+		Template string `yaml:"template"`
+	} `yaml:"clash"`
+	AdgHome struct {
+		Enable  bool   `default:"false" yaml:"enable"`
+		Address string `default:"127.0.0.1:65530" yaml:"address"`
+		WorkDir string `yaml:"workDir"`
+		DNSPort string `default:"65531" yaml:"dnsPort"`
+	} `yaml:"adgHome"`
 	Proxy struct {
 		Method          string   `default:"tproxy" yaml:"method"`
 		TproxyPort      string   `default:"65535" yaml:"tproxyPort"`
@@ -43,10 +53,6 @@ var Config struct {
 		IgnoreList      []string `yaml:"ignoreList"`
 		IntraList       []string `yaml:"intraList"`
 	} `yaml:"proxy"`
-	Clash struct {
-		DNSPort  string `default:"65533" yaml:"dnsPort"`
-		Template string `yaml:"template"`
-	} `yaml:"clash"`
 }
 
 // LoadConfig load program configuration file, should be called before any command Execute
@@ -62,8 +68,9 @@ func LoadConfig() error {
 		return e.New("unmarshal config failed, ", err).WithPrefix(tagConfig)
 	}
 	log.HandleDebug(Config.XrayHelper)
-	log.HandleDebug(Config.Proxy)
 	log.HandleDebug(Config.Clash)
+	log.HandleDebug(Config.AdgHome)
+	log.HandleDebug(Config.Proxy)
 	return nil
 }
 

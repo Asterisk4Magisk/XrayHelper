@@ -15,6 +15,14 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `proxyTag`默认值`proxy`，使用 XrayHelper 进行节点切换时，将进行替换的出站代理 Tag
     - `subList`可选，数组，节点订阅链接（SIP002/v2rayNg/Hysteria/Hysteria2），也支持 clash 订阅链接(需要在订阅链接前添加`clash+`前缀)
     - `userAgent`可选，自定义 XrayHelper http 请求的 User-Agent
+- clash
+  - `dnsPort`使用`mihomo`时必填，默认值`65533`，mihomo 监听的 dns 端口, XrayHelper 会将本机 DNS 请求劫持到该端口
+  - `template`可选，mihomo 配置模板，指定配置模板后，该模板会**覆盖（或注入）** mihomo 配置文件对应内容
+- adgHome
+  - `enable`默认值`false`，是否随核心服务一同启动 AdGuardHome ，需要提前下载 adgHome 二进制文件（可使用命令`xrayhelper update adghome`），由于`mihomo`、`hysteria2`的 DNS 模块并不完善，仅建议与他们配合使用，其他核心直接使用核心 DNS 即可，使用不当可能导致 DNS 泄露
+  - `address`启用时必填，默认值`127.0.0.1:65530`，AdGuardHome WebUI 监听地址
+  - `workDir`启用时必填，AdGuardHome 的工作目录（该目录需包含配置文件`config.yaml`）
+  - `dnsPort`启用时必填，AdGuardHome 监听的 DNS 端口；需要注意，由于`hysteria2`没有 DNS 模块，使用该核心时 XrayHelper 会将本机 DNS 请求劫持到该端口
 - proxy
     - `method`默认值`tproxy`，代理模式，可选`tproxy`、`tun`、`tun2socks`，使用 tun 模式时，请确保你的核心支持 tun 并正确配置它；使用 tun2socks 模式时，需要提前下载 tun2socks 二进制文件（可使用命令`xrayhelper update tun2socks`）
     - `tproxyPort`默认值`65535`，透明代理端口，该值需要与核心的 tproxy 入站代理端口相对应，`tproxy`模式需要
@@ -27,9 +35,6 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `apList`，可选，数组，需代理的 ap 接口名，例如`wlan+`可代理 wlan 热点，`rndis+`可代理 usb 网络共享
     - `ignoreList`，可选，数组，需要忽略的接口名，例如`wlan+`可以实现连上 wifi 不走代理
     - `intraList`，可选，数组，CIDR，默认情况下，内网地址不会被标记，若需要将部分内网地址标记，可配置此项
-- clash
-  - `dnsPort`默认值`65533`，mihomo 监听的 dns 端口
-  - `template`可选，mihomo 配置模板，指定配置模板后，该模板会**覆盖（或注入）** mihomo 配置文件对应内容
 
 ## 命令
 - service
@@ -43,9 +48,10 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `refresh`刷新系统代理规则
 - update
     - `core`更新核心，需要指定 **xrayHelper.coreType**
+    - `adghome`从 [AdguardTeam/AdGuardHome](https://github.com/AdguardTeam/AdGuardHome) 更新 adghome
+    - `tun2socks`从 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) 更新 tun2socks
     - `geodata`从 [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) 更新 GEO 数据文件
     - `subscribe`更新订阅节点（或 clash 订阅）到`${xrayHelper.dataDir}/sub.txt`（或`${xrayHelper.dataDir}/clashSub#{index}.yaml`），需要指定 **xrayHelper.subList**
-    - `tun2socks`从 [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) 更新 tun2socks
     - `yacd-meta`更新 [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta) 到`${xrayHelper.dataDir}/Yacd-meta-gh-pages`
 ### xray、sing-box、hysteria2
 - switch
@@ -64,6 +70,7 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
 ## 鸣谢
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - [@2dust/v2rayNG](https://github.com/2dust/v2rayNG)
+- [@AdguardTeam/AdGuardHome](https://github.com/AdguardTeam/AdGuardHome)
 - [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - ~~[@haishanh/yacd](https://github.com/haishanh/yacd)~~
 - [@MetaCubeX/Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)
