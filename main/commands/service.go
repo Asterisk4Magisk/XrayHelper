@@ -422,7 +422,8 @@ func startAdgHome() error {
 	if dns, ok := adgHomeConfig.Get("dns"); ok {
 		dnsMap := dns.Value.(serial.OrderedMap)
 		// set dnsPort
-		dnsMap.Set("port", builds.Config.AdgHome.DNSPort)
+		port, _ := strconv.Atoi(builds.Config.AdgHome.DNSPort)
+		dnsMap.Set("port", port)
 		// set dnsStrategy
 		if builds.Config.Proxy.AutoDNSStrategy {
 			dnsMap.Set("aaaa_disabled", !builds.Config.Proxy.EnableIPv6)
