@@ -19,7 +19,7 @@ var Option struct {
 
 	Service commands.ServiceCommand `command:"service" description:"control core service"`
 	Proxy   commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
-	Update  commands.UpdateCommand  `command:"update" description:"update core, tun2socks, geodata, yacd-meta or subscribe"`
+	Update  commands.UpdateCommand  `command:"update" description:"update core, adghome, tun2socks, geodata, yacd-meta or subscribe"`
 	Switch  commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
 	Api     commands.ApiCommand     `command:"api" description:"xrayhelper api for webui"`
 }
