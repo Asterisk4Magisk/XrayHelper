@@ -57,6 +57,14 @@ func (this *Tun) Enable() error {
 				this.Disable()
 				return err
 			}
+		case "hysteria2":
+			// hysteria2 don't have dns module, if enable AdgHome, as upstream dns resolver
+			if builds.Config.AdgHome.Enable {
+				if err := tools.RedirectDNS(builds.Config.AdgHome.DNSPort); err != nil {
+					this.Disable()
+					return err
+				}
+			}
 		default:
 			if !builds.Config.Proxy.EnableIPv6 {
 				if err := tools.DisableIPV6DNS(); err != nil {
@@ -84,6 +92,7 @@ func (this *Tun) Disable() {
 		//always clean dns rules
 		tools.EnableIPV6DNS()
 		tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
+		tools.CleanRedirectDNS(builds.Config.AdgHome.DNSPort)
 	}
 }
 

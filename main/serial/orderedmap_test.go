@@ -43,6 +43,16 @@ clash:
 		fmt.Print(err.Error())
 		return
 	}
+	// change
+	if proxy, ok := yamlMap.Get("proxy"); ok {
+		proxyMap := proxy.Value.(OrderedMap)
+		if apList, ok := proxyMap.Get("apList"); ok {
+			proxyMap.Set("apList", append(apList.Value.(OrderedArray), "test+"))
+		}
+		if _, ok := proxyMap.Get("method"); ok {
+			proxyMap.Set("method", "test")
+		}
+	}
 	marshal, _ := yaml.Marshal(yamlMap)
 	fmt.Print(string(marshal))
 }

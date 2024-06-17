@@ -20,6 +20,24 @@ xrayHelper:
         - clash+https://testclashsuburl.com
     # Optional, custom User-Agent for http requests send by xrayhelper
     userAgent: 'ClashMeta'
+clash:
+    # Required for mihomo, Default value: 65533, all dns request will be redirected to the port which listen by mihomo
+    dnsPort: 65533
+    # Optional, if not empty, the template config will replace (or inject to) the actual mihomo config
+    template: /data/adb/xray/mihomoconfs/template.yaml
+adgHome:
+    # Default value: false, start AdGuardHome with core service or not
+    # please run command "xrayhelper update adghome" to install it first
+    # recommended for use with mihomo and hysteria2 only, because their DNS module is incomprehension
+    # improper usage will lead to dns leak
+    enable: false
+    # Required for adgHome, Default value: 127.0.0.1:65530, AdGuardHome's webui
+    address: 127.0.0.1:65530
+    # Required for adgHome, AdGuardHome's workDir(need include config with ${workDir}/config.yaml)
+    workDir: /data/adb/xray/adghomeconfs/
+    # Required for adgHome, Default value: 65531, AdGuardHome's DNS port
+    # Special, when your core is hysteria2, all dns request will be redirected to this port, because hysteria2 don't have DNS module
+    dnsPort: 65531
 proxy:
     # Required, Default value: tproxy, proxy method you want to use, support tproxy, tun, tun2socks
     # If you use tun mode, please make sure your core support tun, and configure it correctly
@@ -56,8 +74,3 @@ proxy:
     intraList:
         - 192.168.123.0/24
         - fd12:3456:789a:bcde::/64
-clash:
-    # Required for mihomo, Default value: 65533, all dns request will be redirected to the port which listen by mihomo
-    dnsPort: 65533
-    # Optional, if not empty, the template config will replace (or inject to) the actual mihomo config
-    template: /data/adb/xray/mihomoconfs/template.yaml

@@ -87,10 +87,30 @@ func (om *OrderedMap) Set(key string, value interface{}) {
 	om.Values = append(om.Values, OrderedValue{key, value})
 }
 
+// SetValue change or add an OrderedValue to OrderedMap.
+func (om *OrderedMap) SetValue(v *OrderedValue) {
+	for i := range om.Values {
+		if om.Values[i].Key == v.Key {
+			om.Values[i] = *v
+			return
+		}
+	}
+	om.Values = append(om.Values, *v)
+}
+
 // Delete remove an Object from OrderedMap.
 func (om *OrderedMap) Delete(key string) {
 	for i, val := range om.Values {
 		if val.Key == key {
+			om.Values = append(om.Values[:i], om.Values[i+1:]...)
+		}
+	}
+}
+
+// DeleteValue remove an OrderedValue from OrderedMap.
+func (om *OrderedMap) DeleteValue(v *OrderedValue) {
+	for i, val := range om.Values {
+		if val.Key == v.Key {
 			om.Values = append(om.Values[:i], om.Values[i+1:]...)
 		}
 	}

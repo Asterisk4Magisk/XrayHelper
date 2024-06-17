@@ -22,6 +22,8 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 ## Update Components
 - update core  
   `xrayhelper update core`, should configure **xrayHelper.coreType** first
+- update adghome  
+  `xrayhelper update adghome`, update adghome from [AdguardTeam/AdGuardHome](https://github.com/AdguardTeam/AdGuardHome)
 - update tun2socks  
   `xrayhelper update tun2socks`, update tun2socks from [heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - update geodata  
@@ -52,6 +54,7 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 ## Credits
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
 - [@2dust/v2rayNG](https://github.com/2dust/v2rayNG)
+- [@AdguardTeam/AdGuardHome](https://github.com/AdguardTeam/AdGuardHome)
 - [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - ~~[@haishanh/yacd](https://github.com/haishanh/yacd)~~
 - [@MetaCubeX/Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)
