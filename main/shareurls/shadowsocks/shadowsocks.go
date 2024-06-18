@@ -3,6 +3,7 @@ package shadowsocks
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
 	"strconv"
@@ -28,7 +29,7 @@ func (this *Shadowsocks) ToOutboundWithTag(coreType string, tag string) (*serial
 	switch coreType {
 	case "xray":
 		var outboundObject serial.OrderedMap
-		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("mux", addon.GetMuxObjectXray(false))
 		outboundObject.Set("protocol", "shadowsocks")
 		outboundObject.Set("settings", getShadowsocksSettingsObjectXray(this))
 		outboundObject.Set("streamSettings", getStreamSettingsObjectXray("tcp"))

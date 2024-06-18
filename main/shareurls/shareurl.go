@@ -33,7 +33,7 @@ func Parse(link string) (ShareUrl, error) {
 		return parseShadowsocks(link)
 	}
 	if strings.HasPrefix(link, vmessPrefix) {
-		return parseVmess(strings.TrimPrefix(link, vmessPrefix))
+		return parseVmess(link)
 	}
 	if strings.HasPrefix(link, vlessPrefix) {
 		return parseVLESS(link)

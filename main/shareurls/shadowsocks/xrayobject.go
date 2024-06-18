@@ -5,13 +5,6 @@ import (
 	"strconv"
 )
 
-// getMuxObjectXray get xray MuxObject
-func getMuxObjectXray(enabled bool) serial.OrderedMap {
-	var mux serial.OrderedMap
-	mux.Set("enabled", enabled)
-	return mux
-}
-
 // getStreamSettingsObjectXray get xray StreamSettingsObject
 func getStreamSettingsObjectXray(network string) serial.OrderedMap {
 	var sockoptObject serial.OrderedMap
