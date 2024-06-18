@@ -3,6 +3,7 @@ package trojan
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
 	"strconv"
@@ -20,21 +21,7 @@ type Trojan struct {
 	Security string
 
 	//addon
-	//ws/httpupgrade/h2->host quic->security grpc->authority
-	Host string
-	//ws/httpupgrade/h2->path quic->key kcp->seed grpc->serviceName
-	Path string
-	//tcp/kcp/quic->type grpc->mode
-	Type string
-
-	//tls
-	Sni         string
-	FingerPrint string
-	Alpn        string
-	//reality
-	PublicKey string //pbk
-	ShortId   string //sid
-	SpiderX   string //spx
+	Addon addon.Addon
 }
 
 func (this *Trojan) GetNodeInfo() string {
@@ -45,10 +32,10 @@ func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (*serial.Orde
 	switch coreType {
 	case "xray":
 		var outboundObject serial.OrderedMap
-		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("mux", addon.GetMuxObjectXray(false))
 		outboundObject.Set("protocol", "trojan")
 		outboundObject.Set("settings", getTrojanSettingsObjectXray(this))
-		outboundObject.Set("streamSettings", getStreamSettingsObjectXray(this))
+		outboundObject.Set("streamSettings", addon.GetStreamSettingsObjectXray(&this.Addon, this.Network, this.Security))
 		outboundObject.Set("tag", tag)
 		return &outboundObject, nil
 	case "sing-box":
@@ -59,8 +46,8 @@ func (this *Trojan) ToOutboundWithTag(coreType string, tag string) (*serial.Orde
 		serverPort, _ := strconv.Atoi(this.Port)
 		outboundObject.Set("server_port", serverPort)
 		outboundObject.Set("password", this.Password)
-		outboundObject.Set("tls", getTrojanTlsObjectSingbox(this))
-		outboundObject.Set("transport", getTrojanTransportObjectSingbox(this))
+		outboundObject.Set("tls", addon.GetTlsObjectSingbox(&this.Addon, this.Security))
+		outboundObject.Set("transport", addon.GetTransportObjectSingbox(&this.Addon, this.Network))
 		return &outboundObject, nil
 	default:
 		return nil, e.New("unsupported core type " + coreType).WithPrefix(tagTrojan).WithPathObj(*this)

@@ -3,6 +3,7 @@ package shareurls
 import (
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/shareurls/addon"
 	"XrayHelper/main/shareurls/hysteria"
 	"XrayHelper/main/shareurls/hysteria2"
 	"XrayHelper/main/shareurls/shadowsocks"
@@ -10,6 +11,7 @@ import (
 	"XrayHelper/main/shareurls/trojan"
 	"XrayHelper/main/shareurls/vless"
 	"XrayHelper/main/shareurls/vmess"
+	"XrayHelper/main/shareurls/vmessaead"
 	"encoding/json"
 	"net/url"
 	"strings"
@@ -81,6 +83,115 @@ func parseSocks(socksUrl string) (ShareUrl, error) {
 	return so, nil
 }
 
+// parseAddon parse vless/trojan/vmessaead addon
+func parseAddon(aUrl string, network string, security string) (*addon.Addon, error) {
+	addon := new(addon.Addon)
+	parse, _ := url.Parse(aUrl)
+	query, _ := url.ParseQuery(parse.RawQuery)
+	switch network {
+	case "tcp":
+		//parse VLESS headerType
+		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
+			if headerTypes[0] == "http" {
+				if hosts, ok := query["host"]; ok && len(hosts) == 1 {
+					addon.Host = hosts[0]
+				}
+			}
+		}
+	case "kcp":
+		//parse VLESS headerType
+		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
+			addon.Type = headerTypes[0]
+		}
+		//parse VLESS kcp seed
+		if seeds, ok := query["seed"]; ok && len(seeds) == 1 {
+			addon.Path = seeds[0]
+		}
+	case "ws", "http", "h2", "httpupgrade", "splithttp":
+		//parse VLESS host
+		if hosts, ok := query["host"]; ok && len(hosts) == 1 {
+			addon.Host = hosts[0]
+		}
+		//parse VLESS path
+		if paths, ok := query["path"]; ok && len(paths) == 1 {
+			addon.Path = paths[0]
+		}
+	case "quic":
+		//parse VLESS headerType
+		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
+			addon.Type = headerTypes[0]
+		}
+		//parse VLESS quicSecurity
+		if quicSecurity, ok := query["quicSecurity"]; ok && len(quicSecurity) == 1 {
+			addon.Host = quicSecurity[0]
+		}
+		//parse VLESS quicKey
+		if quicKey, ok := query["key"]; ok && len(quicKey) == 1 {
+			addon.Path = quicKey[0]
+		}
+	case "grpc":
+		//parse VLESS grpc authority
+		if authority, ok := query["authority"]; ok && len(authority) == 1 {
+			addon.Host = authority[0]
+		}
+		//parse VLESS grpc mode
+		if modes, ok := query["mode"]; ok && len(modes) == 1 {
+			addon.Type = modes[0]
+		} else {
+			addon.Type = "gun"
+		}
+		//parse VLESS grpc serviceName
+		if serviceNames, ok := query["serviceName"]; ok && len(serviceNames) == 1 {
+			addon.Path = serviceNames[0]
+		}
+	default:
+		return nil, e.New("unknown addon transport type " + network).WithPrefix(tagParser)
+	}
+	switch security {
+	case "tls":
+		//parse VLESS tls sni
+		if sni, ok := query["sni"]; ok && len(sni) == 1 {
+			addon.Sni = sni[0]
+		}
+		//parse VLESS tls fingerprint
+		if fps, ok := query["fp"]; ok && len(fps) == 1 {
+			addon.FingerPrint = fps[0]
+		} else {
+			addon.FingerPrint = "chrome"
+		}
+		//parse VLESS tls Alpn
+		if alpns, ok := query["alpn"]; ok && len(alpns) == 1 {
+			addon.Alpn = alpns[0]
+		}
+	case "reality":
+		//parse VLESS reality sni
+		if sni, ok := query["sni"]; ok && len(sni) == 1 {
+			addon.Sni = sni[0]
+		}
+		//parse VLESS reality fingerprint
+		if fps, ok := query["fp"]; ok && len(fps) == 1 {
+			addon.FingerPrint = fps[0]
+		} else {
+			addon.FingerPrint = "chrome"
+		}
+		//parse VLESS reality PublicKey
+		if publicKeys, ok := query["pbk"]; ok && len(publicKeys) == 1 {
+			addon.PublicKey = publicKeys[0]
+		}
+		//parse VLESS reality ShortId
+		if shortIds, ok := query["sid"]; ok && len(shortIds) == 1 {
+			addon.ShortId = shortIds[0]
+		}
+		//parse VLESS reality SpiderX
+		if spiderX, ok := query["spx"]; ok && len(spiderX) == 1 {
+			addon.SpiderX = spiderX[0]
+		}
+	default:
+		return nil, e.New("unknown addon security type " + security).WithPrefix(tagParser)
+	}
+	return addon, nil
+}
+
 // parseTrojan parse trojan url
 func parseTrojan(trojanUrl string) (ShareUrl, error) {
 	tj := new(trojan.Trojan)
@@ -112,100 +223,11 @@ func parseTrojan(trojanUrl string) (ShareUrl, error) {
 	} else if tj.Security = security[0]; tj.Security == "" {
 		return nil, e.New("empty trojan security type").WithPrefix(tagParser)
 	}
-	switch tj.Network {
-	case "tcp":
-		//parse trojan headerType
-		if headerTypes, ok := tjQuery["headerType"]; ok && len(headerTypes) == 1 {
-			if headerTypes[0] == "http" {
-				if hosts, ok := tjQuery["host"]; ok && len(hosts) == 1 {
-					tj.Host = hosts[0]
-				}
-			}
-		}
-	case "kcp":
-		//parse trojan headerType
-		if headerTypes, ok := tjQuery["headerType"]; ok && len(headerTypes) == 1 {
-			tj.Type = headerTypes[0]
-		}
-		//parse trojan kcp seed
-		if seeds, ok := tjQuery["seed"]; ok && len(seeds) == 1 {
-			tj.Path = seeds[0]
-		}
-	case "ws", "http", "h2", "httpupgrade":
-		//parse trojan host
-		if hosts, ok := tjQuery["host"]; ok && len(hosts) == 1 {
-			tj.Host = hosts[0]
-		}
-		//parse trojan path
-		if paths, ok := tjQuery["path"]; ok && len(paths) == 1 {
-			tj.Path = paths[0]
-		}
-	case "quic":
-		//parse trojan headerType
-		if headerTypes, ok := tjQuery["headerType"]; ok && len(headerTypes) == 1 {
-			tj.Type = headerTypes[0]
-		}
-		//parse trojan quicSecurity
-		if quicSecurity, ok := tjQuery["quicSecurity"]; ok && len(quicSecurity) == 1 {
-			tj.Host = quicSecurity[0]
-		}
-		//parse trojan quicKey
-		if quicKey, ok := tjQuery["key"]; ok && len(quicKey) == 1 {
-			tj.Path = quicKey[0]
-		}
-	case "grpc":
-		//parse trojan grpc authority
-		if authority, ok := tjQuery["authority"]; ok && len(authority) == 1 {
-			tj.Host = authority[0]
-		}
-		//parse trojan grpc mode
-		if modes, ok := tjQuery["mode"]; ok && len(modes) == 1 {
-			tj.Type = modes[0]
-		}
-		//parse trojan grpc serviceName
-		if serviceNames, ok := tjQuery["serviceName"]; ok && len(serviceNames) == 1 {
-			tj.Path = serviceNames[0]
-		}
-	default:
-		return nil, e.New("unknown trojan transport type " + tj.Network).WithPrefix(tagParser)
-	}
-	switch tj.Security {
-	case "tls":
-		//parse trojan tls sni
-		if sni, ok := tjQuery["sni"]; ok && len(sni) == 1 {
-			tj.Sni = sni[0]
-		}
-		//parse trojan tls fingerprint
-		if fps, ok := tjQuery["fp"]; ok && len(fps) == 1 {
-			tj.FingerPrint = fps[0]
-		}
-		//parse trojan tls Alpn
-		if alpns, ok := tjQuery["alpn"]; ok && len(alpns) == 1 {
-			tj.Alpn = alpns[0]
-		}
-	case "reality":
-		//parse trojan reality sni
-		if sni, ok := tjQuery["sni"]; ok && len(sni) == 1 {
-			tj.Sni = sni[0]
-		}
-		//parse trojan reality fingerprint
-		if fps, ok := tjQuery["fp"]; ok && len(fps) == 1 {
-			tj.FingerPrint = fps[0]
-		}
-		//parse trojan reality PublicKey
-		if publicKeys, ok := tjQuery["pbk"]; ok && len(publicKeys) == 1 {
-			tj.PublicKey = publicKeys[0]
-		}
-		//parse trojan reality ShortId
-		if shortIds, ok := tjQuery["sid"]; ok && len(shortIds) == 1 {
-			tj.ShortId = shortIds[0]
-		}
-		//parse trojan reality SpiderX
-		if spiderX, ok := tjQuery["spx"]; ok && len(spiderX) == 1 {
-			tj.SpiderX = spiderX[0]
-		}
-	default:
-		return nil, e.New("unknown trojan security type " + tj.Security).WithPrefix(tagParser)
+	//parse addon
+	if addons, err := parseAddon(trojanUrl, tj.Network, tj.Security); err != nil {
+		return nil, err
+	} else {
+		tj.Addon = *addons
 	}
 	return tj, nil
 }
@@ -243,7 +265,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	}
 	//parse VLESS network
 	if types, ok := vlQuery["type"]; !ok {
-		vl.Network = "tcp"
+		vl.Network = "none"
 	} else if len(types) > 1 {
 		return nil, e.New("multiple VLESS transport type").WithPrefix(tagParser)
 	} else if vl.Network = types[0]; vl.Network == "" {
@@ -257,117 +279,75 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	} else if vl.Security = security[0]; vl.Security == "" {
 		return nil, e.New("empty VLESS security type").WithPrefix(tagParser)
 	}
-
-	switch vl.Network {
-	case "tcp":
-		//parse VLESS headerType
-		if headerTypes, ok := vlQuery["headerType"]; ok && len(headerTypes) == 1 {
-			if headerTypes[0] == "http" {
-				if hosts, ok := vlQuery["host"]; ok && len(hosts) == 1 {
-					vl.Host = hosts[0]
-				}
-			}
-		}
-	case "kcp":
-		//parse VLESS headerType
-		if headerTypes, ok := vlQuery["headerType"]; ok && len(headerTypes) == 1 {
-			vl.Type = headerTypes[0]
-		}
-		//parse VLESS kcp seed
-		if seeds, ok := vlQuery["seed"]; ok && len(seeds) == 1 {
-			vl.Path = seeds[0]
-		}
-	case "ws", "http", "h2", "httpupgrade":
-		//parse VLESS host
-		if hosts, ok := vlQuery["host"]; ok && len(hosts) == 1 {
-			vl.Host = hosts[0]
-		}
-		//parse VLESS path
-		if paths, ok := vlQuery["path"]; ok && len(paths) == 1 {
-			vl.Path = paths[0]
-		}
-	case "quic":
-		//parse VLESS headerType
-		if headerTypes, ok := vlQuery["headerType"]; ok && len(headerTypes) == 1 {
-			vl.Type = headerTypes[0]
-		}
-		//parse VLESS quicSecurity
-		if quicSecurity, ok := vlQuery["quicSecurity"]; ok && len(quicSecurity) == 1 {
-			vl.Host = quicSecurity[0]
-		}
-		//parse VLESS quicKey
-		if quicKey, ok := vlQuery["key"]; ok && len(quicKey) == 1 {
-			vl.Path = quicKey[0]
-		}
-	case "grpc":
-		//parse VLESS grpc authority
-		if authority, ok := vlQuery["authority"]; ok && len(authority) == 1 {
-			vl.Host = authority[0]
-		}
-		//parse VLESS grpc mode
-		if modes, ok := vlQuery["mode"]; ok && len(modes) == 1 {
-			vl.Type = modes[0]
-		}
-		//parse VLESS grpc serviceName
-		if serviceNames, ok := vlQuery["serviceName"]; ok && len(serviceNames) == 1 {
-			vl.Path = serviceNames[0]
-		}
-	default:
-		return nil, e.New("unknown VLESS transport type " + vl.Network).WithPrefix(tagParser)
-	}
-	switch vl.Security {
-	case "tls":
-		//parse VLESS tls sni
-		if sni, ok := vlQuery["sni"]; ok && len(sni) == 1 {
-			vl.Sni = sni[0]
-		}
-		//parse VLESS tls fingerprint
-		if fps, ok := vlQuery["fp"]; ok && len(fps) == 1 {
-			vl.FingerPrint = fps[0]
-		}
-		//parse VLESS tls Alpn
-		if alpns, ok := vlQuery["alpn"]; ok && len(alpns) == 1 {
-			vl.Alpn = alpns[0]
-		}
-	case "reality":
-		//parse VLESS reality sni
-		if sni, ok := vlQuery["sni"]; ok && len(sni) == 1 {
-			vl.Sni = sni[0]
-		}
-		//parse VLESS reality fingerprint
-		if fps, ok := vlQuery["fp"]; ok && len(fps) == 1 {
-			vl.FingerPrint = fps[0]
-		}
-		//parse VLESS reality PublicKey
-		if publicKeys, ok := vlQuery["pbk"]; ok && len(publicKeys) == 1 {
-			vl.PublicKey = publicKeys[0]
-		}
-		//parse VLESS reality ShortId
-		if shortIds, ok := vlQuery["sid"]; ok && len(shortIds) == 1 {
-			vl.ShortId = shortIds[0]
-		}
-		//parse VLESS reality SpiderX
-		if spiderX, ok := vlQuery["spx"]; ok && len(spiderX) == 1 {
-			vl.SpiderX = spiderX[0]
-		}
-	default:
-		return nil, e.New("unknown VLESS security type " + vl.Security).WithPrefix(tagParser)
+	//parse addon
+	if addons, err := parseAddon(vlessUrl, vl.Network, vl.Security); err != nil {
+		return nil, err
+	} else {
+		vl.Addon = *addons
 	}
 	return vl, nil
 }
 
 // parseVmess parse Vmess url
 func parseVmess(vmessUrl string) (ShareUrl, error) {
-	v2 := new(vmess.Vmess)
-	originJson, err := common.DecodeBase64(vmessUrl)
+	originJson, err := common.DecodeBase64(strings.TrimPrefix(vmessUrl, "vmess://"))
 	if err != nil {
-		return nil, err
+		return parseVmessAEAD(vmessUrl)
 	}
+	v2 := new(vmess.Vmess)
 	err = json.Unmarshal([]byte(originJson), v2)
 	if err != nil {
 		return nil, e.New("unmarshal origin json failed, ", err).WithPrefix(tagParser)
 	}
 	return v2, nil
+}
+
+// parseVmessAEAD parse VmessAEAD url
+func parseVmessAEAD(vmessUrl string) (ShareUrl, error) {
+	vm := new(vmessaead.VmessAEAD)
+	vmParse, err := url.Parse(vmessUrl)
+	if err != nil {
+		return nil, e.New("VmessAEAD url parse err, ", err).WithPrefix(tagParser)
+	}
+	vm.Remarks = vmParse.Fragment
+	vm.Id = vmParse.User.Username()
+	vm.Server = vmParse.Hostname()
+	vm.Port = vmParse.Port()
+	vmQuery, err := url.ParseQuery(vmParse.RawQuery)
+	if err != nil {
+		return nil, e.New("VmessAEAD url parse query err, ", err).WithPrefix(tagParser)
+	}
+	//parse VmessAEAD encryption
+	if encryption, ok := vmQuery["encryption"]; !ok {
+		vm.Encryption = "auto"
+	} else if len(encryption) > 1 {
+		return nil, e.New("multiple VmessAEAD encryption").WithPrefix(tagParser)
+	} else if vm.Encryption = encryption[0]; vm.Encryption == "" {
+		return nil, e.New("empty VmessAEAD encryption").WithPrefix(tagParser)
+	}
+	//parse VmessAEAD network
+	if types, ok := vmQuery["type"]; !ok {
+		vm.Network = "tcp"
+	} else if len(types) > 1 {
+		return nil, e.New("multiple VmessAEAD transport type").WithPrefix(tagParser)
+	} else if vm.Network = types[0]; vm.Network == "" {
+		return nil, e.New("empty VmessAEAD transport type").WithPrefix(tagParser)
+	}
+	//parse VmessAEAD security
+	if security, ok := vmQuery["security"]; !ok {
+		vm.Security = "none"
+	} else if len(security) > 1 {
+		return nil, e.New("multiple VmessAEAD security type").WithPrefix(tagParser)
+	} else if vm.Security = security[0]; vm.Security == "" {
+		return nil, e.New("empty VmessAEAD security type").WithPrefix(tagParser)
+	}
+	//parse addon
+	if addons, err := parseAddon(vmessUrl, vm.Network, vm.Security); err != nil {
+		return nil, err
+	} else {
+		vm.Addon = *addons
+	}
+	return vm, nil
 }
 
 // parseHysteria parse hysteria url

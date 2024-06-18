@@ -3,6 +3,7 @@ package socks
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
 	"strconv"
@@ -26,7 +27,7 @@ func (this *Socks) ToOutboundWithTag(coreType string, tag string) (*serial.Order
 	switch coreType {
 	case "xray":
 		var outboundObject serial.OrderedMap
-		outboundObject.Set("mux", getMuxObjectXray(false))
+		outboundObject.Set("mux", addon.GetMuxObjectXray(false))
 		outboundObject.Set("protocol", "socks")
 		outboundObject.Set("settings", getSocksSettingsObjectXray(this))
 		outboundObject.Set("streamSettings", getStreamSettingsObjectXray("tcp"))

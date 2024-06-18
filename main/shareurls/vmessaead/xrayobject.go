@@ -1,23 +1,23 @@
-package vless
+package vmessaead
 
 import (
 	"XrayHelper/main/serial"
 	"strconv"
 )
 
-// getVLESSSettingsObjectXray get xray VLESS SettingsObject
-func getVLESSSettingsObjectXray(vless *VLESS) serial.OrderedMap {
+// getVmessSettingsObjectXray get xray Vmess SettingsObject
+func getVmessSettingsObjectXray(vmess *VmessAEAD) serial.OrderedMap {
 	var vnextArray serial.OrderedArray
 	var vnext serial.OrderedMap
-	vnext.Set("address", vless.Server)
-	port, _ := strconv.Atoi(vless.Port)
+	vnext.Set("address", vmess.Server)
+	port, _ := strconv.Atoi(vmess.Port)
 	vnext.Set("port", port)
 
 	var userArray serial.OrderedArray
 	var user serial.OrderedMap
-	user.Set("id", vless.Id)
-	user.Set("flow", vless.Flow)
-	user.Set("encryption", vless.Encryption)
+	user.Set("id", vmess.Id)
+	user.Set("alterId", 0)
+	user.Set("security", vmess.Encryption)
 	user.Set("level", 0)
 	userArray = append(userArray, user)
 
