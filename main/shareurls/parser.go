@@ -83,14 +83,14 @@ func parseSocks(socksUrl string) (ShareUrl, error) {
 	return so, nil
 }
 
-// parseAddon parse vless/trojan/vmessaead addon
+// parseAddon parse v2ray addon
 func parseAddon(aUrl string, network string, security string) (*addon.Addon, error) {
 	addon := new(addon.Addon)
 	parse, _ := url.Parse(aUrl)
 	query, _ := url.ParseQuery(parse.RawQuery)
 	switch network {
 	case "tcp":
-		//parse VLESS headerType
+		//parse addon headerType
 		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
 			if headerTypes[0] == "http" {
 				if hosts, ok := query["host"]; ok && len(hosts) == 1 {
@@ -99,95 +99,97 @@ func parseAddon(aUrl string, network string, security string) (*addon.Addon, err
 			}
 		}
 	case "kcp":
-		//parse VLESS headerType
+		//parse addon headerType
 		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
 			addon.Type = headerTypes[0]
 		}
-		//parse VLESS kcp seed
+		//parse addon kcp seed
 		if seeds, ok := query["seed"]; ok && len(seeds) == 1 {
 			addon.Path = seeds[0]
 		}
 	case "ws", "http", "h2", "httpupgrade", "splithttp":
-		//parse VLESS host
+		//parse addon host
 		if hosts, ok := query["host"]; ok && len(hosts) == 1 {
 			addon.Host = hosts[0]
 		}
-		//parse VLESS path
+		//parse addon path
 		if paths, ok := query["path"]; ok && len(paths) == 1 {
 			addon.Path = paths[0]
 		}
 	case "quic":
-		//parse VLESS headerType
+		//parse addon headerType
 		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
 			addon.Type = headerTypes[0]
 		}
-		//parse VLESS quicSecurity
+		//parse addon quicSecurity
 		if quicSecurity, ok := query["quicSecurity"]; ok && len(quicSecurity) == 1 {
 			addon.Host = quicSecurity[0]
 		}
-		//parse VLESS quicKey
+		//parse addon quicKey
 		if quicKey, ok := query["key"]; ok && len(quicKey) == 1 {
 			addon.Path = quicKey[0]
 		}
 	case "grpc":
-		//parse VLESS grpc authority
+		//parse addon grpc authority
 		if authority, ok := query["authority"]; ok && len(authority) == 1 {
 			addon.Host = authority[0]
 		}
-		//parse VLESS grpc mode
+		//parse addon grpc mode
 		if modes, ok := query["mode"]; ok && len(modes) == 1 {
 			addon.Type = modes[0]
 		} else {
 			addon.Type = "gun"
 		}
-		//parse VLESS grpc serviceName
+		//parse addon grpc serviceName
 		if serviceNames, ok := query["serviceName"]; ok && len(serviceNames) == 1 {
 			addon.Path = serviceNames[0]
 		}
 	default:
-		return nil, e.New("unknown addon transport type " + network).WithPrefix(tagParser)
+		return nil, e.New("unknown v2ray addon transport type " + network).WithPrefix(tagParser)
 	}
 	switch security {
+	case "none":
+		break
 	case "tls":
-		//parse VLESS tls sni
+		//parse addon tls sni
 		if sni, ok := query["sni"]; ok && len(sni) == 1 {
 			addon.Sni = sni[0]
 		}
-		//parse VLESS tls fingerprint
+		//parse addon tls fingerprint
 		if fps, ok := query["fp"]; ok && len(fps) == 1 {
 			addon.FingerPrint = fps[0]
 		} else {
 			addon.FingerPrint = "chrome"
 		}
-		//parse VLESS tls Alpn
+		//parse addon tls Alpn
 		if alpns, ok := query["alpn"]; ok && len(alpns) == 1 {
 			addon.Alpn = alpns[0]
 		}
 	case "reality":
-		//parse VLESS reality sni
+		//parse addon reality sni
 		if sni, ok := query["sni"]; ok && len(sni) == 1 {
 			addon.Sni = sni[0]
 		}
-		//parse VLESS reality fingerprint
+		//parse addon reality fingerprint
 		if fps, ok := query["fp"]; ok && len(fps) == 1 {
 			addon.FingerPrint = fps[0]
 		} else {
 			addon.FingerPrint = "chrome"
 		}
-		//parse VLESS reality PublicKey
+		//parse addon reality PublicKey
 		if publicKeys, ok := query["pbk"]; ok && len(publicKeys) == 1 {
 			addon.PublicKey = publicKeys[0]
 		}
-		//parse VLESS reality ShortId
+		//parse addon reality ShortId
 		if shortIds, ok := query["sid"]; ok && len(shortIds) == 1 {
 			addon.ShortId = shortIds[0]
 		}
-		//parse VLESS reality SpiderX
+		//parse addon reality SpiderX
 		if spiderX, ok := query["spx"]; ok && len(spiderX) == 1 {
 			addon.SpiderX = spiderX[0]
 		}
 	default:
-		return nil, e.New("unknown addon security type " + security).WithPrefix(tagParser)
+		return nil, e.New("unknown v2ray addon security type " + security).WithPrefix(tagParser)
 	}
 	return addon, nil
 }
@@ -265,7 +267,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	}
 	//parse VLESS network
 	if types, ok := vlQuery["type"]; !ok {
-		vl.Network = "none"
+		vl.Network = "tcp"
 	} else if len(types) > 1 {
 		return nil, e.New("multiple VLESS transport type").WithPrefix(tagParser)
 	} else if vl.Network = types[0]; vl.Network == "" {
@@ -273,7 +275,7 @@ func parseVLESS(vlessUrl string) (ShareUrl, error) {
 	}
 	//parse VLESS security
 	if security, ok := vlQuery["security"]; !ok {
-		vl.Security = "tls"
+		vl.Security = "none"
 	} else if len(security) > 1 {
 		return nil, e.New("multiple VLESS security type").WithPrefix(tagParser)
 	} else if vl.Security = security[0]; vl.Security == "" {
