@@ -134,7 +134,7 @@ func loadShareUrl(custom bool) error {
 		if len(url) > 0 {
 			shareUrl, err := shareurls.Parse(url)
 			if err != nil {
-				log.HandleInfo("switch: " + err.Error() + ", drop it")
+				log.HandleDebug("switch: " + err.Error() + ", drop it")
 				continue
 			}
 			shareUrls = append(shareUrls, shareUrl)
