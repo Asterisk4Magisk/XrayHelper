@@ -117,7 +117,8 @@ OUT:
 		time.Sleep(1 * time.Second)
 		switch builds.Config.Proxy.Method {
 		case "tproxy":
-			if common.CheckLocalPort(builds.Config.Proxy.TproxyPort) {
+			if common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.TproxyPort, true) ||
+				common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.TproxyPort, false) {
 				listenFlag = true
 				break OUT
 			}
@@ -126,7 +127,8 @@ OUT:
 			listenFlag = true
 			break OUT
 		case "tun2socks":
-			if common.CheckLocalPort(builds.Config.Proxy.SocksPort) {
+			if common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.SocksPort, true) ||
+				common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.SocksPort, false) {
 				listenFlag = true
 				break OUT
 			}

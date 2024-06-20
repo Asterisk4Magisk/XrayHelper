@@ -3,8 +3,8 @@ package common
 import (
 	"XrayHelper/main/builds"
 	e "XrayHelper/main/errors"
-	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -95,10 +95,17 @@ func Ping(protocol string, host string, port string) string {
 }
 
 // CheckLocalPort check whether the local port is listening
-func CheckLocalPort(port string) bool {
-	var msg bytes.Buffer
-	NewExternal(0, &msg, nil, "netstat", "-tnlp").Run()
-	return strings.Contains(msg.String(), port)
+func CheckLocalPort(pid string, port string, ipv6 bool) bool {
+	knetPath := "/proc/" + pid + "/net/tcp"
+	if ipv6 {
+		knetPath = "/proc/" + pid + "/net/tcp6"
+	}
+	i, _ := strconv.Atoi(port)
+	port = fmt.Sprintf(":%X ", i)
+	if knet, err := os.ReadFile(knetPath); err == nil {
+		return strings.Contains(string(knet), port)
+	}
+	return false
 }
 
 func IsIPv6(cidr string) bool {
