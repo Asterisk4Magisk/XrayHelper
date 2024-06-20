@@ -78,8 +78,10 @@ func parseSocks(socksUrl string) (ShareUrl, error) {
 		return nil, err
 	}
 	userAndPassword := strings.Split(info, ":")
-	so.User = userAndPassword[0]
-	so.Password = userAndPassword[1]
+	if len(userAndPassword) == 2 {
+		so.User = userAndPassword[0]
+		so.Password = userAndPassword[1]
+	}
 	return so, nil
 }
 
