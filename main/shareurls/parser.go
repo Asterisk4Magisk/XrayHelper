@@ -160,8 +160,6 @@ func parseAddon(aUrl string, network string, security string) (*addon.Addon, err
 		//parse addon tls fingerprint
 		if fps, ok := query["fp"]; ok && len(fps) == 1 {
 			addon.FingerPrint = fps[0]
-		} else {
-			addon.FingerPrint = "chrome"
 		}
 		//parse addon tls Alpn
 		if alpns, ok := query["alpn"]; ok && len(alpns) == 1 {
