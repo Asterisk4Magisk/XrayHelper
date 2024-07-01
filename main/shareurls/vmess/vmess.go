@@ -51,7 +51,7 @@ func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (*serial.Order
 	if version, _ := strconv.Atoi(string(this.Version)); version < 2 {
 		return nil, e.New("unsupported vmess share link version " + this.Version).WithPrefix(tagVmess).WithPathObj(*this)
 	}
-	addons := &addon.Addon{Alpn: string(this.Alpn), Path: string(this.Path), Type: string(this.Type), Sni: string(this.Sni), FingerPrint: string(this.FingerPrint), PublicKey: "", ShortId: "", SpiderX: ""}
+	addons := &addon.Addon{Alpn: string(this.Alpn), Host: string(this.Host), Path: string(this.Path), Type: string(this.Type), Sni: string(this.Sni), FingerPrint: string(this.FingerPrint), PublicKey: "", ShortId: "", SpiderX: ""}
 	switch coreType {
 	case "xray":
 		var outboundObject serial.OrderedMap
