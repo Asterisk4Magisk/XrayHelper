@@ -45,8 +45,7 @@ func (this *ServiceCommand) Execute(args []string) error {
 		log.HandleInfo("service: core is stopped")
 	case "restart":
 		log.HandleInfo("service: restarting core")
-		stopService()
-		if err := startService(); err != nil {
+		if err := restartService(); err != nil {
 			return err
 		}
 		log.HandleInfo("service: core is running, pid is " + getServicePid())
@@ -61,6 +60,59 @@ func (this *ServiceCommand) Execute(args []string) error {
 		return e.New("unknown operation " + args[0] + ", available operation [start|stop|restart|status]").WithPrefix(tagService).WithPathObj(*this)
 	}
 	return nil
+}
+
+// newServices get core service
+func newServices(serviceLogFile *os.File) (service common.External, err error) {
+	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
+		return nil, e.New("open core config file failed, ", err).WithPrefix(tagService)
+	} else {
+		if confInfo.IsDir() {
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig), nil
+			case "v2ray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
+			case "sing-box":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
+			case "mihomo":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig), nil
+			case "hysteria2":
+				return nil, e.New("hysteria2 CoreConfig should be a file").WithPrefix(tagService)
+			default:
+				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
+			}
+		} else {
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig), nil
+			case "v2ray":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
+			case "sing-box":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
+			case "mihomo":
+				return nil, e.New("mihomo CoreConfig should be a directory").WithPrefix(tagService)
+			case "hysteria2":
+				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-c", builds.Config.XrayHelper.CoreConfig), nil
+			default:
+				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
+			}
+		}
+	}
+}
+
+// getServicePid get core pid from pid file
+func getServicePid() string {
+	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "core.pid")); err == nil {
+		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"))
+		if err != nil {
+			log.HandleDebug(err)
+		}
+		return string(pidFile)
+	} else {
+		log.HandleDebug(err)
+	}
+	return ""
 }
 
 // startService start core service
@@ -151,6 +203,99 @@ OUT:
 	return nil
 }
 
+// stopService stop core service
+func stopService() {
+	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "core.pid")); err == nil {
+		pidStr := getServicePid()
+		if len(pidStr) > 0 {
+			pid, _ := strconv.Atoi(pidStr)
+			if serviceProcess, err := os.FindProcess(pid); err == nil {
+				_ = serviceProcess.Kill()
+				_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"))
+			} else {
+				log.HandleDebug(err)
+			}
+		}
+	} else {
+		log.HandleDebug(err)
+	}
+	stopAdgHome()
+}
+
+// restartService restart core service
+func restartService() error {
+	stopService()
+	time.Sleep(1 * time.Second)
+	return startService()
+}
+
+func startAdgHome() error {
+	adgHomePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "adguardhome")
+	adgHomeConfigPath := path.Join(builds.Config.AdgHome.WorkDir, "config.yaml")
+	adgHomeConfigFile, err := os.ReadFile(adgHomeConfigPath)
+	if err != nil {
+		return e.New("load adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	var adgHomeConfig serial.OrderedMap
+	if err := yaml.Unmarshal(adgHomeConfigFile, &adgHomeConfig); err != nil {
+		return e.New("unmarshal adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	if http, ok := adgHomeConfig.Get("http"); ok {
+		httpMap := http.Value.(serial.OrderedMap)
+		// set address
+		httpMap.Set("address", builds.Config.AdgHome.Address)
+	}
+	if dns, ok := adgHomeConfig.Get("dns"); ok {
+		dnsMap := dns.Value.(serial.OrderedMap)
+		// set dnsPort
+		port, _ := strconv.Atoi(builds.Config.AdgHome.DNSPort)
+		dnsMap.Set("port", port)
+		// set dnsStrategy
+		if builds.Config.Proxy.AutoDNSStrategy {
+			dnsMap.Set("aaaa_disabled", !builds.Config.Proxy.EnableIPv6)
+		}
+	}
+	// save config
+	marshal, err := yaml.Marshal(adgHomeConfig)
+	if err != nil {
+		return e.New("marshal adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	// write new config
+	if err := os.WriteFile(adgHomeConfigPath, marshal, 0644); err != nil {
+		return e.New("write adgHome config failed, ", err).WithPrefix(tagService)
+	}
+	// create adghome service
+	service := common.NewExternal(0, nil, nil, adgHomePath,
+		"--no-check-update",
+		"-w", builds.Config.AdgHome.WorkDir,
+		"-c", adgHomeConfigPath,
+		"--pidfile", path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"),
+		"-l", path.Join(builds.Config.XrayHelper.RunDir, "adghome.log"))
+	service.AppendEnv("SSL_CERT_DIR=/system/etc/security/cacerts/")
+	service.SetUidGid("0", common.CoreGid)
+	service.Start()
+	return nil
+}
+
+// stopAdgHome stop AdGuardHome service
+func stopAdgHome() {
+	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid")); err == nil {
+		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"))
+		if err != nil {
+			log.HandleDebug(err)
+		}
+		pid, _ := strconv.Atoi(string(pidFile))
+		if serviceProcess, err := os.FindProcess(pid); err == nil {
+			_ = serviceProcess.Kill()
+			_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"))
+		} else {
+			log.HandleDebug(err)
+		}
+	} else {
+		log.HandleDebug(err)
+	}
+}
+
 // ignoreSignals start a goroutine to ignore some terminal signals
 func ignoreSignals() {
 	signalChan := make(chan os.Signal, 1)
@@ -167,79 +312,6 @@ func ignoreSignals() {
 			}
 		}
 	}()
-}
-
-// newServices get core service
-func newServices(serviceLogFile *os.File) (service common.External, err error) {
-	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
-		return nil, e.New("open core config file failed, ", err).WithPrefix(tagService)
-	} else {
-		if confInfo.IsDir() {
-			switch builds.Config.XrayHelper.CoreType {
-			case "xray":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig), nil
-			case "v2ray":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-confdir", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
-			case "sing-box":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-C", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
-			case "mihomo":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-d", builds.Config.XrayHelper.CoreConfig), nil
-			case "hysteria2":
-				return nil, e.New("hysteria2 CoreConfig should be a file").WithPrefix(tagService)
-			default:
-				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
-			}
-		} else {
-			switch builds.Config.XrayHelper.CoreType {
-			case "xray":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig), nil
-			case "v2ray":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-format", "jsonv5"), nil
-			case "sing-box":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", builds.Config.XrayHelper.CoreConfig, "-D", builds.Config.XrayHelper.DataDir, "--disable-color"), nil
-			case "mihomo":
-				return nil, e.New("mihomo CoreConfig should be a directory").WithPrefix(tagService)
-			case "hysteria2":
-				return common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "-c", builds.Config.XrayHelper.CoreConfig), nil
-			default:
-				return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
-			}
-		}
-	}
-}
-
-// stopService stop core service
-func stopService() {
-	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "core.pid")); err == nil {
-		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"))
-		if err != nil {
-			log.HandleDebug(err)
-		}
-		pid, _ := strconv.Atoi(string(pidFile))
-		if serviceProcess, err := os.FindProcess(pid); err == nil {
-			_ = serviceProcess.Kill()
-			_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"))
-		} else {
-			log.HandleDebug(err)
-		}
-	} else {
-		log.HandleDebug(err)
-	}
-	stopAdgHome()
-}
-
-// getServicePid get core pid from pid file
-func getServicePid() string {
-	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "core.pid")); err == nil {
-		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"))
-		if err != nil {
-			log.HandleDebug(err)
-		}
-		return string(pidFile)
-	} else {
-		log.HandleDebug(err)
-	}
-	return ""
 }
 
 func handleRayDNS(ipv6 bool) error {
@@ -403,70 +475,4 @@ func overrideClashConfig(template string, target string) error {
 		return e.New("write overridden clash config failed, ", err).WithPrefix(tagService)
 	}
 	return nil
-}
-
-func startAdgHome() error {
-	adgHomePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "adguardhome")
-	adgHomeConfigPath := path.Join(builds.Config.AdgHome.WorkDir, "config.yaml")
-	adgHomeConfigFile, err := os.ReadFile(adgHomeConfigPath)
-	if err != nil {
-		return e.New("load adgHome config failed, ", err).WithPrefix(tagService)
-	}
-	var adgHomeConfig serial.OrderedMap
-	if err := yaml.Unmarshal(adgHomeConfigFile, &adgHomeConfig); err != nil {
-		return e.New("unmarshal adgHome config failed, ", err).WithPrefix(tagService)
-	}
-	if http, ok := adgHomeConfig.Get("http"); ok {
-		httpMap := http.Value.(serial.OrderedMap)
-		// set address
-		httpMap.Set("address", builds.Config.AdgHome.Address)
-	}
-	if dns, ok := adgHomeConfig.Get("dns"); ok {
-		dnsMap := dns.Value.(serial.OrderedMap)
-		// set dnsPort
-		port, _ := strconv.Atoi(builds.Config.AdgHome.DNSPort)
-		dnsMap.Set("port", port)
-		// set dnsStrategy
-		if builds.Config.Proxy.AutoDNSStrategy {
-			dnsMap.Set("aaaa_disabled", !builds.Config.Proxy.EnableIPv6)
-		}
-	}
-	// save config
-	marshal, err := yaml.Marshal(adgHomeConfig)
-	if err != nil {
-		return e.New("marshal adgHome config failed, ", err).WithPrefix(tagService)
-	}
-	// write new config
-	if err := os.WriteFile(adgHomeConfigPath, marshal, 0644); err != nil {
-		return e.New("write adgHome config failed, ", err).WithPrefix(tagService)
-	}
-	// create adghome service
-	service := common.NewExternal(0, nil, nil, adgHomePath,
-		"--no-check-update",
-		"-w", builds.Config.AdgHome.WorkDir,
-		"-c", adgHomeConfigPath,
-		"--pidfile", path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"),
-		"-l", path.Join(builds.Config.XrayHelper.RunDir, "adghome.log"))
-	service.AppendEnv("SSL_CERT_DIR=/system/etc/security/cacerts/")
-	service.SetUidGid("0", common.CoreGid)
-	service.Start()
-	return nil
-}
-
-func stopAdgHome() {
-	if _, err := os.Stat(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid")); err == nil {
-		pidFile, err := os.ReadFile(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"))
-		if err != nil {
-			log.HandleDebug(err)
-		}
-		pid, _ := strconv.Atoi(string(pidFile))
-		if serviceProcess, err := os.FindProcess(pid); err == nil {
-			_ = serviceProcess.Kill()
-			_ = os.Remove(path.Join(builds.Config.XrayHelper.RunDir, "adghome.pid"))
-		} else {
-			log.HandleDebug(err)
-		}
-	} else {
-		log.HandleDebug(err)
-	}
 }

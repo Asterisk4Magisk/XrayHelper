@@ -100,8 +100,7 @@ func setSwitch(api *API, response *serial.OrderedMap) {
 		if err := s.Set(custom, index); err == nil {
 			// if core is running, restart it
 			if len(getServicePid()) > 0 {
-				stopService()
-				if err := startService(); err == nil {
+				if err := restartService(); err == nil {
 					response.Set("ok", true)
 				}
 			} else {

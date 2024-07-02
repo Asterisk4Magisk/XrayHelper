@@ -25,8 +25,7 @@ func (this *SwitchCommand) Execute(args []string) error {
 		// if core is running, restart it
 		if len(getServicePid()) > 0 {
 			log.HandleInfo("switch: detect core is running, restart it")
-			stopService()
-			if err := startService(); err != nil {
+			if err := restartService(); err != nil {
 				log.HandleError("restart service failed, " + err.Error())
 			}
 		}
