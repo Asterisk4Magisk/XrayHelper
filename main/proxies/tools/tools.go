@@ -52,3 +52,26 @@ func CleanRedirectDNS(port string) {
 	_ = common.Ipt.Delete("nat", "OUTPUT", "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "DNAT", "--to-destination", "127.0.0.1:"+port)
 	EnableIPV6DNS()
 }
+
+func EnableForward(device string) error {
+	if err := common.Ipt.Insert("filter", "FORWARD", 1, "-i", device, "-j", "ACCEPT"); err != nil {
+		return e.New("enable ipv4 forward for "+device+" incoming failed, ", err).WithPrefix(tagTools)
+	}
+	if err := common.Ipt.Insert("filter", "FORWARD", 1, "-o", device, "-j", "ACCEPT"); err != nil {
+		return e.New("enable ipv4 forward for "+device+" outgoing failed, ", err).WithPrefix(tagTools)
+	}
+	if err := common.Ipt6.Insert("filter", "FORWARD", 1, "-i", device, "-j", "ACCEPT"); err != nil {
+		return e.New("enable ipv6 forward for "+device+" incoming failed, ", err).WithPrefix(tagTools)
+	}
+	if err := common.Ipt6.Insert("filter", "FORWARD", 1, "-o", device, "-j", "ACCEPT"); err != nil {
+		return e.New("enable ipv6 forward for "+device+" outgoing failed, ", err).WithPrefix(tagTools)
+	}
+	return nil
+}
+
+func DisableForward(device string) {
+	_ = common.Ipt.Delete("filter", "FORWARD", "-i", device, "-j", "ACCEPT")
+	_ = common.Ipt.Delete("filter", "FORWARD", "-o", device, "-j", "ACCEPT")
+	_ = common.Ipt6.Delete("filter", "FORWARD", "-i", device, "-j", "ACCEPT")
+	_ = common.Ipt6.Delete("filter", "FORWARD", "-o", device, "-j", "ACCEPT")
+}

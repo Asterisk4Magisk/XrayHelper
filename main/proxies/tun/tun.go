@@ -78,6 +78,11 @@ func (this *Tun) Enable() error {
 			return e.New("cannot find your tun device " + builds.Config.Proxy.TunDevice + " did you configure core correctly?").WithPrefix(tagTun).WithPathObj(*this)
 		}
 	}
+	// allow tun device forward
+	if err := tools.EnableForward(builds.Config.Proxy.TunDevice); err != nil {
+		this.Disable()
+		return err
+	}
 	return nil
 }
 
@@ -94,6 +99,7 @@ func (this *Tun) Disable() {
 		tools.CleanRedirectDNS(builds.Config.Clash.DNSPort)
 		tools.CleanRedirectDNS(builds.Config.AdgHome.DNSPort)
 	}
+	tools.DisableForward(builds.Config.Proxy.TunDevice)
 }
 
 func tunDeviceReady(checkDev string) bool {
@@ -291,10 +297,10 @@ func createProxyChain(ipv6 bool) error {
 	// start processing proxy rules
 	// if PkgList has no package, should proxy everything
 	if len(builds.Config.Proxy.PkgList) == 0 {
-		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create local applications proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
-		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create local applications proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 	} else if builds.Config.Proxy.Mode == "blacklist" {
@@ -308,10 +314,10 @@ func createProxyChain(ipv6 bool) error {
 			}
 		}
 		// allow others
-		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create local applications proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
-		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create local applications proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 	} else if builds.Config.Proxy.Mode == "whitelist" {
@@ -319,26 +325,26 @@ func createProxyChain(ipv6 bool) error {
 		for _, pkg := range builds.Config.Proxy.PkgList {
 			uidSlice := tools.GetUid(pkg)
 			for _, uid := range uidSlice {
-				if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "TUN2SOCKS"); err != nil {
+				if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 					return e.New("create package "+pkg+" proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
 				}
-				if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "TUN2SOCKS"); err != nil {
+				if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", uid, "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 					return e.New("create package "+pkg+" proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 				}
 			}
 		}
 		// allow root user(eg: magisk, ksud, netd...)
-		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", "0", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", "0", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create root user proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
-		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", "0", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", "0", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create root user proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 		// allow dns_tether user(eg: dnsmasq...)
-		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", "1052", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "tcp", "-m", "owner", "--uid-owner", "1052", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create dns_tether user proxy on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
-		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", "1052", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Append("mangle", "XT", "-p", "udp", "-m", "owner", "--uid-owner", "1052", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("create dns_tether user proxy on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 	} else {
@@ -347,17 +353,17 @@ func createProxyChain(ipv6 bool) error {
 	// allow IntraList
 	for _, intra := range builds.Config.Proxy.IntraList {
 		if (currentProto == "ipv4" && !common.IsIPv6(intra)) || (currentProto == "ipv6" && common.IsIPv6(intra)) {
-			if err := currentIpt.Insert("mangle", "XT", 1, "-p", "tcp", "-d", intra, "-j", "TUN2SOCKS"); err != nil {
+			if err := currentIpt.Insert("mangle", "XT", 1, "-p", "tcp", "-d", intra, "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 				return e.New("allow intra "+intra+" on "+currentProto+" tcp mangle chain XT failed, ", err).WithPrefix(tagTun)
 			}
-			if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-d", intra, "-j", "TUN2SOCKS"); err != nil {
+			if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-d", intra, "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 				return e.New("allow intra "+intra+" on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 			}
 		}
 	}
 	// mark all dns request(except mihomo/hysteria2)
 	if builds.Config.XrayHelper.CoreType != "mihomo" && builds.Config.XrayHelper.CoreType != "hysteria2" {
-		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "TUN2SOCKS"); err != nil {
+		if err := currentIpt.Insert("mangle", "XT", 1, "-p", "udp", "-m", "owner", "!", "--gid-owner", common.CoreGid, "--dport", "53", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
 			return e.New("mark all dns request on "+currentProto+" udp mangle chain XT failed, ", err).WithPrefix(tagTun)
 		}
 	} else {
@@ -411,13 +417,6 @@ func createMangleChain(ipv6 bool) error {
 				return e.New("allow intra "+intra+" on "+currentProto+" udp mangle chain TUN2SOCKS failed, ", err).WithPrefix(tagTun)
 			}
 		}
-	}
-	// mark all traffic
-	if err := currentIpt.Append("mangle", "TUN2SOCKS", "-p", "tcp", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
-		return e.New("create all traffic proxy on "+currentProto+" tcp mangle chain TUN2SOCKS failed, ", err).WithPrefix(tagTun)
-	}
-	if err := currentIpt.Append("mangle", "TUN2SOCKS", "-p", "udp", "-j", "MARK", "--set-xmark", common.TunMarkId); err != nil {
-		return e.New("create all traffic proxy on "+currentProto+" udp mangle chain TUN2SOCKS failed, ", err).WithPrefix(tagTun)
 	}
 	// trans ApList to chain XRAY
 	for _, ap := range builds.Config.Proxy.ApList {
