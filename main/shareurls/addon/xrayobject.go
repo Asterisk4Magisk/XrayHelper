@@ -160,6 +160,8 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		}
 		if builds.Config.XrayHelper.AllowInsecure {
 			tlsSettingsObject.Set("allowInsecure", true)
+		} else {
+			tlsSettingsObject.Set("allowInsecure", false)
 		}
 		streamSettingsObject.Set("tlsSettings", tlsSettingsObject)
 	case "reality":
@@ -175,6 +177,8 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		realitySettingsObject.Set("spiderX", addon.SpiderX)
 		if builds.Config.XrayHelper.AllowInsecure {
 			realitySettingsObject.Set("allowInsecure", true)
+		} else {
+			realitySettingsObject.Set("allowInsecure", false)
 		}
 		streamSettingsObject.Set("realitySettings", realitySettingsObject)
 	}

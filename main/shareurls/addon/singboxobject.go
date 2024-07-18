@@ -92,6 +92,8 @@ func GetTlsObjectSingbox(addon *Addon, security string) serial.OrderedMap {
 	}
 	if builds.Config.XrayHelper.AllowInsecure {
 		tlsObject.Set("insecure", true)
+	} else {
+		tlsObject.Set("insecure", false)
 	}
 	return tlsObject
 }
