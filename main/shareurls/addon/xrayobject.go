@@ -1,6 +1,7 @@
 package addon
 
 import (
+	"XrayHelper/main/builds"
 	"XrayHelper/main/serial"
 	"strings"
 )
@@ -151,17 +152,18 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 				tlsSettingsObject.Set("alpn", alpn)
 			}
 		}
-		tlsSettingsObject.Set("allowInsecure", false)
 		if len(addon.FingerPrint) > 0 {
 			tlsSettingsObject.Set("fingerprint", addon.FingerPrint)
 		}
 		if len(addon.Sni) > 0 {
 			tlsSettingsObject.Set("serverName", addon.Sni)
 		}
+		if builds.Config.XrayHelper.AllowInsecure {
+			tlsSettingsObject.Set("allowInsecure", true)
+		}
 		streamSettingsObject.Set("tlsSettings", tlsSettingsObject)
 	case "reality":
 		var realitySettingsObject serial.OrderedMap
-		realitySettingsObject.Set("allowInsecure", false)
 		if len(addon.FingerPrint) > 0 {
 			realitySettingsObject.Set("fingerprint", addon.FingerPrint)
 		}
@@ -171,6 +173,9 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		realitySettingsObject.Set("publicKey", addon.PublicKey)
 		realitySettingsObject.Set("shortId", addon.ShortId)
 		realitySettingsObject.Set("spiderX", addon.SpiderX)
+		if builds.Config.XrayHelper.AllowInsecure {
+			realitySettingsObject.Set("allowInsecure", true)
+		}
 		streamSettingsObject.Set("realitySettings", realitySettingsObject)
 	}
 	var sockoptObject serial.OrderedMap

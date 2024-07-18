@@ -1,6 +1,7 @@
 package addon
 
 import (
+	"XrayHelper/main/builds"
 	"XrayHelper/main/serial"
 	"strings"
 )
@@ -88,6 +89,9 @@ func GetTlsObjectSingbox(addon *Addon, security string) serial.OrderedMap {
 		}
 	} else {
 		tlsObject.Set("enabled", false)
+	}
+	if builds.Config.XrayHelper.AllowInsecure {
+		tlsObject.Set("insecure", true)
 	}
 	return tlsObject
 }
