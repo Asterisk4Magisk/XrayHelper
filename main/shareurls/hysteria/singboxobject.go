@@ -1,6 +1,7 @@
 package hysteria
 
 import (
+	"XrayHelper/main/builds"
 	"XrayHelper/main/serial"
 	"strconv"
 	"strings"
@@ -12,7 +13,11 @@ func getHysteriaTlsObjectSingbox(hysteria *Hysteria) serial.OrderedMap {
 	tlsObject.Set("enabled", true)
 	tlsObject.Set("server_name", hysteria.Peer)
 	insecure, _ := strconv.ParseBool(hysteria.Insecure)
-	tlsObject.Set("insecure", insecure)
+	if builds.Config.XrayHelper.AllowInsecure || insecure {
+		tlsObject.Set("insecure", true)
+	} else {
+		tlsObject.Set("insecure", false)
+	}
 	var alpn serial.OrderedArray
 	alpnSlice := strings.Split(hysteria.Alpn, ",")
 	for _, v := range alpnSlice {

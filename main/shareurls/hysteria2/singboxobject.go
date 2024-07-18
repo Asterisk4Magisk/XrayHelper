@@ -1,6 +1,7 @@
 package hysteria2
 
 import (
+	"XrayHelper/main/builds"
 	"XrayHelper/main/serial"
 	"strconv"
 	"strings"
@@ -16,7 +17,11 @@ func getHysteria2TlsObjectSingbox(hysteria2 *Hysteria2) serial.OrderedMap {
 		tlsObject.Set("server_name", hysteria2.Sni)
 	}
 	insecure, _ := strconv.ParseBool(hysteria2.Insecure)
-	tlsObject.Set("insecure", insecure)
+	if builds.Config.XrayHelper.AllowInsecure || insecure {
+		tlsObject.Set("insecure", true)
+	} else {
+		tlsObject.Set("insecure", false)
+	}
 	return tlsObject
 }
 

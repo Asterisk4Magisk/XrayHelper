@@ -503,8 +503,16 @@ func updateSubscribe() error {
 			log.HandleError("get data from " + subUrl + " failed, " + err.Error())
 			continue
 		}
-		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
-			return e.New("write subscribe file failed, ", err).WithPrefix(tagUpdate)
+		subData, err := common.DecodeBase64(string(rawData))
+		if err != nil {
+			log.HandleDebug("try decode base64 data from " + subUrl + " failed, will save raw data")
+			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), rawData, 0644); err != nil {
+				return e.New("write subscribe file failed, ", err).WithPrefix(tagUpdate)
+			}
+		} else {
+			if err := os.WriteFile(path.Join(builds.Config.XrayHelper.DataDir, "clashSub"+strconv.Itoa(index)+".yaml"), []byte(subData), 0644); err != nil {
+				return e.New("write subscribe file failed, ", err).WithPrefix(tagUpdate)
+			}
 		}
 	}
 	return nil

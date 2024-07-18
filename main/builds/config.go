@@ -21,14 +21,15 @@ var PackageMap = make(map[string]string)
 // Config the program configuration, yml
 var Config struct {
 	XrayHelper struct {
-		CoreType   string   `default:"xray" yaml:"coreType"`
-		CorePath   string   `yaml:"corePath"`
-		CoreConfig string   `yaml:"coreConfig"`
-		DataDir    string   `yaml:"dataDir"`
-		RunDir     string   `yaml:"runDir"`
-		ProxyTag   string   `default:"proxy" yaml:"proxyTag"`
-		SubList    []string `yaml:"subList"`
-		UserAgent  string   `yaml:"userAgent"`
+		CoreType      string   `default:"xray" yaml:"coreType"`
+		CorePath      string   `yaml:"corePath"`
+		CoreConfig    string   `yaml:"coreConfig"`
+		DataDir       string   `yaml:"dataDir"`
+		RunDir        string   `yaml:"runDir"`
+		ProxyTag      string   `default:"proxy" yaml:"proxyTag"`
+		AllowInsecure bool     `default:"false" yaml:"allowInsecure"`
+		SubList       []string `yaml:"subList"`
+		UserAgent     string   `yaml:"userAgent"`
 	} `yaml:"xrayHelper"`
 	Clash struct {
 		DNSPort  string `default:"65533" yaml:"dnsPort"`
