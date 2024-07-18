@@ -25,12 +25,12 @@ jobs:
         include:
           - goos: android
             goarch: arm64
-            cc: aarch64-linux-android34-clang
-            cxx: aarch64-linux-android34-clang++
+            cc: aarch64-linux-android35-clang
+            cxx: aarch64-linux-android35-clang++
           - goos: android
             goarch: amd64
-            cc: x86_64-linux-android34-clang
-            cxx: x86_64-linux-android34-clang++
+            cc: x86_64-linux-android35-clang
+            cxx: x86_64-linux-android35-clang++
       fail-fast: false
 
     runs-on: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r26d
+          ndk-version: r27
 
       - name: Show workflow information
         run: |
