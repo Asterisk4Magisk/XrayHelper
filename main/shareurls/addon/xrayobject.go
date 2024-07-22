@@ -92,9 +92,7 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 	case "httpupgrade":
 		var httpupgradeSettingsObject serial.OrderedMap
 		if len(addon.Host) > 0 {
-			var host serial.OrderedArray
-			host = append(host, addon.Host)
-			httpupgradeSettingsObject.Set("host", host)
+			httpupgradeSettingsObject.Set("host", addon.Host)
 		}
 		if len(addon.Path) > 0 {
 			httpupgradeSettingsObject.Set("path", addon.Path)
@@ -103,9 +101,7 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 	case "splithttp":
 		var splithttpSettingsObject serial.OrderedMap
 		if len(addon.Host) > 0 {
-			var host serial.OrderedArray
-			host = append(host, addon.Host)
-			splithttpSettingsObject.Set("host", host)
+			splithttpSettingsObject.Set("host", addon.Host)
 		}
 		if len(addon.Path) > 0 {
 			splithttpSettingsObject.Set("path", addon.Path)
