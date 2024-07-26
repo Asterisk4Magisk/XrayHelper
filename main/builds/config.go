@@ -26,6 +26,8 @@ var Config struct {
 		CoreConfig    string   `yaml:"coreConfig"`
 		DataDir       string   `yaml:"dataDir"`
 		RunDir        string   `yaml:"runDir"`
+		CPULimit      string   `default:"1.0" yaml:"cpuLimit"`
+		MemLimit      string   `default:"-1" yaml:"memLimit"`
 		ProxyTag      string   `default:"proxy" yaml:"proxyTag"`
 		AllowInsecure bool     `default:"false" yaml:"allowInsecure"`
 		SubList       []string `yaml:"subList"`

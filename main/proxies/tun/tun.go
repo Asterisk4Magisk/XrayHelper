@@ -2,6 +2,7 @@ package tun
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/cgroup"
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
@@ -154,6 +155,10 @@ func startTun2socks() error {
 		return e.New("start tun2socks failed, ", service.Err()).WithPrefix(tagTun)
 	}
 	if tunDeviceReady(builds.Config.Proxy.TunDevice) {
+		if err := cgroup.LimitProcess(service.Pid()); err != nil {
+			_ = service.Kill()
+			return err
+		}
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "tun2socks.pid"), []byte(strconv.Itoa(service.Pid())), 0644); err != nil {
 			_ = service.Kill()
 			return e.New("write tun2socks pid failed, ", err).WithPrefix(tagTun)

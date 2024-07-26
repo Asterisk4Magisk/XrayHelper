@@ -2,6 +2,7 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/cgroup"
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
@@ -190,6 +191,11 @@ OUT:
 		}
 	}
 	if listenFlag {
+		if err := cgroup.LimitProcess(service.Pid()); err != nil {
+			_ = service.Kill()
+			stopService()
+			return err
+		}
 		if err := os.WriteFile(path.Join(builds.Config.XrayHelper.RunDir, "core.pid"), []byte(strconv.Itoa(service.Pid())), 0644); err != nil {
 			_ = service.Kill()
 			stopService()
@@ -274,6 +280,12 @@ func startAdgHome() error {
 	service.AppendEnv("SSL_CERT_DIR=/system/etc/security/cacerts/")
 	service.SetUidGid("0", common.CoreGid)
 	service.Start()
+	if service.Err() != nil {
+		return e.New("start adgHome service failed, ", service.Err()).WithPrefix(tagService)
+	}
+	if err := cgroup.LimitProcess(service.Pid()); err != nil {
+		return err
+	}
 	return nil
 }
 
