@@ -102,7 +102,7 @@ func LimitProcess(pid int) error {
 		return e.New("cannot open memcg cgroup procs, ", err).WithPrefix(tagCgroup)
 	}
 	defer f2.Close()
-	if _, err := f.WriteString(strconv.FormatInt(int64(pid), 10) + "\n"); err != nil {
+	if _, err := f2.WriteString(strconv.FormatInt(int64(pid), 10) + "\n"); err != nil {
 		return e.New("cannot add process to memcg cgroup, ", err).WithPrefix(tagCgroup)
 	}
 	return nil
