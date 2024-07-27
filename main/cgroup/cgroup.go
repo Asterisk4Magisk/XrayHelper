@@ -48,9 +48,12 @@ func v1MountPoint() (string, error) {
 
 // LimitProcess use cgroup v1 to limit process resource
 func LimitProcess(pid int) error {
+	cpuLimit, _ := strconv.ParseFloat(builds.Config.XrayHelper.CPULimit, 64)
+	memLimit, _ := strconv.ParseFloat(builds.Config.XrayHelper.MemLimit, 64)
+	if cpuLimit == 100.0 && memLimit == -1.0 {
+		return nil
+	}
 	if mountPoint == "" {
-		cpuLimit, _ := strconv.ParseFloat(builds.Config.XrayHelper.CPULimit, 64)
-		memLimit, _ := strconv.ParseFloat(builds.Config.XrayHelper.MemLimit, 64)
 		mp, err := v1MountPoint()
 		if err != nil {
 			return err
