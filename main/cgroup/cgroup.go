@@ -69,11 +69,11 @@ func LimitProcess(pid int) error {
 				log.HandleDebug("kernel not support uclamp, skip cpu.uclamp.max")
 			}
 			if err := os.WriteFile(
-				filepath.Join(mountPoint, "cpuctl", name, "cpu.share"),
+				filepath.Join(mountPoint, "cpuctl", name, "cpu.shares"),
 				[]byte(strconv.FormatInt(int64(cpuLimit*0.01*1024), 10)),
 				os.FileMode(0),
 			); err != nil {
-				return e.New("cannot apply cpuctl cgroup share, ", err).WithPrefix(tagCgroup)
+				return e.New("cannot apply cpuctl cgroup, ", err).WithPrefix(tagCgroup)
 			}
 		}
 		// create memory limit
