@@ -12,6 +12,8 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `coreConfig`必填，指定核心配置文件，可指向文件或目录，影响核心的启动命令
     - `dataDir`必填，指定 XrayHelper 的数据目录，用于存储 GEO 数据文件、自定义节点和订阅节点信息等
     - `runDir`必填，用于存储运行时所产生的文件，例如核心的 pid 值，核心日志等
+    - `cpuLimit`默认值`100`，用于限制模块服务的CPU（百分比），100 表示禁用限制
+    - `memLimit`默认值`-1`，用于限制模块服务的内存（MB），-1 表示禁用限制
     - `proxyTag`默认值`proxy`，使用 XrayHelper 进行节点切换时，将进行替换的出站代理 Tag
     - `allowInsecure`默认值`false`，使用 XrayHelper 进行节点切换时，是否允许不安全的节点
     - `subList`可选，数组，节点订阅链接（SIP002/v2rayNg/Hysteria/Hysteria2），也支持 clash 订阅链接(需要在订阅链接前添加`clash+`前缀)

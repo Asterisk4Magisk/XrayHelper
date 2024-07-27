@@ -11,6 +11,10 @@ xrayHelper:
     dataDir: /data/adb/xray/data/
     # Required, absolute path to xrayhelper temp directory, include xrayhelper logs, core pid, core logs and so on
     runDir: /data/adb/xray/run/
+    # Optional, Default value: 100, services' CPU limit(Percentage), set 100 for disable
+    cpuLimit: 5
+    # Optional, Default value: -1, services' Memory limit(MB), set -1 for disable
+    memLimit: 256
     # Required for xray/v2ray/sing-box, Default value: proxy, the replaced outbound object's tag when you use xrayhelper to switch proxy node
     proxyTag: proxy
     # Optional, Default value: false, the replaced outbound object's allowInsecure setting when you use xrayhelper to switch proxy node
