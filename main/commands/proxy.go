@@ -32,8 +32,12 @@ func (this *ProxyCommand) Execute(args []string) error {
 	switch args[0] {
 	case "enable":
 		log.HandleInfo("proxy: enabling rules")
-		if err := proxy.Enable(); err != nil {
-			return err
+		if len(getServicePid()) > 0 {
+			if err := proxy.Enable(); err != nil {
+				return err
+			}
+		} else {
+			log.HandleError("proxy: service not running, please check it")
 		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
@@ -41,8 +45,12 @@ func (this *ProxyCommand) Execute(args []string) error {
 	case "refresh":
 		log.HandleInfo("proxy: refreshing rules")
 		proxy.Disable()
-		if err := proxy.Enable(); err != nil {
-			return err
+		if len(getServicePid()) > 0 {
+			if err := proxy.Enable(); err != nil {
+				return err
+			}
+		} else {
+			log.HandleError("proxy: service not running, please check it")
 		}
 	default:
 		return e.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix(tagProxy).WithPathObj(*this)
