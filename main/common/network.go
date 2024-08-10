@@ -129,23 +129,6 @@ func CheckLocalDevice(dev string) bool {
 	return false
 }
 
-// getExternalIPv6Addr get external ipv6 address, which should bypass
-func getExternalIPv6Addr() ([]string, error) {
-	var ipv6Addrs []string
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return nil, e.New("cannot get ip address from local interface, ", err).WithPrefix(tagNetwork)
-	}
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
-			if ipnet.IP.To4() == nil {
-				ipv6Addrs = append(ipv6Addrs, ipnet.IP.String())
-			}
-		}
-	}
-	return ipv6Addrs, nil
-}
-
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
 	// get file from url

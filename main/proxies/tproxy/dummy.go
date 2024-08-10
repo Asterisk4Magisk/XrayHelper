@@ -33,7 +33,7 @@ func removeDummyDevice() {
 	var errMsg bytes.Buffer
 	common.NewExternal(0, nil, &errMsg, "ip", "-6", "link", "set", common.DummyDevice, "down").Run()
 	if errMsg.Len() > 0 {
-		log.HandleDebug("set dummy up down: " + errMsg.String())
+		log.HandleDebug("set dummy down failed: " + errMsg.String())
 	}
 	errMsg.Reset()
 	common.NewExternal(0, nil, &errMsg, "ip", "-6", "link", "del", common.DummyDevice, "type", "dummy").Run()

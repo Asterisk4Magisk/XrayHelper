@@ -11,16 +11,6 @@ import (
 
 const tagTproxy = "tproxy"
 
-var useDummy bool
-
-func init() {
-	if len(common.ExternalIPv6) > 0 {
-		useDummy = false
-	} else {
-		useDummy = true
-	}
-}
-
 type Tproxy struct{}
 
 func (this *Tproxy) Enable() error {
@@ -101,7 +91,7 @@ func addRoute(ipv6 bool) error {
 			return e.New("add ip route failed, ", errMsg.String()).WithPrefix(tagTproxy)
 		}
 	} else {
-		if !useDummy {
+		if !common.UseDummy {
 			common.NewExternal(0, nil, &errMsg, "ip", "-6", "rule", "add", "fwmark", common.TproxyMarkId, "table", common.TproxyTableId).Run()
 			if errMsg.Len() > 0 {
 				return e.New("add ip rule failed, ", errMsg.String()).WithPrefix(tagTproxy)
@@ -162,7 +152,7 @@ func createProxyChain(ipv6 bool) error {
 		return e.New("create "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
 	}
 	// bypass dummy
-	if currentProto == "ipv6" && useDummy {
+	if currentProto == "ipv6" && common.UseDummy {
 		if err := currentIpt.Append("mangle", "PROXY", "-o", common.DummyDevice, "-j", "RETURN"); err != nil {
 			return e.New("ignore dummy interface "+common.DummyDevice+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
 		}
@@ -184,13 +174,6 @@ func createProxyChain(ipv6 bool) error {
 		for _, intraIp6 := range common.IntraNet6 {
 			if err := currentIpt.Append("mangle", "PROXY", "-d", intraIp6, "-j", "RETURN"); err != nil {
 				return e.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
-			}
-		}
-		if !useDummy {
-			for _, external := range common.ExternalIPv6 {
-				if err := currentIpt.Append("mangle", "PROXY", "-d", external+"/32", "-j", "RETURN"); err != nil {
-					return e.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain PROXY failed, ", err).WithPrefix(tagTproxy)
-				}
 			}
 		}
 	}
@@ -307,13 +290,6 @@ func createMangleChain(ipv6 bool) error {
 		for _, intraIp6 := range common.IntraNet6 {
 			if err := currentIpt.Append("mangle", "XRAY", "-d", intraIp6, "-j", "RETURN"); err != nil {
 				return e.New("bypass intraNet "+intraIp6+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
-			}
-		}
-		if !useDummy {
-			for _, external := range common.ExternalIPv6 {
-				if err := currentIpt.Append("mangle", "XRAY", "-d", external+"/32", "-j", "RETURN"); err != nil {
-					return e.New("bypass externalIPv6 "+external+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
-				}
 			}
 		}
 	}
