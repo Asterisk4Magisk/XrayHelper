@@ -37,7 +37,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 				return err
 			}
 		} else {
-			log.HandleError("proxy: service not running, please check it")
+			log.HandleInfo("proxy: service not running, please check it")
 		}
 	case "disable":
 		log.HandleInfo("proxy: disabling rules")
@@ -50,7 +50,7 @@ func (this *ProxyCommand) Execute(args []string) error {
 				return err
 			}
 		} else {
-			log.HandleError("proxy: service not running, please check it")
+			log.HandleInfo("proxy: service not running, please check it")
 		}
 	default:
 		return e.New("unknown operation " + args[0] + ", available operation [enable|disable|refresh]").WithPrefix(tagProxy).WithPathObj(*this)
