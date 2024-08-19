@@ -1,6 +1,6 @@
 module XrayHelper
 
-go 1.22
+go 1.23
 
 require (
 	github.com/coreos/go-iptables v0.7.0
