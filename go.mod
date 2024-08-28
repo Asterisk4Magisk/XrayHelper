@@ -3,7 +3,7 @@ module XrayHelper
 go 1.23
 
 require (
-	github.com/coreos/go-iptables v0.7.0
+	github.com/coreos/go-iptables v0.8.0
 	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.17.0
 	github.com/jessevdk/go-flags v1.6.1
