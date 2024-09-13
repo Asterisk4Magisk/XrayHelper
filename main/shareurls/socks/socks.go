@@ -3,7 +3,6 @@ package socks
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
@@ -20,8 +19,8 @@ type Socks struct {
 	Password string
 }
 
-func (this *Socks) GetNodeInfo() *shareurls.NodeInfo {
-	return &shareurls.NodeInfo{
+func (this *Socks) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
 		Remarks:  this.Remarks,
 		Type:     "Socks",
 		Host:     this.Server,

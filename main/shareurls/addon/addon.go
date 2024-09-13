@@ -18,3 +18,11 @@ type Addon struct {
 	ShortId   string //sid
 	SpiderX   string //spx
 }
+
+type NodeInfo struct {
+	Remarks  string `json:"remarks"`
+	Type     string `json:"type"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Protocol string `json:"protocol"`
+}

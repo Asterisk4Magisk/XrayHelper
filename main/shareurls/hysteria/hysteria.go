@@ -3,7 +3,7 @@ package hysteria
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
+	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
 	"strconv"
@@ -26,8 +26,8 @@ type Hysteria struct {
 	ObfsParam string
 }
 
-func (this *Hysteria) GetNodeInfo() *shareurls.NodeInfo {
-	return &shareurls.NodeInfo{
+func (this *Hysteria) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
 		Remarks:  this.Remarks,
 		Type:     "Hysteria",
 		Host:     this.Host,

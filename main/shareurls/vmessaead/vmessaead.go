@@ -3,7 +3,6 @@ package vmessaead
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
@@ -26,8 +25,8 @@ type VmessAEAD struct {
 	Addon addon.Addon
 }
 
-func (this *VmessAEAD) GetNodeInfo() *shareurls.NodeInfo {
-	return &shareurls.NodeInfo{
+func (this *VmessAEAD) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
 		Remarks:  this.Remarks,
 		Type:     "VMess",
 		Host:     this.Server,

@@ -3,7 +3,6 @@ package shadowsocks
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
@@ -22,8 +21,8 @@ type Shadowsocks struct {
 	PluginOpt string
 }
 
-func (this *Shadowsocks) GetNodeInfo() *shareurls.NodeInfo {
-	return &shareurls.NodeInfo{
+func (this *Shadowsocks) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
 		Remarks:  this.Remarks,
 		Type:     "Shadowsocks",
 		Host:     this.Server,

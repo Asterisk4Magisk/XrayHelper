@@ -3,7 +3,6 @@ package vless
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
@@ -27,8 +26,8 @@ type VLESS struct {
 	Addon addon.Addon
 }
 
-func (this *VLESS) GetNodeInfo() *shareurls.NodeInfo {
-	return &shareurls.NodeInfo{
+func (this *VLESS) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
 		Remarks:  this.Remarks,
 		Type:     "VLESS",
 		Host:     this.Server,

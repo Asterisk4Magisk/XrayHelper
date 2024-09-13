@@ -3,6 +3,7 @@ package shareurls
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls/addon"
 	"strings"
 )
 
@@ -18,18 +19,10 @@ const (
 	hy2Prefix       = "hy2://"
 )
 
-type NodeInfo struct {
-	Remarks  string `json:"remarks"`
-	Type     string `json:"type"`
-	Host     string `json:"host"`
-	Port     string `json:"port"`
-	Protocol string `json:"protocol"`
-}
-
 // ShareUrl implement this interface, that node can be converted to core OutoundObject
 type ShareUrl interface {
 	GetNodeInfoStr() string
-	GetNodeInfo() *NodeInfo
+	GetNodeInfo() *addon.NodeInfo
 	ToOutboundWithTag(coreType string, tag string) (*serial.OrderedMap, error)
 }
 

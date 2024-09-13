@@ -3,7 +3,6 @@ package vmess
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
@@ -44,8 +43,8 @@ type Vmess struct {
 	Version     String `json:"v"`
 }
 
-func (this *Vmess) GetNodeInfo() *shareurls.NodeInfo {
-	return &shareurls.NodeInfo{
+func (this *Vmess) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
 		Remarks:  string(this.Remarks),
 		Type:     "VMess",
 		Host:     string(this.Host),
