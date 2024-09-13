@@ -52,7 +52,7 @@ func (this *RaySwitch) Get(custom bool) serial.OrderedArray {
 	err := loadShareUrl(custom)
 	if err == nil {
 		for _, url := range shareUrls {
-			result = append(result, url.GetNodeInfoStr())
+			result = append(result, url.GetNodeInfo())
 		}
 	}
 	return result
