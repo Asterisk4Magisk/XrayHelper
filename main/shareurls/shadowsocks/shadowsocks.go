@@ -3,6 +3,7 @@ package shadowsocks
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
 	"github.com/fatih/color"
@@ -21,7 +22,17 @@ type Shadowsocks struct {
 	PluginOpt string
 }
 
-func (this *Shadowsocks) GetNodeInfo() string {
+func (this *Shadowsocks) GetNodeInfo() *shareurls.NodeInfo {
+	return &shareurls.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "Shadowsocks",
+		Host:     this.Server,
+		Port:     this.Port,
+		Protocol: "tcp",
+	}
+}
+
+func (this *Shadowsocks) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Shadowsocks"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Method: ")+"%+v"+color.BlueString(", Password: ")+"%+v", this.Remarks, this.Server, this.Port, this.Method, this.Password)
 }
 

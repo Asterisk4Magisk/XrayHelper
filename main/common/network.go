@@ -37,61 +37,57 @@ func getHttpClient(dns string, timeout time.Duration) *http.Client {
 	return &http.Client{}
 }
 
-// Ping simple ping use target host&port(result max: 2000)
-func Ping(protocol string, host string, port string) string {
-	addr := net.JoinHostPort(host, port)
+// Ping simple ping use target host&port(result max: 3000)
+func Ping(protocol string, host string, port string) (result int) {
 	start := time.Now()
+	addr := net.JoinHostPort(host, port)
+	result = -1
 	switch strings.ToLower(protocol) {
 	case "tcp", "http", "h2", "httpupgrade", "ws", "grpc":
 		conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
 		if err != nil {
-			return "-"
+			return
 		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
+		_ = conn.Close()
 	case "udp", "kcp", "mkcp":
 		conn, err := net.DialTimeout("udp", addr, 2*time.Second)
 		if err != nil {
-			return "-"
+			return
 		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
+		_ = conn.Close()
 	case "quic":
 		conn, err := net.DialTimeout("udp", addr, 2*time.Second)
 		if err != nil {
-			return "-"
+			return
 		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
 		_ = conn.SetDeadline(time.Now().Add(2 * time.Second))
 		if _, err := conn.Write([]byte("\r12345678Q999\x00")); err != nil {
-			return "-"
+			_ = conn.Close()
+			return
 		}
 		if _, err := conn.Read(make([]byte, 1024)); err != nil {
-			return "-"
+			_ = conn.Close()
+			return
 		}
 	case "dns":
 		conn, err := net.DialTimeout("udp", addr, 2*time.Second)
 		if err != nil {
-			return "-"
+			return
 		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
 		_ = conn.SetDeadline(time.Now().Add(2 * time.Second))
 		if _, err := conn.Write([]byte("\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00")); err != nil {
-			return "-"
+			_ = conn.Close()
+			return
 		}
 		if _, err := conn.Read(make([]byte, 1024)); err != nil {
-			return "-"
+			_ = conn.Close()
+			return
 		}
 	default:
-		return "-"
+		return
 	}
-	return strconv.FormatInt(time.Since(start).Milliseconds(), 10) + "ms"
+	result = int(time.Since(start).Milliseconds())
+	return
 }
 
 // CheckLocalPort check whether the local port is listening

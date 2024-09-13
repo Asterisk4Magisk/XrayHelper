@@ -3,6 +3,7 @@ package hysteria
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls"
 	"fmt"
 	"github.com/fatih/color"
 	"strconv"
@@ -25,7 +26,17 @@ type Hysteria struct {
 	ObfsParam string
 }
 
-func (this *Hysteria) GetNodeInfo() string {
+func (this *Hysteria) GetNodeInfo() *shareurls.NodeInfo {
+	return &shareurls.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "Hysteria",
+		Host:     this.Host,
+		Port:     this.Port,
+		Protocol: this.Protocol,
+	}
+}
+
+func (this *Hysteria) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Hysteria"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", UpMBPS: ")+"%+v"+color.BlueString(", DownMBPS: ")+"%+v"+color.BlueString(", ObfsParam: ")+"%+v", this.Remarks, this.Host, this.Port, this.UpMBPS, this.DownMBPS, this.ObfsParam)
 }
 

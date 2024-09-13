@@ -58,6 +58,11 @@ func parse(api *API) *serial.OrderedMap {
 		case "switch":
 			setSwitch(api, &response)
 		}
+	case "misc":
+		switch api.Object {
+		case "ping":
+			ping(api, &response)
+		}
 	}
 	return &response
 }
@@ -108,4 +113,8 @@ func setSwitch(api *API, response *serial.OrderedMap) {
 			}
 		}
 	}
+}
+
+func ping(api *API, response *serial.OrderedMap) {
+	response.Set("result", -1)
 }

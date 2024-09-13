@@ -14,7 +14,7 @@ func TestSocks(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(socksShareUrl.GetNodeInfo())
+	fmt.Println(socksShareUrl.GetNodeInfoStr())
 	tag, err := socksShareUrl.ToOutboundWithTag("xray", "proxy")
 	indent, err := json.MarshalIndent(tag, "", "    ")
 	fmt.Println(string(indent))

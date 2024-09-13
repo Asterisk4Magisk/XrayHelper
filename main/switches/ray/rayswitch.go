@@ -47,12 +47,12 @@ func (this *RaySwitch) Execute(args []string) (bool, error) {
 	return true, nil
 }
 
-func (this *RaySwitch) Get(custom bool) []string {
-	var result []string
+func (this *RaySwitch) Get(custom bool) serial.OrderedArray {
+	var result serial.OrderedArray
 	err := loadShareUrl(custom)
 	if err == nil {
 		for _, url := range shareUrls {
-			result = append(result, url.GetNodeInfo())
+			result = append(result, url.GetNodeInfoStr())
 		}
 	}
 	return result
@@ -148,7 +148,7 @@ func loadShareUrl(custom bool) error {
 
 func printProxyNode() {
 	for index, shareUrl := range shareUrls {
-		fmt.Printf(color.GreenString("[%d]")+" %s\n", index, shareUrl.GetNodeInfo())
+		fmt.Printf(color.GreenString("[%d]")+" %s\n", index, shareUrl.GetNodeInfoStr())
 	}
 }
 

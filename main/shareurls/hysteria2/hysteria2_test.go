@@ -16,6 +16,6 @@ func TestHysteria2(t *testing.T) {
 	}
 	tag, err := hysteriaShareUrl.ToOutboundWithTag("sing-box", "proxy")
 	indent, err := json.MarshalIndent(tag, "", "    ")
-	fmt.Println(hysteriaShareUrl.GetNodeInfo())
+	fmt.Println(hysteriaShareUrl.GetNodeInfoStr())
 	fmt.Println(string(indent))
 }

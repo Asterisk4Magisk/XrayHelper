@@ -3,6 +3,7 @@ package hysteria2
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls"
 	"fmt"
 	"github.com/fatih/color"
 	"strconv"
@@ -22,7 +23,17 @@ type Hysteria2 struct {
 	PinSHA256    string
 }
 
-func (this *Hysteria2) GetNodeInfo() string {
+func (this *Hysteria2) GetNodeInfo() *shareurls.NodeInfo {
+	return &shareurls.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "Hysteria2",
+		Host:     this.Host,
+		Port:     this.Port,
+		Protocol: "udp",
+	}
+}
+
+func (this *Hysteria2) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Hysteria2"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Auth: ")+"%+v"+color.BlueString(", Obfs: ")+"%+v"+color.BlueString(", ObfsPassword: ")+"%+v"+color.BlueString(", PinSHA256: ")+"%+v", this.Remarks, this.Host, this.Port, this.Auth, this.Obfs, this.ObfsPassword, this.PinSHA256)
 }
 
