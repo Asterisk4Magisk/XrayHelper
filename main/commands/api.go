@@ -49,6 +49,7 @@ func (this *ApiCommand) Execute(args []string) error {
 }
 
 func parse(api *API) (response *serial.OrderedMap) {
+	response = new(serial.OrderedMap)
 	switch api.Operation {
 	case "get":
 		if err := load(); err != nil {
