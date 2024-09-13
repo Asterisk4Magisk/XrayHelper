@@ -2,6 +2,7 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"XrayHelper/main/switches"
@@ -20,18 +21,22 @@ type API struct {
 
 type ApiCommand struct{}
 
+func load() error {
+	if err := builds.LoadConfig(); err != nil {
+		return err
+	}
+	if err := builds.LoadPackage(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (this *ApiCommand) Execute(args []string) error {
 	if len(args) == 0 {
 		fmt.Println(builds.Version())
 		return nil
 	} else if len(args) < 2 {
 		return nil
-	}
-	if err := builds.LoadConfig(); err != nil {
-		return err
-	}
-	if err := builds.LoadPackage(); err != nil {
-		return err
 	}
 	api := API{Operation: args[0], Object: args[1], Addon: args[2:]}
 	response, err := json.Marshal(parse(&api))
@@ -43,28 +48,33 @@ func (this *ApiCommand) Execute(args []string) error {
 	return err
 }
 
-func parse(api *API) *serial.OrderedMap {
-	var response serial.OrderedMap
+func parse(api *API) (response *serial.OrderedMap) {
 	switch api.Operation {
 	case "get":
+		if err := load(); err != nil {
+			return
+		}
 		switch api.Object {
 		case "status":
-			getStatus(&response)
+			getStatus(response)
 		case "switch":
-			getSwitch(api, &response)
+			getSwitch(api, response)
 		}
 	case "set":
+		if err := load(); err != nil {
+			return
+		}
 		switch api.Object {
 		case "switch":
-			setSwitch(api, &response)
+			setSwitch(api, response)
 		}
 	case "misc":
 		switch api.Object {
 		case "ping":
-			ping(api, &response)
+			ping(api, response)
 		}
 	}
-	return &response
+	return
 }
 
 func getStatus(response *serial.OrderedMap) {
@@ -117,4 +127,7 @@ func setSwitch(api *API, response *serial.OrderedMap) {
 
 func ping(api *API, response *serial.OrderedMap) {
 	response.Set("result", -1)
+	if len(api.Addon) >= 3 {
+		response.Set("result", common.Ping(api.Addon[0], api.Addon[1], api.Addon[2]))
+	}
 }
