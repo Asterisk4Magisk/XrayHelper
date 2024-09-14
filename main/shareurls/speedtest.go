@@ -137,7 +137,8 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	var inboundsArr serial.OrderedArray
 	var socksObj serial.OrderedMap
 	socksObj.Set("tag", "socks-in")
-	socksObj.Set("port", testPort)
+	port, _ := strconv.Atoi(testPort)
+	socksObj.Set("port", port)
 	socksObj.Set("protocol", "socks")
 
 	var sniffingObj serial.OrderedMap
@@ -183,7 +184,8 @@ func genSingboxTestConfig(url ShareUrl, configPath string) error {
 	var socksObj serial.OrderedMap
 	socksObj.Set("tag", "socks-in")
 	socksObj.Set("listen", "::")
-	socksObj.Set("listen_port", testPort)
+	port, _ := strconv.Atoi(testPort)
+	socksObj.Set("listen_port", port)
 	socksObj.Set("type", "socks")
 	socksObj.Set("sniff", true)
 	socksObj.Set("sniff_override_destination", true)
