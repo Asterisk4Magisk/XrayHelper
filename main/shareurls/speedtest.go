@@ -20,18 +20,23 @@ import (
 
 const (
 	tagSpeedtest = "speedtest"
-	testFileName = "test.json"
-	testPort     = "65500"
 	testUrl      = "https://www.google.com/generate_204"
 )
 
-func RealPing(coreType string, url ShareUrl) (result int) {
-	result = -1
-	configPath := path.Join(builds.Config.XrayHelper.RunDir, testFileName)
+type Result struct {
+	Name  string
+	Url   ShareUrl
+	Port  int
+	Value int
+}
+
+func RealPing(coreType string, results chan *Result, result *Result) {
+	configPath := path.Join(builds.Config.XrayHelper.RunDir, serial.Concat("test", result.Port, ".json"))
 	// start test service
-	service, err := startTestService(coreType, url, configPath)
+	service, err := startTestService(coreType, result.Url, result.Port, configPath)
 	if err != nil {
 		log.HandleDebug(err)
+		results <- result
 		return
 	}
 	defer stopTestService(service, configPath)
@@ -39,26 +44,28 @@ func RealPing(coreType string, url ShareUrl) (result int) {
 	listenFlag := false
 	for i := 0; i < *builds.CoreStartTimeout; i++ {
 		time.Sleep(1 * time.Second)
-		if common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, false) ||
-			common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, true) {
+		if common.CheckLocalPort(strconv.Itoa(service.Pid()), strconv.Itoa(result.Port), false) ||
+			common.CheckLocalPort(strconv.Itoa(service.Pid()), strconv.Itoa(result.Port), true) {
 			listenFlag = true
 			break
 		}
 	}
 	if !listenFlag {
 		log.HandleDebug("service not listen for RealPing")
+		results <- result
 		return
 	}
 	// set socks5 proxy
-	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:"+testPort, nil, proxy.Direct)
+	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:"+strconv.Itoa(result.Port), nil, proxy.Direct)
 	if err != nil {
 		log.HandleDebug("set socks5 proxy: " + err.Error())
+		results <- result
 		return
 	}
 	// drop first result
 	startTest(dialer)
-	result = startTest(dialer)
-	return
+	result.Value = startTest(dialer)
+	results <- result
 }
 
 func startTest(dialer proxy.Dialer) (result int) {
@@ -96,11 +103,11 @@ func startTest(dialer proxy.Dialer) (result int) {
 	return
 }
 
-func startTestService(coreType string, url ShareUrl, configPath string) (common.External, error) {
+func startTestService(coreType string, url ShareUrl, port int, configPath string) (common.External, error) {
 	var service common.External
 	switch coreType {
 	case "xray":
-		if err := genXrayTestConfig(url, configPath); err != nil {
+		if err := genXrayTestConfig(url, port, configPath); err != nil {
 			return nil, err
 		}
 		serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "test.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
@@ -109,7 +116,7 @@ func startTestService(coreType string, url ShareUrl, configPath string) (common.
 		}
 		service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
 	case "sing-box":
-		if err := genSingboxTestConfig(url, configPath); err != nil {
+		if err := genSingboxTestConfig(url, port, configPath); err != nil {
 			return nil, err
 		}
 		serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "test.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
@@ -125,7 +132,7 @@ func startTestService(coreType string, url ShareUrl, configPath string) (common.
 	return service, nil
 }
 
-func genXrayTestConfig(url ShareUrl, configPath string) error {
+func genXrayTestConfig(url ShareUrl, port int, configPath string) error {
 	var config serial.OrderedMap
 	// add dns
 	var dnsObj serial.OrderedMap
@@ -137,7 +144,6 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	var inboundsArr serial.OrderedArray
 	var socksObj serial.OrderedMap
 	socksObj.Set("tag", "socks-in")
-	port, _ := strconv.Atoi(testPort)
 	socksObj.Set("port", port)
 	socksObj.Set("protocol", "socks")
 
@@ -169,7 +175,7 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	return nil
 }
 
-func genSingboxTestConfig(url ShareUrl, configPath string) error {
+func genSingboxTestConfig(url ShareUrl, port int, configPath string) error {
 	var config serial.OrderedMap
 	// add dns
 	var dnsObj serial.OrderedMap
@@ -185,7 +191,6 @@ func genSingboxTestConfig(url ShareUrl, configPath string) error {
 	var socksObj serial.OrderedMap
 	socksObj.Set("tag", "socks-in")
 	socksObj.Set("listen", "::")
-	port, _ := strconv.Atoi(testPort)
 	socksObj.Set("listen_port", port)
 	socksObj.Set("type", "socks")
 	socksObj.Set("sniff", true)

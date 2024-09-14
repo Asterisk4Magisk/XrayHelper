@@ -82,6 +82,9 @@ func (this *ClashSwitch) Choose(custom bool, index int) any {
 }
 
 func loadClashUrl() {
+	if len(clashUrl) > 0 {
+		return
+	}
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
 		if strings.HasPrefix(subUrl, "clash+") {
 			clashUrl = append(clashUrl, strings.TrimPrefix(subUrl, "clash+"))

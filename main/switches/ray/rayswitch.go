@@ -124,6 +124,9 @@ func change(index int) error {
 }
 
 func loadShareUrl(custom bool) error {
+	if len(shareUrls) > 0 {
+		return nil
+	}
 	var nodeTxt string
 	if custom {
 		nodeTxt = path.Join(builds.Config.XrayHelper.DataDir, "custom.txt")

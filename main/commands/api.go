@@ -124,22 +124,47 @@ func setSwitch(api *API, response *serial.OrderedMap) {
 }
 
 func realPing(api *API, response *serial.OrderedMap) {
-	response.Set("result", -1)
-	custom := false
-	index := 0
-	if len(api.Addon) == 2 && api.Addon[0] == "custom" {
-		custom = true
-		index, _ = strconv.Atoi(api.Addon[1])
-	} else if len(api.Addon) == 1 {
-		index, _ = strconv.Atoi(api.Addon[0])
-	} else {
+	var responseArr serial.OrderedArray
+	response.Set("result", responseArr)
+	var results []shareurls.Result
+	if len(api.Addon) == 0 {
 		return
 	}
-	if s, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
-		if target := s.Choose(custom, index); target != nil {
-			if url, ok := target.(shareurls.ShareUrl); ok {
-				response.Set("result", shareurls.RealPing(builds.Config.XrayHelper.CoreType, url))
+	port := 65500
+	if swh, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
+		if api.Addon[0] == "custom" {
+			for _, idx := range api.Addon[1:] {
+				id, _ := strconv.Atoi(idx)
+				if target := swh.Choose(true, id); target != nil {
+					if url, ok := target.(shareurls.ShareUrl); ok {
+						results = append(results, shareurls.Result{Name: idx, Url: url, Port: port, Value: -1})
+						port += 1
+					}
+				}
+			}
+		} else {
+			for _, idx := range api.Addon {
+				id, _ := strconv.Atoi(idx)
+				if target := swh.Choose(false, id); target != nil {
+					if url, ok := target.(shareurls.ShareUrl); ok {
+						results = append(results, shareurls.Result{Name: idx, Url: url, Port: port, Value: -1})
+						port += 1
+					}
+				}
 			}
 		}
 	}
+	rchan := make(chan *shareurls.Result, len(results))
+	for _, result := range results {
+		go shareurls.RealPing(builds.Config.XrayHelper.CoreType, rchan, &result)
+	}
+	for i := 0; i < len(results); i++ {
+		select {
+		case result := <-rchan:
+			var res serial.OrderedMap
+			res.Set(result.Name, result.Value)
+			responseArr = append(responseArr, res)
+		}
+	}
+	response.Set("result", responseArr)
 }
