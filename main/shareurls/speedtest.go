@@ -176,6 +176,7 @@ func genSingboxTestConfig(url ShareUrl, configPath string) error {
 	var dnsServersArr serial.OrderedArray
 	var dnsServerObj serial.OrderedMap
 	dnsServerObj.Set("address", "223.5.5.5")
+	dnsServerObj.Set("detour", "direct")
 	dnsServersArr = append(dnsServersArr, dnsServerObj)
 	dnsObj.Set("servers", dnsServersArr)
 	config.Set("dns", dnsObj)
@@ -197,7 +198,10 @@ func genSingboxTestConfig(url ShareUrl, configPath string) error {
 	if err != nil {
 		return err
 	}
-	outboundsArr = append(outboundsArr, outbound)
+	var outbound2 serial.OrderedMap
+	outbound2.Set("tag", "direct")
+	outbound2.Set("type", "direct")
+	outboundsArr = append(outboundsArr, outbound, outbound2)
 	config.Set("outbounds", outboundsArr)
 	// save test config
 	marshal, err := json.MarshalIndent(config, "", "    ")
