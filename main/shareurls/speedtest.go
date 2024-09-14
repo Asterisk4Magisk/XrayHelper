@@ -108,6 +108,15 @@ func startTestService(coreType string, url ShareUrl, configPath string) (common.
 			return nil, e.New("open core test log file failed, ", err).WithPrefix(tagSpeedtest)
 		}
 		service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
+	case "sing-box":
+		if err := genSingboxTestConfig(url, configPath); err != nil {
+			return nil, err
+		}
+		serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "test.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
+		if err != nil {
+			return nil, e.New("open core test log file failed, ", err).WithPrefix(tagSpeedtest)
+		}
+		service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", configPath, "--disable-color")
 	default:
 		return nil, e.New("not a supported coreType " + coreType).WithPrefix(tagSpeedtest)
 	}
@@ -130,6 +139,14 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	socksObj.Set("tag", "socks-in")
 	socksObj.Set("port", testPort)
 	socksObj.Set("protocol", "socks")
+
+	var sniffingObj serial.OrderedMap
+	sniffingObj.Set("enabled", true)
+	var destOverrideArr serial.OrderedArray
+	destOverrideArr = append(destOverrideArr, "http", "tls", "quic")
+	sniffingObj.Set("destOverride", destOverrideArr)
+
+	socksObj.Set("sniffing", sniffingObj)
 	inboundsArr = append(inboundsArr, socksObj)
 	config.Set("inbounds", inboundsArr)
 	// add outbounds
@@ -147,6 +164,46 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	}
 	if err := os.WriteFile(configPath, marshal, 0644); err != nil {
 		return e.New("write xray test config failed, ", err).WithPrefix(tagSpeedtest)
+	}
+	return nil
+}
+
+func genSingboxTestConfig(url ShareUrl, configPath string) error {
+	var config serial.OrderedMap
+	// add dns
+	var dnsObj serial.OrderedMap
+	var dnsServersArr serial.OrderedArray
+	var dnsServerObj serial.OrderedMap
+	dnsServerObj.Set("address", "223.5.5.5")
+	dnsServersArr = append(dnsServersArr, dnsServerObj)
+	dnsObj.Set("servers", dnsServersArr)
+	config.Set("dns", dnsObj)
+	// add inbound
+	var inboundsArr serial.OrderedArray
+	var socksObj serial.OrderedMap
+	socksObj.Set("tag", "socks-in")
+	socksObj.Set("listen", "::")
+	socksObj.Set("listen_port", testPort)
+	socksObj.Set("type", "socks")
+	socksObj.Set("sniff", true)
+	socksObj.Set("sniff_override_destination", true)
+	inboundsArr = append(inboundsArr, socksObj)
+	config.Set("inbounds", inboundsArr)
+	// add outbounds
+	var outboundsArr serial.OrderedArray
+	outbound, err := url.ToOutboundWithTag("sing-box", "test")
+	if err != nil {
+		return err
+	}
+	outboundsArr = append(outboundsArr, outbound)
+	config.Set("outbounds", outboundsArr)
+	// save test config
+	marshal, err := json.MarshalIndent(config, "", "    ")
+	if err != nil {
+		return e.New("marshal sing-box test config failed, ", err).WithPrefix(tagSpeedtest)
+	}
+	if err := os.WriteFile(configPath, marshal, 0644); err != nil {
+		return e.New("write sing-box test config failed, ", err).WithPrefix(tagSpeedtest)
 	}
 	return nil
 }
