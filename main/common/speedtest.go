@@ -23,8 +23,13 @@ const (
 	testUrl      = "https://www.google.com/generate_204"
 )
 
-func RealPing(coreType string, url shareurls.ShareUrl) (result int) {
+func RealPing(coreType string, target any) (result int) {
 	result = -1
+	url, ok := target.(shareurls.ShareUrl)
+	if !ok {
+		log.HandleDebug("not a supported target")
+		return
+	}
 	configPath := path.Join(builds.Config.XrayHelper.RunDir, testFileName)
 	// start test service
 	service, err := startTestService(coreType, url, configPath)
