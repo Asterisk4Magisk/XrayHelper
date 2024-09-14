@@ -1,11 +1,11 @@
-package common
+package shareurls
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"XrayHelper/main/serial"
-	"XrayHelper/main/shareurls"
 	"encoding/json"
 	"golang.org/x/net/proxy"
 	"io"
@@ -23,13 +23,8 @@ const (
 	testUrl      = "https://www.google.com/generate_204"
 )
 
-func RealPing(coreType string, target any) (result int) {
+func RealPing(coreType string, url ShareUrl) (result int) {
 	result = -1
-	url, ok := target.(shareurls.ShareUrl)
-	if !ok {
-		log.HandleDebug("not a supported target")
-		return
-	}
 	configPath := path.Join(builds.Config.XrayHelper.RunDir, testFileName)
 	// start test service
 	service, err := startTestService(coreType, url, configPath)
@@ -40,7 +35,7 @@ func RealPing(coreType string, target any) (result int) {
 	// check service port
 	listenFlag := false
 	for i := 0; i < 15; i++ {
-		if CheckLocalPort(strconv.Itoa(service.Pid()), testPort, false) {
+		if common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, false) {
 			listenFlag = true
 			break
 		}
@@ -66,7 +61,7 @@ func RealPing(coreType string, target any) (result int) {
 		return
 	}
 	// defer stop test service
-	defer func(Body io.ReadCloser, Service External) {
+	defer func(Body io.ReadCloser, Service common.External) {
 		_ = Body.Close()
 		stopTest(Service, configPath)
 	}(response.Body, service)
@@ -79,23 +74,23 @@ func RealPing(coreType string, target any) (result int) {
 	return
 }
 
-func startTestService(coreType string, url shareurls.ShareUrl, configPath string) (External, error) {
-	var service External
+func startTestService(coreType string, url ShareUrl, configPath string) (common.External, error) {
+	var service common.External
 	switch coreType {
 	case "xray":
 		if err := genXrayTestConfig(url, configPath); err != nil {
 			return nil, err
 		}
-		service = NewExternal(0, nil, nil, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
+		service = common.NewExternal(0, nil, nil, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
 	default:
 		return nil, e.New("not a supported coreType " + coreType).WithPrefix(tagSpeedtest)
 	}
-	service.SetUidGid("0", CoreGid)
+	service.SetUidGid("0", common.CoreGid)
 	service.Start()
 	return service, nil
 }
 
-func genXrayTestConfig(url shareurls.ShareUrl, configPath string) error {
+func genXrayTestConfig(url ShareUrl, configPath string) error {
 	var config serial.OrderedMap
 	// add dns
 	var dnsObj serial.OrderedMap
@@ -129,7 +124,7 @@ func genXrayTestConfig(url shareurls.ShareUrl, configPath string) error {
 	return nil
 }
 
-func stopTest(service External, configPath string) {
+func stopTest(service common.External, configPath string) {
 	_ = service.Kill()
 	//_ = os.Remove(configPath)
 }

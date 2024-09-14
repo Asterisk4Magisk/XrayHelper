@@ -2,9 +2,9 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
-	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls"
 	"XrayHelper/main/switches"
 	"encoding/json"
 	"fmt"
@@ -137,7 +137,9 @@ func realPing(api *API, response *serial.OrderedMap) {
 	}
 	if s, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
 		if target := s.Choose(custom, index); target != nil {
-			response.Set("result", common.RealPing(builds.Config.XrayHelper.CoreType, target))
+			if url, ok := target.(shareurls.ShareUrl); ok {
+				response.Set("result", shareurls.RealPing(builds.Config.XrayHelper.CoreType, url))
+			}
 		}
 	}
 }
