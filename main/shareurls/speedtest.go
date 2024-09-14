@@ -36,7 +36,8 @@ func RealPing(coreType string, url ShareUrl) (result int) {
 	listenFlag := false
 	for i := 0; i < *builds.CoreStartTimeout; i++ {
 		time.Sleep(1 * time.Second)
-		if common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, false) {
+		if common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, false) ||
+			common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, true) {
 			listenFlag = true
 			break
 		}
@@ -81,7 +82,11 @@ func startTestService(coreType string, url ShareUrl, configPath string) (common.
 		if err := genXrayTestConfig(url, configPath); err != nil {
 			return nil, err
 		}
-		service = common.NewExternal(0, nil, nil, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
+		serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "test.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
+		if err != nil {
+			return nil, e.New("open core test log file failed, ", err).WithPrefix(tagSpeedtest)
+		}
+		service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
 	default:
 		return nil, e.New("not a supported coreType " + coreType).WithPrefix(tagSpeedtest)
 	}
@@ -95,12 +100,13 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	// add dns
 	var dnsObj serial.OrderedMap
 	var dnsServersArr serial.OrderedArray
-	dnsServersArr = append(dnsServersArr, "1.1.1.1", "223.5.5.5")
+	dnsServersArr = append(dnsServersArr, "223.5.5.5")
 	dnsObj.Set("servers", dnsServersArr)
 	config.Set("dns", dnsObj)
 	// add inbounds
 	var inboundsArr serial.OrderedArray
 	var socksObj serial.OrderedMap
+	socksObj.Set("tag", "socks-in")
 	socksObj.Set("port", testPort)
 	socksObj.Set("protocol", "socks")
 	inboundsArr = append(inboundsArr, socksObj)
