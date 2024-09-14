@@ -78,7 +78,7 @@ func startTest(dialer proxy.Dialer) (result int) {
 		ForceAttemptHTTP2:     true,
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
+		TLSHandshakeTimeout:   5 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 	client := &http.Client{Transport: transport}
@@ -110,20 +110,12 @@ func startTestService(coreType string, url ShareUrl, port int, configPath string
 		if err := genXrayTestConfig(url, port, configPath); err != nil {
 			return nil, err
 		}
-		serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "test.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
-		if err != nil {
-			return nil, e.New("open core test log file failed, ", err).WithPrefix(tagSpeedtest)
-		}
-		service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
+		service = common.NewExternal(0, nil, nil, builds.Config.XrayHelper.CorePath, "run", "-c", configPath)
 	case "sing-box":
 		if err := genSingboxTestConfig(url, port, configPath); err != nil {
 			return nil, err
 		}
-		serviceLogFile, err := os.OpenFile(path.Join(builds.Config.XrayHelper.RunDir, "test.log"), os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0644)
-		if err != nil {
-			return nil, e.New("open core test log file failed, ", err).WithPrefix(tagSpeedtest)
-		}
-		service = common.NewExternal(0, serviceLogFile, serviceLogFile, builds.Config.XrayHelper.CorePath, "run", "-c", configPath, "--disable-color")
+		service = common.NewExternal(0, nil, nil, builds.Config.XrayHelper.CorePath, "run", "-c", configPath, "--disable-color")
 	default:
 		return nil, e.New("not a supported coreType " + coreType).WithPrefix(tagSpeedtest)
 	}
@@ -221,5 +213,5 @@ func genSingboxTestConfig(url ShareUrl, port int, configPath string) error {
 
 func stopTestService(service common.External, configPath string) {
 	_ = service.Kill()
-	//_ = os.Remove(configPath)
+	_ = os.Remove(configPath)
 }
