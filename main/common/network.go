@@ -22,19 +22,27 @@ const (
 
 // getHttpClient get a http client with custom dns
 func getHttpClient(dns string, timeout time.Duration) *http.Client {
-	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		dialer := &net.Dialer{
-			Resolver: &net.Resolver{
-				PreferGo: true,
-				Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-					d := net.Dialer{Timeout: timeout}
-					return d.DialContext(ctx, "udp", dns)
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			dialer := &net.Dialer{
+				Resolver: &net.Resolver{
+					PreferGo: true,
+					Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+						d := net.Dialer{Timeout: timeout}
+						return d.DialContext(ctx, "udp", dns)
+					},
 				},
-			},
-		}
-		return dialer.DialContext(ctx, network, addr)
+			}
+			return dialer.DialContext(ctx, network, addr)
+		},
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
-	return &http.Client{}
+	return &http.Client{Transport: transport}
 }
 
 // CheckLocalPort check whether the local port is listening

@@ -6,9 +6,11 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"XrayHelper/main/serial"
+	"context"
 	"encoding/json"
 	"golang.org/x/net/proxy"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -32,6 +34,7 @@ func RealPing(coreType string, url ShareUrl) (result int) {
 		log.HandleDebug(err)
 		return
 	}
+	defer stopTestService(service, configPath)
 	// check service port
 	listenFlag := false
 	for i := 0; i < *builds.CoreStartTimeout; i++ {
@@ -52,7 +55,26 @@ func RealPing(coreType string, url ShareUrl) (result int) {
 		log.HandleDebug("set socks5 proxy: " + err.Error())
 		return
 	}
-	client := &http.Client{Transport: &http.Transport{Dial: dialer.Dial}}
+	// drop first result
+	startTest(dialer)
+	result = startTest(dialer)
+	return
+}
+
+func startTest(dialer proxy.Dialer) (result int) {
+	result = -1
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return dialer.Dial(network, addr)
+		},
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+	client := &http.Client{Transport: transport}
 	// start test
 	request, _ := http.NewRequest("GET", testUrl, nil)
 	start := time.Now()
@@ -61,11 +83,10 @@ func RealPing(coreType string, url ShareUrl) (result int) {
 		log.HandleDebug("request google_204: " + err.Error())
 		return
 	}
-	// defer stop test service
-	defer func(Body io.ReadCloser, Service common.External) {
+	// defer close body
+	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
-		stopTest(Service, configPath)
-	}(response.Body, service)
+	}(response.Body)
 	// get result
 	if response.StatusCode != 204 {
 		log.HandleDebug("request google_204 get " + strconv.Itoa(response.StatusCode))
@@ -130,7 +151,7 @@ func genXrayTestConfig(url ShareUrl, configPath string) error {
 	return nil
 }
 
-func stopTest(service common.External, configPath string) {
+func stopTestService(service common.External, configPath string) {
 	_ = service.Kill()
 	//_ = os.Remove(configPath)
 }
