@@ -34,12 +34,12 @@ func RealPing(coreType string, url ShareUrl) (result int) {
 	}
 	// check service port
 	listenFlag := false
-	for i := 0; i < 15; i++ {
+	for i := 0; i < *builds.CoreStartTimeout; i++ {
+		time.Sleep(1 * time.Second)
 		if common.CheckLocalPort(strconv.Itoa(service.Pid()), testPort, false) {
 			listenFlag = true
 			break
 		}
-		time.Sleep(100 * time.Millisecond)
 	}
 	if !listenFlag {
 		log.HandleDebug("service not listen for RealPing")
