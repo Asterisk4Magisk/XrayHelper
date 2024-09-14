@@ -47,7 +47,7 @@ func (this *Vmess) GetNodeInfo() *addon.NodeInfo {
 	return &addon.NodeInfo{
 		Remarks:  string(this.Remarks),
 		Type:     "VMess",
-		Host:     string(this.Host),
+		Host:     string(this.Server),
 		Port:     string(this.Port),
 		Protocol: string(this.Network),
 	}
