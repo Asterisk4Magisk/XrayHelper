@@ -5,6 +5,7 @@ import (
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
+	"XrayHelper/main/shareurls"
 	"XrayHelper/main/switches"
 	"encoding/json"
 	"fmt"
@@ -50,11 +51,11 @@ func (this *ApiCommand) Execute(args []string) error {
 
 func parse(api *API) (response *serial.OrderedMap) {
 	response = new(serial.OrderedMap)
+	if err := load(); err != nil {
+		return
+	}
 	switch api.Operation {
 	case "get":
-		if err := load(); err != nil {
-			return
-		}
 		switch api.Object {
 		case "status":
 			getStatus(response)
@@ -62,17 +63,14 @@ func parse(api *API) (response *serial.OrderedMap) {
 			getSwitch(api, response)
 		}
 	case "set":
-		if err := load(); err != nil {
-			return
-		}
 		switch api.Object {
 		case "switch":
 			setSwitch(api, response)
 		}
 	case "misc":
 		switch api.Object {
-		case "ping":
-			ping(api, response)
+		case "realping":
+			realPing(api, response)
 		}
 	}
 	return
@@ -126,9 +124,23 @@ func setSwitch(api *API, response *serial.OrderedMap) {
 	}
 }
 
-func ping(api *API, response *serial.OrderedMap) {
+func realPing(api *API, response *serial.OrderedMap) {
 	response.Set("result", -1)
-	if len(api.Addon) >= 3 {
-		response.Set("result", common.Ping(api.Addon[0], api.Addon[1], api.Addon[2]))
+	custom := false
+	index := 0
+	if len(api.Addon) == 2 && api.Addon[0] == "custom" {
+		custom = true
+		index, _ = strconv.Atoi(api.Addon[1])
+	} else if len(api.Addon) == 1 {
+		index, _ = strconv.Atoi(api.Addon[0])
+	} else {
+		return
+	}
+	if s, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
+		if target := s.Choose(custom, index); target != nil {
+			if url, ok := target.(shareurls.ShareUrl); ok {
+				response.Set("result", common.RealPing(builds.Config.XrayHelper.CoreType, url))
+			}
+		}
 	}
 }

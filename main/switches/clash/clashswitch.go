@@ -73,6 +73,14 @@ func (this *ClashSwitch) Set(custom bool, index int) error {
 	return change(index)
 }
 
+func (this *ClashSwitch) Choose(custom bool, index int) any {
+	loadClashUrl()
+	if index >= 0 && index < len(clashUrl) {
+		return clashUrl[index]
+	}
+	return nil
+}
+
 func loadClashUrl() {
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
 		if strings.HasPrefix(subUrl, "clash+") {

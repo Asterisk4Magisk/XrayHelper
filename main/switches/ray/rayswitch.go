@@ -66,6 +66,16 @@ func (this *RaySwitch) Set(custom bool, index int) error {
 	return err
 }
 
+func (this *RaySwitch) Choose(custom bool, index int) any {
+	err := loadShareUrl(custom)
+	if err == nil {
+		if index >= 0 && index < len(shareUrls) {
+			return shareUrls[index]
+		}
+	}
+	return nil
+}
+
 func change(index int) error {
 	if index < 0 || index >= len(shareUrls) {
 		return e.New("invalid number").WithPrefix(tagRayswitch)

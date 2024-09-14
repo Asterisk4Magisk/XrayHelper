@@ -14,6 +14,7 @@ type Switch interface {
 	Execute(args []string) (bool, error)
 	Get(custom bool) serial.OrderedArray
 	Set(custom bool, index int) error
+	Choose(custom bool, index int) any
 }
 
 func NewSwitch(coreType string) (Switch, error) {
