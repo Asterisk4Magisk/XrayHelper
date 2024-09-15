@@ -62,9 +62,13 @@ func RealPing(coreType string, results chan *Result, result *Result) {
 		results <- result
 		return
 	}
-	// drop first result
-	startTest(dialer)
-	result.Value = startTest(dialer)
+	start := time.Now()
+	for {
+		result.Value = startTest(dialer)
+		if time.Since(start) > 5*time.Second || result.Value > -1 {
+			break
+		}
+	}
 	results <- result
 }
 
@@ -76,8 +80,8 @@ func startTest(dialer proxy.Dialer) (result int) {
 			return dialer.Dial(network, addr)
 		},
 		ForceAttemptHTTP2:     true,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
+		MaxIdleConns:          1,
+		IdleConnTimeout:       5 * time.Second,
 		TLSHandshakeTimeout:   5 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 	}
