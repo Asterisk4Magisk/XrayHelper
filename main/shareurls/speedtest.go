@@ -161,7 +161,7 @@ func genXrayTestConfig(url ShareUrl, port int, configPath string) error {
 	outboundsArr = append(outboundsArr, outbound)
 	config.Set("outbounds", outboundsArr)
 	// save test config
-	marshal, err := json.MarshalIndent(config, "", "    ")
+	marshal, err := json.Marshal(config)
 	if err != nil {
 		return e.New("marshal xray test config failed, ", err).WithPrefix(tagSpeedtest)
 	}
@@ -205,7 +205,7 @@ func genSingboxTestConfig(url ShareUrl, port int, configPath string) error {
 	outboundsArr = append(outboundsArr, outbound, outbound2)
 	config.Set("outbounds", outboundsArr)
 	// save test config
-	marshal, err := json.MarshalIndent(config, "", "    ")
+	marshal, err := json.Marshal(config)
 	if err != nil {
 		return e.New("marshal sing-box test config failed, ", err).WithPrefix(tagSpeedtest)
 	}
