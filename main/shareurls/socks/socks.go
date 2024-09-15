@@ -19,7 +19,17 @@ type Socks struct {
 	Password string
 }
 
-func (this *Socks) GetNodeInfo() string {
+func (this *Socks) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "Socks",
+		Host:     this.Server,
+		Port:     this.Port,
+		Protocol: "tcp",
+	}
+}
+
+func (this *Socks) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Socks"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", User: ")+"%+v"+color.BlueString(", Password: ")+"%+v", this.Remarks, this.Server, this.Port, this.User, this.Password)
 }
 

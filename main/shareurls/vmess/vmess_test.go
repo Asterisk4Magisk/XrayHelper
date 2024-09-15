@@ -14,7 +14,7 @@ func TestVmess(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(vmessShareUrl.GetNodeInfo())
+	fmt.Println(vmessShareUrl.GetNodeInfoStr())
 	tag, err := vmessShareUrl.ToOutboundWithTag("xray", "proxy")
 	indent, err := json.MarshalIndent(tag, "", "    ")
 	fmt.Println(string(indent))

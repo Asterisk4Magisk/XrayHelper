@@ -22,76 +22,27 @@ const (
 
 // getHttpClient get a http client with custom dns
 func getHttpClient(dns string, timeout time.Duration) *http.Client {
-	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		dialer := &net.Dialer{
-			Resolver: &net.Resolver{
-				PreferGo: true,
-				Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-					d := net.Dialer{Timeout: timeout}
-					return d.DialContext(ctx, "udp", dns)
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			dialer := &net.Dialer{
+				Resolver: &net.Resolver{
+					PreferGo: true,
+					Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+						d := net.Dialer{Timeout: timeout}
+						return d.DialContext(ctx, "udp", dns)
+					},
 				},
-			},
-		}
-		return dialer.DialContext(ctx, network, addr)
+			}
+			return dialer.DialContext(ctx, network, addr)
+		},
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
-	return &http.Client{}
-}
-
-// Ping simple ping use target host&port(result max: 2000)
-func Ping(protocol string, host string, port string) string {
-	addr := net.JoinHostPort(host, port)
-	start := time.Now()
-	switch strings.ToLower(protocol) {
-	case "tcp", "http", "h2", "httpupgrade", "ws", "grpc":
-		conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
-		if err != nil {
-			return "-"
-		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
-	case "udp", "kcp", "mkcp":
-		conn, err := net.DialTimeout("udp", addr, 2*time.Second)
-		if err != nil {
-			return "-"
-		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
-	case "quic":
-		conn, err := net.DialTimeout("udp", addr, 2*time.Second)
-		if err != nil {
-			return "-"
-		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
-		_ = conn.SetDeadline(time.Now().Add(2 * time.Second))
-		if _, err := conn.Write([]byte("\r12345678Q999\x00")); err != nil {
-			return "-"
-		}
-		if _, err := conn.Read(make([]byte, 1024)); err != nil {
-			return "-"
-		}
-	case "dns":
-		conn, err := net.DialTimeout("udp", addr, 2*time.Second)
-		if err != nil {
-			return "-"
-		}
-		defer func(conn net.Conn) {
-			_ = conn.Close()
-		}(conn)
-		_ = conn.SetDeadline(time.Now().Add(2 * time.Second))
-		if _, err := conn.Write([]byte("\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00")); err != nil {
-			return "-"
-		}
-		if _, err := conn.Read(make([]byte, 1024)); err != nil {
-			return "-"
-		}
-	default:
-		return "-"
-	}
-	return strconv.FormatInt(time.Since(start).Milliseconds(), 10) + "ms"
+	return &http.Client{Transport: transport}
 }
 
 // CheckLocalPort check whether the local port is listening

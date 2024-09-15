@@ -26,7 +26,17 @@ type VLESS struct {
 	Addon addon.Addon
 }
 
-func (this *VLESS) GetNodeInfo() string {
+func (this *VLESS) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "VLESS",
+		Host:     this.Server,
+		Port:     this.Port,
+		Protocol: this.Network,
+	}
+}
+
+func (this *VLESS) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"VLESS"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Flow: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Id: ")+"%+v", this.Remarks, this.Server, this.Port, this.Flow, this.Network, this.Id)
 }
 

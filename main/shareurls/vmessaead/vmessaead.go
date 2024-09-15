@@ -25,7 +25,17 @@ type VmessAEAD struct {
 	Addon addon.Addon
 }
 
-func (this *VmessAEAD) GetNodeInfo() string {
+func (this *VmessAEAD) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "VMess",
+		Host:     this.Server,
+		Port:     this.Port,
+		Protocol: this.Network,
+	}
+}
+
+func (this *VmessAEAD) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Vmess"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Id: ")+"%+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
 }
 

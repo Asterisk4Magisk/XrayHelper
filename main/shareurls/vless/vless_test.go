@@ -14,7 +14,7 @@ func TestVLESS(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(vlessShareUrl.GetNodeInfo())
+	fmt.Println(vlessShareUrl.GetNodeInfoStr())
 	tag, err := vlessShareUrl.ToOutboundWithTag("xray", "proxy")
 	indent, err := json.MarshalIndent(tag, "", "    ")
 	fmt.Println(string(indent))

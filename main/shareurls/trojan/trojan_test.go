@@ -14,7 +14,7 @@ func TestTrojan(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(trojanShareUrl.GetNodeInfo())
+	fmt.Println(trojanShareUrl.GetNodeInfoStr())
 	tag, err := trojanShareUrl.ToOutboundWithTag("xray", "proxy")
 	indent, err := json.MarshalIndent(tag, "", "    ")
 	fmt.Println(string(indent))

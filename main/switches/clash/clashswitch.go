@@ -4,6 +4,7 @@ import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/serial"
 	"fmt"
 	"github.com/fatih/color"
 	"os"
@@ -56,8 +57,8 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 	return true, nil
 }
 
-func (this *ClashSwitch) Get(custom bool) []string {
-	var result []string
+func (this *ClashSwitch) Get(custom bool) serial.OrderedArray {
+	var result serial.OrderedArray
 	loadClashUrl()
 	if len(clashUrl) > 0 {
 		for _, url := range clashUrl {
@@ -72,7 +73,18 @@ func (this *ClashSwitch) Set(custom bool, index int) error {
 	return change(index)
 }
 
+func (this *ClashSwitch) Choose(custom bool, index int) any {
+	loadClashUrl()
+	if index >= 0 && index < len(clashUrl) {
+		return clashUrl[index]
+	}
+	return nil
+}
+
 func loadClashUrl() {
+	if len(clashUrl) > 0 {
+		return
+	}
 	for _, subUrl := range builds.Config.XrayHelper.SubList {
 		if strings.HasPrefix(subUrl, "clash+") {
 			clashUrl = append(clashUrl, strings.TrimPrefix(subUrl, "clash+"))

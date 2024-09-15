@@ -47,8 +47,8 @@ func (this *RaySwitch) Execute(args []string) (bool, error) {
 	return true, nil
 }
 
-func (this *RaySwitch) Get(custom bool) []string {
-	var result []string
+func (this *RaySwitch) Get(custom bool) serial.OrderedArray {
+	var result serial.OrderedArray
 	err := loadShareUrl(custom)
 	if err == nil {
 		for _, url := range shareUrls {
@@ -64,6 +64,16 @@ func (this *RaySwitch) Set(custom bool, index int) error {
 		return change(index)
 	}
 	return err
+}
+
+func (this *RaySwitch) Choose(custom bool, index int) any {
+	err := loadShareUrl(custom)
+	if err == nil {
+		if index >= 0 && index < len(shareUrls) {
+			return shareUrls[index]
+		}
+	}
+	return nil
 }
 
 func change(index int) error {
@@ -114,6 +124,9 @@ func change(index int) error {
 }
 
 func loadShareUrl(custom bool) error {
+	if len(shareUrls) > 0 {
+		return nil
+	}
 	var nodeTxt string
 	if custom {
 		nodeTxt = path.Join(builds.Config.XrayHelper.DataDir, "custom.txt")
@@ -148,7 +161,7 @@ func loadShareUrl(custom bool) error {
 
 func printProxyNode() {
 	for index, shareUrl := range shareUrls {
-		fmt.Printf(color.GreenString("[%d]")+" %s\n", index, shareUrl.GetNodeInfo())
+		fmt.Printf(color.GreenString("[%d]")+" %s\n", index, shareUrl.GetNodeInfoStr())
 	}
 }
 

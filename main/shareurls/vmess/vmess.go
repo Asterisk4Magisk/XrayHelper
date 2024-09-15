@@ -43,7 +43,17 @@ type Vmess struct {
 	Version     String `json:"v"`
 }
 
-func (this *Vmess) GetNodeInfo() string {
+func (this *Vmess) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
+		Remarks:  string(this.Remarks),
+		Type:     "VMess",
+		Host:     string(this.Server),
+		Port:     string(this.Port),
+		Protocol: string(this.Network),
+	}
+}
+
+func (this *Vmess) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Vmess"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Id: ")+"%+v", this.Remarks, this.Server, this.Port, this.Network, this.Id)
 }
 

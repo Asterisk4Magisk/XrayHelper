@@ -24,7 +24,17 @@ type Trojan struct {
 	Addon addon.Addon
 }
 
-func (this *Trojan) GetNodeInfo() string {
+func (this *Trojan) GetNodeInfo() *addon.NodeInfo {
+	return &addon.NodeInfo{
+		Remarks:  this.Remarks,
+		Type:     "Trojan",
+		Host:     this.Server,
+		Port:     this.Port,
+		Protocol: this.Network,
+	}
+}
+
+func (this *Trojan) GetNodeInfoStr() string {
 	return fmt.Sprintf(color.BlueString("Remarks: ")+"%+v"+color.BlueString(", Type: ")+"Trojan"+color.BlueString(", Server: ")+"%+v"+color.BlueString(", Port: ")+"%+v"+color.BlueString(", Network: ")+"%+v"+color.BlueString(", Password: ")+"%+v", this.Remarks, this.Server, this.Port, this.Network, this.Password)
 }
 
