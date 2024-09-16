@@ -57,7 +57,7 @@ func (this *ClashSwitch) Execute(args []string) (bool, error) {
 	return true, nil
 }
 
-func (this *ClashSwitch) Get(custom bool) serial.OrderedArray {
+func (this *ClashSwitch) Get(bool) serial.OrderedArray {
 	var result serial.OrderedArray
 	loadClashUrl()
 	if len(clashUrl) > 0 {
@@ -68,12 +68,12 @@ func (this *ClashSwitch) Get(custom bool) serial.OrderedArray {
 	return result
 }
 
-func (this *ClashSwitch) Set(custom bool, index int) error {
+func (this *ClashSwitch) Set(_ bool, index int) error {
 	loadClashUrl()
 	return change(index)
 }
 
-func (this *ClashSwitch) Choose(custom bool, index int) any {
+func (this *ClashSwitch) Choose(_ bool, index int) any {
 	loadClashUrl()
 	if index >= 0 && index < len(clashUrl) {
 		return clashUrl[index]
