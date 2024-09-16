@@ -24,21 +24,21 @@ func init() {
 }
 
 // HandleError record error log
-func HandleError(v interface{}) {
+func HandleError(v any) {
 	if str := serial.ToString(v); str != "" {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.RedString("ERROR"), ":", str)
 	}
 }
 
 // HandleInfo record info log
-func HandleInfo(v interface{}) {
+func HandleInfo(v any) {
 	if str := serial.ToString(v); str != "" {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.GreenString("INFO"), ":", str)
 	}
 }
 
 // HandleDebug record debug log
-func HandleDebug(v interface{}) {
+func HandleDebug(v any) {
 	if *Verbose {
 		if str := serial.ToString(v); str != "" {
 			fmt.Println(time.Now().Format("2006-01-02 15:04:05"), color.BlueString("DEBUG"), ":", str)

@@ -8,19 +8,19 @@ import (
 
 // Error is an error object with underlying error.
 type Error struct {
-	prefix  []interface{}
-	pathObj interface{}
-	message []interface{}
+	prefix  []any
+	pathObj any
+	message []any
 }
 
 // WithPrefix set err prefix in method Error()
-func (err *Error) WithPrefix(prefix ...interface{}) *Error {
+func (err *Error) WithPrefix(prefix ...any) *Error {
 	err.prefix = prefix
 	return err
 }
 
 // WithPathObj set Obj path, should not be predeclared type like pointer, bool ...
-func (err *Error) WithPathObj(obj interface{}) *Error {
+func (err *Error) WithPathObj(obj any) *Error {
 	err.pathObj = obj
 	return err
 }
@@ -55,6 +55,6 @@ func (err *Error) Error() string {
 }
 
 // New returns a new error object with message formed from given arguments
-func New(msg ...interface{}) *Error {
+func New(msg ...any) *Error {
 	return &Error{message: msg}
 }
