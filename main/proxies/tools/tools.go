@@ -11,8 +11,10 @@ import (
 const tagTools = "tools"
 
 func GetUid(pkgInfo string) []string {
-	var userId int
-	var pkgUserId []string
+	var (
+		userId    int
+		pkgUserId []string
+	)
 	info := strings.Split(pkgInfo, ":")
 	if len(info) == 2 {
 		userId, _ = strconv.Atoi(info[1])

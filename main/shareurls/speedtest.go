@@ -31,12 +31,14 @@ type Result struct {
 }
 
 func RealPing(coreType string, results chan *Result, result *Result) {
+	defer func(results chan *Result, result *Result) {
+		results <- result
+	}(results, result)
 	configPath := path.Join(builds.Config.XrayHelper.RunDir, serial.Concat("test", result.Port, ".json"))
 	// start test service
 	service, err := startTestService(coreType, result.Url, result.Port, configPath)
 	if err != nil {
 		log.HandleDebug(err)
-		results <- result
 		return
 	}
 	defer stopTestService(service, configPath)
@@ -52,14 +54,12 @@ func RealPing(coreType string, results chan *Result, result *Result) {
 	}
 	if !listenFlag {
 		log.HandleDebug("service not listen for RealPing")
-		results <- result
 		return
 	}
 	// set socks5 proxy
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:"+strconv.Itoa(result.Port), nil, proxy.Direct)
 	if err != nil {
 		log.HandleDebug("set socks5 proxy: " + err.Error())
-		results <- result
 		return
 	}
 	start := time.Now()
@@ -69,7 +69,6 @@ func RealPing(coreType string, results chan *Result, result *Result) {
 			break
 		}
 	}
-	results <- result
 }
 
 func startTest(dialer proxy.Dialer) (result int) {
