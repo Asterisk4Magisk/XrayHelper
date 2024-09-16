@@ -207,42 +207,31 @@ func replaceProxyNode(conf []byte, index int) ([]byte, error) {
 		if err != nil {
 			return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
 		}
-		outbounds, ok := jsonMap.Get("outbounds")
-		if !ok {
-			return nil, e.New("cannot find outbounds").WithPrefix(tagRayswitch)
-		}
-		// assert outbounds
-		outboundArray, ok := outbounds.Value.(serial.OrderedArray)
-		if !ok {
-			return nil, e.New("assert outbounds to serial.OrderedArray failed").WithPrefix(tagRayswitch)
-		}
-		for i, outbound := range outboundArray {
-			outboundMap, ok := outbound.(serial.OrderedMap)
-			if !ok {
-				continue
-			}
-			tag, ok := outboundMap.Get("tag")
-			if !ok {
-				continue
-			}
-			if tag.Value == builds.Config.XrayHelper.ProxyTag {
-				// replace
-				outbound, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
-				if err != nil {
-					return nil, err
+		if outbounds, ok := jsonMap.Get("outbounds"); ok {
+			outboundArray := outbounds.Value.(serial.OrderedArray)
+			for i, outbound := range outboundArray {
+				outboundMap := outbound.(serial.OrderedMap)
+				if tag, ok := outboundMap.Get("tag"); ok {
+					if tag.Value == builds.Config.XrayHelper.ProxyTag {
+						// replace
+						outbound, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
+						if err != nil {
+							return nil, err
+						}
+						outboundArray[i] = outbound
+						jsonMap.Set("outbounds", outboundArray)
+						// marshal
+						marshal, err := json.MarshalIndent(jsonMap, "", "    ")
+						if err != nil {
+							return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
+						}
+						return marshal, nil
+					}
 				}
-				outboundArray[i] = outbound
-				// array is a slice, need reset
-				jsonMap.Set("outbounds", outboundArray)
-				// marshal
-				marshal, err := json.MarshalIndent(jsonMap, "", "    ")
-				if err != nil {
-					return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
-				}
-				return marshal, nil
 			}
+			return nil, e.New("cannot found outbounds tag: " + builds.Config.XrayHelper.ProxyTag).WithPrefix(tagRayswitch)
 		}
-		return nil, e.New("not found tag, " + builds.Config.XrayHelper.ProxyTag).WithPrefix(tagRayswitch)
+		return nil, e.New("cannot found outbounds from provided conf").WithPrefix(tagRayswitch)
 	case "hysteria2":
 		// unmarshal
 		var yamlMap serial.OrderedMap
@@ -285,29 +274,25 @@ func replaceXrayHost(conf []byte, index int) ([]byte, error) {
 	if err != nil {
 		return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
 	}
-	dns, ok := jsonMap.Get("dns")
-	if !ok {
-		return nil, e.New("cannot find dns").WithPrefix(tagRayswitch)
+	// asset dns
+	if dns, ok := jsonMap.Get("dns"); ok {
+		dnsMap := dns.Value.(serial.OrderedMap)
+		// replace
+		var hostsMap serial.OrderedMap
+		nodeInfo := shareUrls[index].GetNodeInfo()
+		result, err := common.LookupIP(nodeInfo.Host)
+		if err != nil {
+			return nil, err
+		}
+		hostsMap.Set(nodeInfo.Host, result)
+		dnsMap.Set("hosts", hostsMap)
+		jsonMap.Set("dns", dnsMap)
+		// marshal
+		marshal, err := json.MarshalIndent(jsonMap, "", "    ")
+		if err != nil {
+			return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
+		}
+		return marshal, nil
 	}
-	// assert dns
-	dnsMap, ok := dns.Value.(serial.OrderedMap)
-	if !ok {
-		return nil, e.New("assert dns to serial.OrderedMap failed").WithPrefix(tagRayswitch)
-	}
-	// replace
-	var hostsMap serial.OrderedMap
-	nodeInfo := shareUrls[index].GetNodeInfo()
-	result, err := common.LookupIP(nodeInfo.Host)
-	if err != nil {
-		return nil, err
-	}
-	hostsMap.Set(nodeInfo.Host, result)
-	dnsMap.Set("hosts", hostsMap)
-	jsonMap.Set("dns", dnsMap)
-	// marshal
-	marshal, err := json.MarshalIndent(jsonMap, "", "    ")
-	if err != nil {
-		return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
-	}
-	return marshal, nil
+	return nil, e.New("cannot find dns from provided conf").WithPrefix(tagRayswitch)
 }

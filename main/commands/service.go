@@ -250,6 +250,7 @@ func startAdgHome() error {
 		httpMap := http.Value.(serial.OrderedMap)
 		// set address
 		httpMap.Set("address", builds.Config.AdgHome.Address)
+		adgHomeConfig.Set("http", httpMap)
 	}
 	if dns, ok := adgHomeConfig.Get("dns"); ok {
 		dnsMap := dns.Value.(serial.OrderedMap)
@@ -260,6 +261,7 @@ func startAdgHome() error {
 		if builds.Config.Proxy.AutoDNSStrategy {
 			dnsMap.Set("aaaa_disabled", !builds.Config.Proxy.EnableIPv6)
 		}
+		adgHomeConfig.Set("dns", dnsMap)
 	}
 	// save config
 	marshal, err := yaml.Marshal(adgHomeConfig)
@@ -375,43 +377,39 @@ func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err err
 	if err != nil {
 		return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagService)
 	}
-	dns, ok := jsonMap.Get("dns")
-	if !ok {
-		return nil, e.New("cannot find dns object from your core config").WithPrefix(tagService)
-	}
-	// assert dns
-	dnsMap, ok := dns.Value.(serial.OrderedMap)
-	if !ok {
-		return nil, e.New("assert dns to map failed").WithPrefix(tagService)
-	}
-	switch builds.Config.XrayHelper.CoreType {
-	case "xray":
-		if ipv6 {
-			dnsMap.Set("queryStrategy", "UseIP")
-		} else {
-			dnsMap.Set("queryStrategy", "UseIPv4")
+	if dns, ok := jsonMap.Get("dns"); ok {
+		dnsMap := dns.Value.(serial.OrderedMap)
+		switch builds.Config.XrayHelper.CoreType {
+		case "xray":
+			if ipv6 {
+				dnsMap.Set("queryStrategy", "UseIP")
+			} else {
+				dnsMap.Set("queryStrategy", "UseIPv4")
+			}
+		case "v2ray":
+			if ipv6 {
+				dnsMap.Set("queryStrategy", "USE_IP")
+			} else {
+				dnsMap.Set("queryStrategy", "USE_IP4")
+			}
+		case "sing-box":
+			if ipv6 {
+				dnsMap.Set("strategy", "prefer_ipv4")
+			} else {
+				dnsMap.Set("strategy", "ipv4_only")
+			}
+		default:
+			return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
 		}
-	case "v2ray":
-		if ipv6 {
-			dnsMap.Set("queryStrategy", "USE_IP")
-		} else {
-			dnsMap.Set("queryStrategy", "USE_IP4")
+		jsonMap.Set("dns", dnsMap)
+		// marshal
+		marshal, err := json.MarshalIndent(jsonMap, "", "    ")
+		if err != nil {
+			return nil, e.New("marshal config json failed, ", err).WithPrefix(tagService)
 		}
-	case "sing-box":
-		if ipv6 {
-			dnsMap.Set("strategy", "prefer_ipv4")
-		} else {
-			dnsMap.Set("strategy", "ipv4_only")
-		}
-	default:
-		return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
+		return marshal, nil
 	}
-	// marshal
-	marshal, err := json.MarshalIndent(jsonMap, "", "    ")
-	if err != nil {
-		return nil, e.New("marshal config json failed, ", err).WithPrefix(tagService)
-	}
-	return marshal, nil
+	return nil, e.New("cannot find dns object from provided conf").WithPrefix(tagService)
 }
 
 func overrideClashConfig(template string, target string) error {
@@ -459,9 +457,9 @@ func overrideClashConfig(template string, target string) error {
 		templateYamlMap.Set("ipv6", builds.Config.Proxy.EnableIPv6)
 		if dns, ok := templateYamlMap.Get("dns"); ok {
 			// assert dns
-			if dnsMap, ok := dns.Value.(serial.OrderedMap); ok {
-				dnsMap.Set("listen", "127.0.0.1:"+builds.Config.Clash.DNSPort)
-			}
+			dnsMap := dns.Value.(serial.OrderedMap)
+			dnsMap.Set("listen", "127.0.0.1:"+builds.Config.Clash.DNSPort)
+			templateYamlMap.Set("dns", dnsMap)
 		}
 	}
 	// save template
