@@ -21,17 +21,10 @@ type API struct {
 
 type ApiCommand struct{}
 
-func load() error {
+func (this *ApiCommand) Execute(args []string) error {
 	if err := builds.LoadConfig(); err != nil {
 		return err
 	}
-	if err := builds.LoadPackage(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (this *ApiCommand) Execute(args []string) error {
 	if len(args) == 0 {
 		fmt.Println(builds.Version())
 		return nil
@@ -50,9 +43,6 @@ func (this *ApiCommand) Execute(args []string) error {
 
 func parse(api *API) (response *serial.OrderedMap) {
 	response = new(serial.OrderedMap)
-	if err := load(); err != nil {
-		return
-	}
 	switch api.Operation {
 	case "get":
 		switch api.Object {
