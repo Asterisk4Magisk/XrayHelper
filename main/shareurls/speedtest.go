@@ -31,12 +31,14 @@ type Result struct {
 }
 
 func RealPing(coreType string, results chan *Result, result *Result) {
+	defer func(results chan *Result, result *Result) {
+		results <- result
+	}(results, result)
 	configPath := path.Join(builds.Config.XrayHelper.RunDir, serial.Concat("test", result.Port, ".json"))
 	// start test service
 	service, err := startTestService(coreType, result.Url, result.Port, configPath)
 	if err != nil {
 		log.HandleDebug(err)
-		results <- result
 		return
 	}
 	defer stopTestService(service, configPath)
@@ -52,24 +54,21 @@ func RealPing(coreType string, results chan *Result, result *Result) {
 	}
 	if !listenFlag {
 		log.HandleDebug("service not listen for RealPing")
-		results <- result
 		return
 	}
 	// set socks5 proxy
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:"+strconv.Itoa(result.Port), nil, proxy.Direct)
 	if err != nil {
 		log.HandleDebug("set socks5 proxy: " + err.Error())
-		results <- result
 		return
 	}
 	start := time.Now()
 	for {
 		result.Value = startTest(dialer)
-		if time.Since(start) > 5*time.Second || result.Value > -1 {
+		if time.Since(start) > 6*time.Second || result.Value > -1 {
 			break
 		}
 	}
-	results <- result
 }
 
 func startTest(dialer proxy.Dialer) (result int) {
@@ -132,6 +131,14 @@ func genXrayTestConfig(url ShareUrl, port int, configPath string) error {
 	var config serial.OrderedMap
 	// add dns
 	var dnsObj serial.OrderedMap
+	var dnsHostsObj serial.OrderedMap
+	nodeInfo := url.GetNodeInfo()
+	ip, err := common.LookupIP(nodeInfo.Host)
+	if err != nil {
+		return err
+	}
+	dnsHostsObj.Set(nodeInfo.Host, ip)
+	dnsObj.Set("hosts", dnsHostsObj)
 	var dnsServersArr serial.OrderedArray
 	dnsServersArr = append(dnsServersArr, "223.5.5.5")
 	dnsObj.Set("servers", dnsServersArr)
@@ -161,7 +168,7 @@ func genXrayTestConfig(url ShareUrl, port int, configPath string) error {
 	outboundsArr = append(outboundsArr, outbound)
 	config.Set("outbounds", outboundsArr)
 	// save test config
-	marshal, err := json.MarshalIndent(config, "", "    ")
+	marshal, err := json.Marshal(config)
 	if err != nil {
 		return e.New("marshal xray test config failed, ", err).WithPrefix(tagSpeedtest)
 	}
@@ -205,7 +212,7 @@ func genSingboxTestConfig(url ShareUrl, port int, configPath string) error {
 	outboundsArr = append(outboundsArr, outbound, outbound2)
 	config.Set("outbounds", outboundsArr)
 	// save test config
-	marshal, err := json.MarshalIndent(config, "", "    ")
+	marshal, err := json.Marshal(config)
 	if err != nil {
 		return e.New("marshal sing-box test config failed, ", err).WithPrefix(tagSpeedtest)
 	}

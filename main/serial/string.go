@@ -6,7 +6,7 @@ import (
 )
 
 // ToString serializes an arbitrary value into string.
-func ToString(v interface{}) string {
+func ToString(v any) string {
 	if v == nil {
 		return ""
 	}
@@ -25,7 +25,7 @@ func ToString(v interface{}) string {
 }
 
 // Concat concatenates all input into a single string.
-func Concat(v ...interface{}) string {
+func Concat(v ...any) string {
 	builder := strings.Builder{}
 	for _, value := range v {
 		builder.WriteString(ToString(value))

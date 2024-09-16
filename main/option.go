@@ -25,18 +25,17 @@ var Option struct {
 }
 
 // LoadOption load Option, the program entry
-func LoadOption() int {
+func LoadOption() (exitCode int) {
 	// if no args, show Intro
 	if len(os.Args) == 1 {
 		fmt.Println(builds.VersionStatement())
 		fmt.Println(builds.IntroStatement())
-		return 0
+		return
 	}
 	log.Verbose = &Option.VerboseFlag
 	builds.ConfigFilePath = &Option.ConfigFilePath
 	builds.CoreStartTimeout = &Option.CoreStartTimeout
 	builds.BypassSelf = &Option.BypassSelf
-	rCode := 0
 	parser := flags.NewParser(&Option, flags.HelpFlag|flags.PassDoubleDash)
 	if _, err := parser.Parse(); err != nil {
 		var flagsError *flags.Error
@@ -46,20 +45,20 @@ func LoadOption() int {
 					fmt.Println(builds.Version())
 					err = nil
 				} else {
-					rCode = 127
+					exitCode = 127
 				}
 			} else if errors.Is((*flagsError).Type, flags.ErrHelp) {
 				fmt.Println(builds.VersionStatement())
 				fmt.Println(err.Error())
 				err = nil
 			} else {
-				rCode = 126
+				exitCode = 126
 			}
 			log.HandleError(err)
 		} else {
 			log.HandleError(err)
-			rCode = 1
+			exitCode = 1
 		}
 	}
-	return rCode
+	return
 }

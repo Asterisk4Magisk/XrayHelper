@@ -19,7 +19,7 @@ const (
 	hy2Prefix       = "hy2://"
 )
 
-// ShareUrl implement this interface, that node can be converted to core OutoundObject
+// ShareUrl implement this interface, that node can be converted to core OutboundObject
 type ShareUrl interface {
 	GetNodeInfoStr() string
 	GetNodeInfo() *addon.NodeInfo

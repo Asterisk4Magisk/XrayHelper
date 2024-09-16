@@ -27,7 +27,7 @@ func getHttpClient(dns string, timeout time.Duration) *http.Client {
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dialer := &net.Dialer{
 				Resolver: &net.Resolver{
-					PreferGo: true,
+					PreferGo: false,
 					Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 						d := net.Dialer{Timeout: timeout}
 						return d.DialContext(ctx, "udp", dns)
@@ -43,6 +43,25 @@ func getHttpClient(dns string, timeout time.Duration) *http.Client {
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 	return &http.Client{Transport: transport}
+}
+
+func LookupIP(host string) ([]string, error) {
+	resolver := &net.Resolver{
+		PreferGo: false,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{Timeout: timeout}
+			return d.DialContext(ctx, "udp", dns)
+		},
+	}
+	addrs, err := resolver.LookupIPAddr(context.Background(), host)
+	if err != nil {
+		return nil, e.New("lookup ipaddr failed, ", err)
+	}
+	ips := make([]string, len(addrs))
+	for i, ia := range addrs {
+		ips[i] = ia.IP.String()
+	}
+	return ips, nil
 }
 
 // CheckLocalPort check whether the local port is listening

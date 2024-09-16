@@ -21,17 +21,10 @@ type API struct {
 
 type ApiCommand struct{}
 
-func load() error {
+func (this *ApiCommand) Execute(args []string) error {
 	if err := builds.LoadConfig(); err != nil {
 		return err
 	}
-	if err := builds.LoadPackage(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (this *ApiCommand) Execute(args []string) error {
 	if len(args) == 0 {
 		fmt.Println(builds.Version())
 		return nil
@@ -50,9 +43,6 @@ func (this *ApiCommand) Execute(args []string) error {
 
 func parse(api *API) (response *serial.OrderedMap) {
 	response = new(serial.OrderedMap)
-	if err := load(); err != nil {
-		return
-	}
 	switch api.Operation {
 	case "get":
 		switch api.Object {
@@ -131,21 +121,11 @@ func realPing(api *API, response *serial.OrderedMap) {
 		return
 	}
 	port := 65500
-	if swh, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
-		if api.Addon[0] == "custom" {
-			for _, idx := range api.Addon[1:] {
+	prepare := func(index []string, custom bool) {
+		if swh, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
+			for _, idx := range index {
 				id, _ := strconv.Atoi(idx)
-				if target := swh.Choose(true, id); target != nil {
-					if url, ok := target.(shareurls.ShareUrl); ok {
-						results = append(results, shareurls.Result{Name: idx, Url: url, Port: port, Value: -1})
-						port += 1
-					}
-				}
-			}
-		} else {
-			for _, idx := range api.Addon {
-				id, _ := strconv.Atoi(idx)
-				if target := swh.Choose(false, id); target != nil {
+				if target := swh.Choose(custom, id); target != nil {
 					if url, ok := target.(shareurls.ShareUrl); ok {
 						results = append(results, shareurls.Result{Name: idx, Url: url, Port: port, Value: -1})
 						port += 1
@@ -154,13 +134,18 @@ func realPing(api *API, response *serial.OrderedMap) {
 			}
 		}
 	}
-	rchan := make(chan *shareurls.Result, len(results))
+	if api.Addon[0] == "custom" {
+		prepare(api.Addon[1:], true)
+	} else {
+		prepare(api.Addon, false)
+	}
+	workChan := make(chan *shareurls.Result, len(results))
 	for _, result := range results {
-		go shareurls.RealPing(builds.Config.XrayHelper.CoreType, rchan, &result)
+		go shareurls.RealPing(builds.Config.XrayHelper.CoreType, workChan, &result)
 	}
 	for i := 0; i < len(results); i++ {
 		select {
-		case result := <-rchan:
+		case result := <-workChan:
 			var res serial.OrderedMap
 			res.Set(result.Name, result.Value)
 			responseArr = append(responseArr, res)

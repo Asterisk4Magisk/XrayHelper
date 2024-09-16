@@ -10,15 +10,15 @@ import (
 )
 
 type OrderedMap struct {
-	Values []OrderedValue
+	Values []*OrderedValue
 }
 
 type OrderedValue struct {
 	Key   string
-	Value interface{}
+	Value any
 }
 
-type OrderedArray []interface{}
+type OrderedArray []any
 
 // MarshalJSON implements the json.Marshaler interface.
 func (om OrderedMap) MarshalJSON() ([]byte, error) {
@@ -69,7 +69,7 @@ func (om *OrderedMap) UnmarshalJSON(b []byte) error {
 func (om *OrderedMap) Get(key string) (*OrderedValue, bool) {
 	for i := range om.Values {
 		if om.Values[i].Key == key {
-			return &om.Values[i], true
+			return om.Values[i], true
 		}
 	}
 
@@ -77,25 +77,26 @@ func (om *OrderedMap) Get(key string) (*OrderedValue, bool) {
 }
 
 // Set change or add an Object to OrderedMap.
-func (om *OrderedMap) Set(key string, value interface{}) {
+func (om *OrderedMap) Set(key string, value any) {
+
 	for i := range om.Values {
 		if om.Values[i].Key == key {
 			om.Values[i].Value = value
 			return
 		}
 	}
-	om.Values = append(om.Values, OrderedValue{key, value})
+	om.Values = append(om.Values, &OrderedValue{key, value})
 }
 
 // SetValue change or add an OrderedValue to OrderedMap.
 func (om *OrderedMap) SetValue(v *OrderedValue) {
 	for i := range om.Values {
 		if om.Values[i].Key == v.Key {
-			om.Values[i] = *v
+			om.Values[i] = v
 			return
 		}
 	}
-	om.Values = append(om.Values, *v)
+	om.Values = append(om.Values, v)
 }
 
 // Delete remove an Object from OrderedMap.
@@ -165,7 +166,7 @@ func (om *OrderedMap) unmarshalEmbededObject(d *json.Decoder) error {
 			return errors.New("unexpected EOF")
 		}
 
-		var val interface{}
+		var val any
 		switch vToken {
 		case json.Delim('{'):
 			var obj OrderedMap
@@ -185,7 +186,7 @@ func (om *OrderedMap) unmarshalEmbededObject(d *json.Decoder) error {
 			return err
 		}
 
-		om.Values = append(om.Values, OrderedValue{kToken.(string), val})
+		om.Values = append(om.Values, &OrderedValue{kToken.(string), val})
 	}
 
 	kToken, err := d.Token()
@@ -201,7 +202,7 @@ func (arr *OrderedArray) unmarshalEmbededArray(d *json.Decoder) error {
 		if err == io.EOF || (err == nil && token == json.Delim(']')) {
 			return errors.New("unexpected EOF")
 		}
-		var val interface{}
+		var val any
 		switch token {
 		case json.Delim('{'):
 			var obj OrderedMap
@@ -228,14 +229,14 @@ func (arr *OrderedArray) unmarshalEmbededArray(d *json.Decoder) error {
 	}
 
 	if *arr == nil {
-		*arr = make([]interface{}, 0)
+		*arr = make([]any, 0)
 	}
 
 	return nil
 }
 
 // MarshalYAML implements the yaml.MarshalYAML interface.
-func (om OrderedMap) MarshalYAML() (interface{}, error) {
+func (om OrderedMap) MarshalYAML() (any, error) {
 	node := yaml.Node{
 		Kind: yaml.MappingNode,
 	}
@@ -268,7 +269,7 @@ func (om *OrderedMap) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	if om.Values == nil {
-		om.Values = make([]OrderedValue, 0)
+		om.Values = make([]*OrderedValue, 0)
 	}
 
 	key := ""
@@ -287,19 +288,19 @@ func (om *OrderedMap) UnmarshalYAML(value *yaml.Node) error {
 				if err := node.Decode(&obj); err != nil {
 					return err
 				}
-				om.Values = append(om.Values, OrderedValue{key, obj})
+				om.Values = append(om.Values, &OrderedValue{key, obj})
 			case yaml.SequenceNode:
 				var arr OrderedArray
 				if err := node.Decode(&arr); err != nil {
 					return err
 				}
-				om.Values = append(om.Values, OrderedValue{key, arr})
+				om.Values = append(om.Values, &OrderedValue{key, arr})
 			case yaml.AliasNode, yaml.ScalarNode:
-				var ins interface{}
+				var ins any
 				if err := node.Decode(&ins); err != nil {
 					return err
 				}
-				om.Values = append(om.Values, OrderedValue{key, ins})
+				om.Values = append(om.Values, &OrderedValue{key, ins})
 			default:
 				continue
 			}
@@ -310,7 +311,7 @@ func (om *OrderedMap) UnmarshalYAML(value *yaml.Node) error {
 }
 
 // MarshalYAML implements the yaml.MarshalYAML interface.
-func (arr OrderedArray) MarshalYAML() (interface{}, error) {
+func (arr OrderedArray) MarshalYAML() (any, error) {
 	node := yaml.Node{
 		Kind: yaml.SequenceNode,
 	}
@@ -347,7 +348,7 @@ func (arr *OrderedArray) UnmarshalYAML(value *yaml.Node) error {
 			}
 			*arr = append(*arr, r)
 		case yaml.AliasNode, yaml.ScalarNode:
-			var ins interface{}
+			var ins any
 			if err := node.Decode(&ins); err != nil {
 				return err
 			}
