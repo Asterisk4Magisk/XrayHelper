@@ -65,7 +65,7 @@ func RealPing(coreType string, results chan *Result, result *Result) {
 	start := time.Now()
 	for {
 		result.Value = startTest(dialer)
-		if time.Since(start) > 5*time.Second || result.Value > -1 {
+		if time.Since(start) > 6*time.Second || result.Value > -1 {
 			break
 		}
 	}
@@ -131,6 +131,14 @@ func genXrayTestConfig(url ShareUrl, port int, configPath string) error {
 	var config serial.OrderedMap
 	// add dns
 	var dnsObj serial.OrderedMap
+	var dnsHostsObj serial.OrderedMap
+	nodeInfo := url.GetNodeInfo()
+	ip, err := common.LookupIP(nodeInfo.Host)
+	if err != nil {
+		return err
+	}
+	dnsHostsObj.Set(nodeInfo.Host, ip)
+	dnsObj.Set("hosts", dnsHostsObj)
 	var dnsServersArr serial.OrderedArray
 	dnsServersArr = append(dnsServersArr, "223.5.5.5")
 	dnsObj.Set("servers", dnsServersArr)
