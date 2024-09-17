@@ -24,7 +24,7 @@ const (
 )
 
 type Result struct {
-	Name  string
+	Index string
 	Url   ShareUrl
 	Port  int
 	Value int
