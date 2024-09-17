@@ -127,7 +127,7 @@ func realPing(api *API, response *serial.OrderedMap) {
 				id, _ := strconv.Atoi(idx)
 				if target := swh.Choose(custom, id); target != nil {
 					if url, ok := target.(shareurls.ShareUrl); ok {
-						results = append(results, shareurls.Result{Name: idx, Url: url, Port: port, Value: -1})
+						results = append(results, shareurls.Result{Index: idx, Url: url, Port: port, Value: -1})
 						port += 1
 					}
 				}
@@ -147,7 +147,8 @@ func realPing(api *API, response *serial.OrderedMap) {
 		select {
 		case result := <-workChan:
 			var res serial.OrderedMap
-			res.Set(result.Name, result.Value)
+			res.Set("index", result.Index)
+			res.Set("realping", result.Value)
 			responseArr = append(responseArr, res)
 		}
 	}
