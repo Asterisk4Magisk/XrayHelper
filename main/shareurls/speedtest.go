@@ -124,6 +124,9 @@ func startTestService(coreType string, url ShareUrl, port int, configPath string
 	}
 	service.SetUidGid("0", common.CoreGid)
 	service.Start()
+	if service.Err() != nil {
+		return nil, e.New("start test service failed, ", service.Err()).WithPrefix(tagSpeedtest)
+	}
 	return service, nil
 }
 
