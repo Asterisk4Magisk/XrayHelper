@@ -128,7 +128,7 @@ func realPing(api *API, response *serial.OrderedMap) {
 				if target := swh.Choose(custom, id); target != nil {
 					if url, ok := target.(shareurls.ShareUrl); ok {
 						results = append(results, shareurls.Result{Index: idx, Url: url, Port: port, Value: -1})
-						port += 1
+						port -= 1
 					}
 				}
 			}
