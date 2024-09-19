@@ -281,11 +281,10 @@ func replaceXrayHost(conf []byte, index int) ([]byte, error) {
 		var hostsMap serial.OrderedMap
 		nodeInfo := shareUrls[index].GetNodeInfo()
 		result, err := common.LookupIP(nodeInfo.Host)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			hostsMap.Set(nodeInfo.Host, result)
+			dnsMap.Set("hosts", hostsMap)
 		}
-		hostsMap.Set(nodeInfo.Host, result)
-		dnsMap.Set("hosts", hostsMap)
 		jsonMap.Set("dns", dnsMap)
 		// marshal
 		marshal, err := json.MarshalIndent(jsonMap, "", "    ")

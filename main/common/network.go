@@ -65,15 +65,25 @@ func LookupIP(host string) ([]string, error) {
 }
 
 // CheckLocalPort check whether the local port is listening
-func CheckLocalPort(pid string, port string, ipv6 bool) bool {
-	knetPath := "/proc/" + pid + "/net/tcp"
-	if ipv6 {
-		knetPath = "/proc/" + pid + "/net/tcp6"
+func CheckLocalPort(pid string, port string, timeout time.Duration) bool {
+	var check = func(ipv6 bool) bool {
+		knetPath := "/proc/" + pid + "/net/tcp"
+		if ipv6 {
+			knetPath = "/proc/" + pid + "/net/tcp6"
+		}
+		i, _ := strconv.Atoi(port)
+		hex := fmt.Sprintf(":%X ", i)
+		if knet, err := os.ReadFile(knetPath); err == nil {
+			return strings.Contains(string(knet), hex)
+		}
+		return false
 	}
-	i, _ := strconv.Atoi(port)
-	port = fmt.Sprintf(":%X ", i)
-	if knet, err := os.ReadFile(knetPath); err == nil {
-		return strings.Contains(string(knet), port)
+	start := time.Now()
+	for time.Since(start) < timeout {
+		if check(true) || check(false) {
+			return true
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 	return false
 }
@@ -86,15 +96,18 @@ func IsIPv6(cidr string) bool {
 	return false
 }
 
-func CheckLocalDevice(dev string) bool {
-	devices, err := net.Interfaces()
-	if err != nil {
-		return false
-	}
-	for _, device := range devices {
-		if dev == device.Name {
-			return true
+func CheckLocalDevice(dev string, timeout time.Duration) bool {
+	start := time.Now()
+	for time.Since(start) < timeout {
+		devices, err := net.Interfaces()
+		if err == nil {
+			for _, device := range devices {
+				if dev == device.Name {
+					return true
+				}
+			}
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
 	return false
 }

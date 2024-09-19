@@ -116,41 +116,48 @@ func setSwitch(api *API, response *serial.OrderedMap) {
 func realPing(api *API, response *serial.OrderedMap) {
 	var responseArr serial.OrderedArray
 	response.Set("result", responseArr)
-	var results []shareurls.Result
 	if len(api.Addon) == 0 {
 		return
 	}
-	port := 65500
-	prepare := func(index []string, custom bool) {
+	start := func(index []string, custom bool) (arr serial.OrderedArray) {
+		var (
+			results []*shareurls.Result
+			res     []*shareurls.Result
+			port    = 65500
+			i       = 0
+		)
 		if swh, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
 			for _, idx := range index {
 				id, _ := strconv.Atoi(idx)
 				if target := swh.Choose(custom, id); target != nil {
 					if url, ok := target.(shareurls.ShareUrl); ok {
-						results = append(results, shareurls.Result{Index: idx, Url: url, Port: port, Value: -1})
+						if i > 50 {
+							shareurls.RealPing(builds.Config.XrayHelper.CoreType, res)
+							results = append(results, res...)
+							res = make([]*shareurls.Result, 0)
+							port = 65500
+							i = 0
+						}
+						res = append(res, &shareurls.Result{Index: idx, Url: url, Port: port, Value: -1})
 						port -= 1
+						i++
 					}
 				}
 			}
 		}
+		shareurls.RealPing(builds.Config.XrayHelper.CoreType, res)
+		results = append(results, res...)
+		for _, result := range results {
+			var ret serial.OrderedMap
+			ret.Set("index", result.Index)
+			ret.Set("realping", result.Value)
+			arr = append(arr, ret)
+		}
+		return
 	}
 	if api.Addon[0] == "custom" {
-		prepare(api.Addon[1:], true)
+		response.Set("result", start(api.Addon[1:], true))
 	} else {
-		prepare(api.Addon, false)
+		response.Set("result", start(api.Addon, false))
 	}
-	workChan := make(chan *shareurls.Result, len(results))
-	for _, result := range results {
-		go shareurls.RealPing(builds.Config.XrayHelper.CoreType, workChan, &result)
-	}
-	for i := 0; i < len(results); i++ {
-		select {
-		case result := <-workChan:
-			var res serial.OrderedMap
-			res.Set("index", result.Index)
-			res.Set("realping", result.Value)
-			responseArr = append(responseArr, res)
-		}
-	}
-	response.Set("result", responseArr)
 }

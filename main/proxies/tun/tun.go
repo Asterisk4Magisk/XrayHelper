@@ -75,7 +75,7 @@ func (this *Tun) Enable() error {
 			}
 		}
 	} else {
-		if !tunDeviceReady(builds.Config.Proxy.TunDevice) {
+		if !common.CheckLocalDevice(builds.Config.Proxy.TunDevice, time.Duration(*builds.CoreStartTimeout)*time.Second) {
 			return e.New("cannot find your tun device " + builds.Config.Proxy.TunDevice + " did you configure core correctly?").WithPrefix(tagTun).WithPathObj(*this)
 		}
 	}
@@ -101,16 +101,6 @@ func (this *Tun) Disable() {
 		tools.CleanRedirectDNS(builds.Config.AdgHome.DNSPort)
 	}
 	tools.DisableForward(builds.Config.Proxy.TunDevice)
-}
-
-func tunDeviceReady(checkDev string) bool {
-	for i := 0; i < *builds.CoreStartTimeout; i++ {
-		time.Sleep(1 * time.Second)
-		if common.CheckLocalDevice(checkDev) {
-			return true
-		}
-	}
-	return false
 }
 
 func startTun2socks() error {
@@ -154,7 +144,7 @@ func startTun2socks() error {
 	if service.Err() != nil {
 		return e.New("start tun2socks failed, ", service.Err()).WithPrefix(tagTun)
 	}
-	if tunDeviceReady(builds.Config.Proxy.TunDevice) {
+	if common.CheckLocalDevice(builds.Config.Proxy.TunDevice, time.Duration(*builds.CoreStartTimeout)*time.Second) {
 		if err := cgroup.LimitProcess(service.Pid()); err != nil {
 			_ = service.Kill()
 			return err

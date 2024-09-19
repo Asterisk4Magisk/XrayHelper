@@ -165,30 +165,16 @@ func startService() error {
 	if service.Err() != nil {
 		return e.New("start core service failed, ", service.Err()).WithPrefix(tagService)
 	}
-OUT:
-	for i := 0; i < *builds.CoreStartTimeout; i++ {
-		time.Sleep(1 * time.Second)
-		switch builds.Config.Proxy.Method {
-		case "tproxy":
-			if common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.TproxyPort, true) ||
-				common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.TproxyPort, false) {
-				listenFlag = true
-				break OUT
-			}
-		case "tun":
-			// tun don't need check any local port
-			listenFlag = true
-			break OUT
-		case "tun2socks":
-			if common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.SocksPort, true) ||
-				common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.SocksPort, false) {
-				listenFlag = true
-				break OUT
-			}
-		default:
-			listenFlag = false
-			break OUT
-		}
+	switch builds.Config.Proxy.Method {
+	case "tproxy":
+		listenFlag = common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.TproxyPort, time.Duration(*builds.CoreStartTimeout)*time.Second)
+	case "tun":
+		// tun don't need check any local port
+		listenFlag = true
+	case "tun2socks":
+		listenFlag = common.CheckLocalPort(strconv.Itoa(service.Pid()), builds.Config.Proxy.SocksPort, time.Duration(*builds.CoreStartTimeout)*time.Second)
+	default:
+		listenFlag = false
 	}
 	if listenFlag {
 		if err := cgroup.LimitProcess(service.Pid()); err != nil {
