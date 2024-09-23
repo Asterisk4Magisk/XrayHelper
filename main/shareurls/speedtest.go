@@ -63,7 +63,7 @@ func RealPing(coreType string, results []*Result) {
 			start := time.Now()
 			for {
 				result.Value = startTest(dialer)
-				if time.Since(start) > 6*time.Second || result.Value > -1 {
+				if time.Since(start) > 4*time.Second || result.Value > -1 {
 					break
 				}
 			}
@@ -82,8 +82,8 @@ func startTest(dialer proxy.Dialer) (result int) {
 		},
 		ForceAttemptHTTP2:     true,
 		MaxIdleConns:          1,
-		IdleConnTimeout:       5 * time.Second,
-		TLSHandshakeTimeout:   5 * time.Second,
+		IdleConnTimeout:       3 * time.Second,
+		TLSHandshakeTimeout:   3 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 	client := &http.Client{Transport: transport}
