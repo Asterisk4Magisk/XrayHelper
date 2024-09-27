@@ -81,6 +81,10 @@ func (this *ClashSwitch) Choose(_ bool, index int) any {
 	return nil
 }
 
+func (this *ClashSwitch) Clear() {
+	clashUrl = clashUrl[0:0]
+}
+
 func loadClashUrl() {
 	if len(clashUrl) > 0 {
 		return

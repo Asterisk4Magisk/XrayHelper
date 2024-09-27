@@ -74,16 +74,25 @@ func getStatus(response *serial.OrderedMap) {
 }
 
 func getSwitch(api *API, response *serial.OrderedMap) {
-	custom := false
-	if len(api.Addon) > 0 && api.Addon[0] == "custom" {
-		custom = true
-	}
-	if s, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
+	get := func(custom bool) serial.OrderedArray {
 		var result serial.OrderedArray
-		for _, url := range s.Get(custom) {
-			result = append(result, url)
+		if s, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType); err == nil {
+			defer s.Clear()
+			for _, url := range s.Get(custom) {
+				result = append(result, url)
+			}
 		}
-		response.Set("result", result)
+		return result
+	}
+	if len(api.Addon) > 0 {
+		if api.Addon[0] == "all" {
+			response.Set("result", get(false))
+			response.Set("custom", get(true))
+		} else if api.Addon[0] == "custom" {
+			response.Set("result", get(true))
+		}
+	} else {
+		response.Set("result", get(false))
 	}
 }
 
