@@ -77,6 +77,10 @@ func (this *RaySwitch) Choose(custom bool, index int) any {
 	return nil
 }
 
+func (this *RaySwitch) Clear() {
+	shareUrls = shareUrls[0:0]
+}
+
 func change(index int) error {
 	if index < 0 || index >= len(shareUrls) {
 		return e.New("invalid number").WithPrefix(tagRayswitch)
