@@ -6,7 +6,6 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"XrayHelper/main/serial"
-	"compress/gzip"
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
