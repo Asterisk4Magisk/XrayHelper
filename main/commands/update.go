@@ -580,7 +580,7 @@ func updateMetacubexd() error {
 
     file, err := os.Open(metacubexdTgzPath)
     if err != nil {
-        return errors.Wrap(err, "open tgz file failed")
+        return e.New("open tgz file failed, ", err).WithPrefix(tagUpdate)
     }
     defer func() {
         _ = file.Close()
@@ -589,14 +589,14 @@ func updateMetacubexd() error {
 
     gzr, err := gzip.NewReader(file)
     if err != nil {
-        return errors.Wrap(err, "create gzip reader failed")
+        return e.New("create gzip reader failed, ", err).WithPrefix(tagUpdate)
     }
     defer gzr.Close()
 
     tarReader := tar.NewReader(gzr)
 
     if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "./")); err != nil {
-        return errors.Wrap(err, "remove old metacubex files failed")
+        return e.New("remove old metacubex files failed, ", err).WithPrefix(tagUpdate)
     }
 
     for {
@@ -605,7 +605,7 @@ func updateMetacubexd() error {
             break
         }
         if err != nil {
-            return errors.Wrap(err, "read tar file failed")
+            return e.New("read tar file failed, ", err).WithPrefix(tagUpdate)
         }
 
         target := filepath.Join(builds.Config.XrayHelper.DataDir, header.Name)
@@ -613,20 +613,20 @@ func updateMetacubexd() error {
         switch header.Typeflag {
         case tar.TypeDir:
             if err := os.MkdirAll(target, 0755); err != nil {
-                return errors.Wrap(err, "create dir "+target+" failed")
+                return e.New("create dir "+target+" failed, ", err).WithPrefix(tagUpdate)
             }
         case tar.TypeReg:
             f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
             if err != nil {
-                return errors.Wrap(err, "open file "+target+" failed")
+                return e.New("open file "+target+" failed, ", err).WithPrefix(tagUpdate)
             }
             if _, err := io.Copy(f, tarReader); err != nil {
                 _ = f.Close()
-                return errors.Wrap(err, "copy file "+target+" failed")
+                return e.New("copy file "+target+" failed, ", err).WithPrefix(tagUpdate)
             }
             _ = f.Close()
         default:
-            return errors.New("unknown type: " + string(header.Typeflag))
+            return e.New("unknown type: " + string(header.Typeflag)).WithPrefix(tagUpdate)
         }
     }
 
