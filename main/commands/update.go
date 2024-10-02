@@ -27,6 +27,7 @@ const (
 	mihomoUrl            = "https://api.github.com/repos/MetaCubeX/mihomo/releases"
 	hysteriaUrl          = "https://api.github.com/repos/apernet/hysteria/releases"
 	yacdMetaDownloadUrl  = "https://github.com/MetaCubeX/yacd/archive/gh-pages.zip"
+	metacubexDownloadUrl = "https://github.com/MetaCubeX/metacubexd/releases/latest/download/compressed-dist.tgz"
 	xrayCoreDownloadUrl  = "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-android-arm64-v8a.zip"
 	v2rayCoreDownloadUrl = "https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-android-arm64-v8a.zip"
 	geoipDownloadUrl     = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat"
@@ -96,6 +97,12 @@ func (this *UpdateCommand) Execute(args []string) error {
 	case "yacd-meta":
 		log.HandleInfo("update: updating yacd-meta")
 		if err := updateYacdMeta(); err != nil {
+			return err
+		}
+		log.HandleInfo("update: update success")
+	case "metacubexd":
+		log.HandleInfo("update: updating metacubexd")
+		if err := updateMetacubexd(); err != nil {
 			return err
 		}
 		log.HandleInfo("update: update success")
@@ -562,6 +569,68 @@ func updateYacdMeta() error {
 		_ = fr.Close()
 	}
 	return nil
+}
+
+// updateMetacubexd update metacubexd
+func updateMetacubexd() error {
+    metacubexdTgzPath := path.Join(builds.Config.XrayHelper.DataDir, "compressed-dist.tgz")
+    if err := common.DownloadFile(metacubexdTgzPath, metacubexDownloadUrl); err != nil {
+        return err
+    }
+
+    file, err := os.Open(metacubexdTgzPath)
+    if err != nil {
+        return e.New("open tgz file failed, ", err).WithPrefix(tagUpdate)
+    }
+    defer func() {
+        _ = file.Close()
+        _ = os.Remove(metacubexdTgzPath)
+    }()
+
+    gzr, err := gzip.NewReader(file)
+    if err != nil {
+        return e.New("create gzip reader failed, ", err).WithPrefix(tagUpdate)
+    }
+    defer gzr.Close()
+
+    tarReader := tar.NewReader(gzr)
+
+    if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "Yacd-meta-gh-pages/")); err != nil {
+        return e.New("remove old metacubex files failed, ", err).WithPrefix(tagUpdate)
+    }
+
+    for {
+        header, err := tarReader.Next()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            return e.New("read tar file failed, ", err).WithPrefix(tagUpdate)
+        }
+
+        target := filepath.Join(builds.Config.XrayHelper.DataDir,"Yacd-meta-gh-pages", header.Name)
+
+        switch header.Typeflag {
+        case tar.TypeDir:
+            if err := os.MkdirAll(target, 0755); err != nil {
+                return e.New("create dir "+target+" failed, ", err).WithPrefix(tagUpdate)
+            }
+        case tar.TypeReg:
+            f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
+            if err != nil {
+                return e.New("open file "+target+" failed, ", err).WithPrefix(tagUpdate)
+            }
+            if _, err := io.Copy(f, tarReader); err != nil {
+                _ = f.Close()
+                return e.New("copy file "+target+" failed, ", err).WithPrefix(tagUpdate)
+            }
+            _ = f.Close()
+        default:
+            return e.New("unknown type: " + string(header.Typeflag)).WithPrefix(tagUpdate)
+        }
+    }
+
+    return nil
 }
 
 // getDownloadUrlLatest use GitHub api to get latest download url
