@@ -544,6 +544,7 @@ func updateYacdMeta() error {
 	}
 	for _, file := range zipReader.File {
 		t := filepath.Join(builds.Config.XrayHelper.DataDir, file.Name)
+		t = strings.Replace(t, "/./", "/mihomoUI/", 1)
 		if file.FileInfo().IsDir() {
 			if err := os.MkdirAll(t, 0644); err != nil {
 				return e.New("create dir "+t+" failed, ", err).WithPrefix(tagUpdate)
@@ -609,6 +610,7 @@ func updateMetacubexd() error {
         }
 
         target := filepath.Join(builds.Config.XrayHelper.DataDir, header.Name)
+		target = strings.Replace(target, "/./", "/mihomoUI/", 1)
 
         switch header.Typeflag {
         case tar.TypeDir:
