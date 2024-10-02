@@ -608,7 +608,7 @@ func updateMetacubexd() error {
             return e.New("read tar file failed, ", err).WithPrefix(tagUpdate)
         }
 
-        target := filepath.Join(builds.Config.XrayHelper.DataDir, header.Name)
+        target := filepath.Join(builds.Config.XrayHelper.DataDir,"Yacd-meta-gh-pages", header.Name)
 
         switch header.Typeflag {
         case tar.TypeDir:
