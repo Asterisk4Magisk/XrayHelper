@@ -78,7 +78,7 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 			wsSettingsObject.Set("path", addon.Path)
 		}
 		streamSettingsObject.Set("wsSettings", wsSettingsObject)
-	case "http", "h2":
+	case "http", "h2", "h3":
 		var httpSettingsObject serial.OrderedMap
 		if len(addon.Host) > 0 {
 			var host serial.OrderedArray
@@ -136,9 +136,9 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		}
 		streamSettingsObject.Set("grpcSettings", grpcSettingsObject)
 	}
-	streamSettingsObject.Set("security", security)
 	switch security {
 	case "tls":
+		streamSettingsObject.Set("security", security)
 		var tlsSettingsObject serial.OrderedMap
 		var alpn serial.OrderedArray
 		alpnSlice := strings.Split(addon.Alpn, ",")
@@ -161,6 +161,7 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		}
 		streamSettingsObject.Set("tlsSettings", tlsSettingsObject)
 	case "reality":
+		streamSettingsObject.Set("security", security)
 		var realitySettingsObject serial.OrderedMap
 		if len(addon.FingerPrint) > 0 {
 			realitySettingsObject.Set("fingerprint", addon.FingerPrint)
