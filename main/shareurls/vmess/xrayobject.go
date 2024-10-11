@@ -18,7 +18,9 @@ func getVmessSettingsObjectXray(vmess *Vmess) serial.OrderedMap {
 	user.Set("id", vmess.Id)
 	alterId, _ := strconv.Atoi(string(vmess.AlterId))
 	user.Set("alterId", alterId)
-	user.Set("security", vmess.Security)
+	if len(vmess.Security) > 0 {
+		user.Set("security", vmess.Security)
+	}
 	user.Set("level", 0)
 	userArray = append(userArray, user)
 
