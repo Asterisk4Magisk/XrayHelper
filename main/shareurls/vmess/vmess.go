@@ -79,7 +79,9 @@ func (this *Vmess) ToOutboundWithTag(coreType string, tag string) (*serial.Order
 		serverPort, _ := strconv.Atoi(string(this.Port))
 		outboundObject.Set("server_port", serverPort)
 		outboundObject.Set("uuid", this.Id)
-		outboundObject.Set("security", this.Security)
+		if len(this.Security) > 0 {
+			outboundObject.Set("security", this.Security)
+		}
 		alterId, _ := strconv.Atoi(string(this.AlterId))
 		outboundObject.Set("alter_id", alterId)
 		outboundObject.Set("tls", addon.GetTlsObjectSingbox(addons, string(this.Tls)))
