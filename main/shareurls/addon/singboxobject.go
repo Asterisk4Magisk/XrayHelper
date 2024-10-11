@@ -10,7 +10,7 @@ import (
 func GetTransportObjectSingbox(addon *Addon, network string) serial.OrderedMap {
 	var transportObject serial.OrderedMap
 	switch network {
-	case "http", "h2":
+	case "http", "h2", "h3":
 		transportObject.Set("type", "http")
 		if len(addon.Host) > 0 {
 			var host serial.OrderedArray
