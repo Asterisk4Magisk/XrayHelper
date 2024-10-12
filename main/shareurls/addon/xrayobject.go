@@ -106,7 +106,7 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		if len(addon.Path) > 0 {
 			splithttpSettingsObject.Set("path", addon.Path)
 		}
-		streamSettingsObject.Set("splithttpSettings", streamSettingsObject)
+		streamSettingsObject.Set("splithttpSettings", splithttpSettingsObject)
 	case "quic":
 		var quicSettingsObject serial.OrderedMap
 		if len(addon.Type) > 0 {
