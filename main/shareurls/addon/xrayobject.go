@@ -18,7 +18,7 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 	var streamSettingsObject serial.OrderedMap
 	streamSettingsObject.Set("network", network)
 	switch network {
-	case "tcp":
+	case "tcp", "raw":
 		var tcpSettingsObject serial.OrderedMap
 		var headerObject serial.OrderedMap
 		switch addon.Type {
