@@ -48,7 +48,9 @@ func (this *Hysteria2) ToOutboundWithTag(coreType string, tag string) (*serial.O
 		outboundObject.Set("server", this.Host)
 		port, _ := strconv.Atoi(this.Port)
 		outboundObject.Set("server_port", port)
-		outboundObject.Set("obfs", getHysteria2ObfsObjectSingbox(this))
+		if len(this.Obfs) > 0 {
+			outboundObject.Set("obfs", getHysteria2ObfsObjectSingbox(this))
+		}
 		outboundObject.Set("password", this.Auth)
 		outboundObject.Set("tls", getHysteria2TlsObjectSingbox(this))
 		return &outboundObject, nil
@@ -57,7 +59,9 @@ func (this *Hysteria2) ToOutboundWithTag(coreType string, tag string) (*serial.O
 		var clientObject serial.OrderedMap
 		clientObject.Set("server", this.Host+":"+this.Port)
 		clientObject.Set("auth", this.Auth)
-		clientObject.Set("obfs", getHysteria2ObfsObjectHysteria2(this))
+		if len(this.Obfs) > 0 {
+			clientObject.Set("obfs", getHysteria2ObfsObjectHysteria2(this))
+		}
 		clientObject.Set("tls", getHysteria2TlsObjectHysteria2(this))
 		return &clientObject, nil
 	default:
