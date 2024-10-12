@@ -49,7 +49,7 @@ func (this *Hysteria2) ToOutboundWithTag(coreType string, tag string) (*serial.O
 		port, _ := strconv.Atoi(this.Port)
 		outboundObject.Set("server_port", port)
 		outboundObject.Set("obfs", getHysteria2ObfsObjectSingbox(this))
-		outboundObject.Set("users", getHysteria2UsersObjectSingbox(this))
+		outboundObject.Set("password", this.Auth)
 		outboundObject.Set("tls", getHysteria2TlsObjectSingbox(this))
 		return &outboundObject, nil
 	case "hysteria2":

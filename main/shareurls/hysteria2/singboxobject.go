@@ -4,7 +4,6 @@ import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/serial"
 	"strconv"
-	"strings"
 )
 
 // getHysteria2TlsObjectSingbox get sing-box Hysteria2 tls Object
@@ -31,17 +30,4 @@ func getHysteria2ObfsObjectSingbox(hysteria2 *Hysteria2) serial.OrderedMap {
 	obfsObject.Set("type", hysteria2.Obfs)
 	obfsObject.Set("password", hysteria2.ObfsPassword)
 	return obfsObject
-}
-
-// getHysteriaTlsObjectSingbox get sing-box Hysteria2 users Object
-func getHysteria2UsersObjectSingbox(hysteria2 *Hysteria2) serial.OrderedArray {
-	nameAndPassword := strings.Split(hysteria2.Auth, ":")
-	var users serial.OrderedArray
-	var userObject serial.OrderedMap
-	userObject.Set("name", nameAndPassword[0])
-	if len(nameAndPassword) == 2 {
-		userObject.Set("password", nameAndPassword[1])
-	}
-	users = append(users, userObject)
-	return users
 }
