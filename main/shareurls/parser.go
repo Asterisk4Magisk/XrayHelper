@@ -91,7 +91,7 @@ func parseAddon(aUrl string, network string, security string) (*addon.Addon, err
 	parse, _ := url.Parse(aUrl)
 	query, _ := url.ParseQuery(parse.RawQuery)
 	switch network {
-	case "tcp":
+	case "tcp", "raw":
 		//parse addon headerType
 		if headerTypes, ok := query["headerType"]; ok && len(headerTypes) == 1 {
 			if headerTypes[0] == "http" {
@@ -109,7 +109,7 @@ func parseAddon(aUrl string, network string, security string) (*addon.Addon, err
 		if seeds, ok := query["seed"]; ok && len(seeds) == 1 {
 			addon.Path = seeds[0]
 		}
-	case "ws", "http", "h2", "httpupgrade", "splithttp":
+	case "ws", "http", "h2", "h3", "httpupgrade", "splithttp":
 		//parse addon host
 		if hosts, ok := query["host"]; ok && len(hosts) == 1 {
 			addon.Host = hosts[0]
