@@ -58,6 +58,18 @@ func parse(api *API) (response *serial.OrderedMap) {
 		switch api.Object {
 		case "switch":
 			setSwitch(api, response)
+		case "rule":
+			setRule(api, response)
+		}
+	case "add":
+		switch api.Object {
+		case "rule":
+			addRule(api, response)
+		}
+	case "delete":
+		switch api.Object {
+		case "rule":
+			deleteRule(api, response)
 		}
 	case "misc":
 		switch api.Object {
@@ -176,4 +188,49 @@ func realPing(api *API, response *serial.OrderedMap) {
 
 func getRule(api *API, response *serial.OrderedMap) {
 	response.Set("result", routes.GetRule())
+}
+
+func setRule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			var ruleMap serial.OrderedMap
+			if err = json.Unmarshal([]byte(api.Addon[1]), &ruleMap); err == nil {
+				if routes.SetRule(index, &ruleMap) {
+					if err := routes.ApplyRule(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func addRule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			var ruleMap serial.OrderedMap
+			if err = json.Unmarshal([]byte(api.Addon[1]), &ruleMap); err == nil {
+				if routes.AddRule(index, &ruleMap) {
+					if err := routes.ApplyRule(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func deleteRule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			if routes.DeleteRule(index) {
+				if err := routes.ApplyRule(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
 }
