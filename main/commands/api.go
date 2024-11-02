@@ -3,6 +3,7 @@ package commands
 import (
 	"XrayHelper/main/builds"
 	e "XrayHelper/main/errors"
+	"XrayHelper/main/routes"
 	"XrayHelper/main/serial"
 	"XrayHelper/main/shareurls"
 	"XrayHelper/main/switches"
@@ -50,6 +51,8 @@ func parse(api *API) (response *serial.OrderedMap) {
 			getStatus(response)
 		case "switch":
 			getSwitch(api, response)
+		case "rule":
+			getRule(api, response)
 		}
 	case "set":
 		switch api.Object {
@@ -169,4 +172,8 @@ func realPing(api *API, response *serial.OrderedMap) {
 	} else {
 		response.Set("result", start(api.Addon, false))
 	}
+}
+
+func getRule(api *API, response *serial.OrderedMap) {
+	response.Set("result", routes.GetRule())
 }
