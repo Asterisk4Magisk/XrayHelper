@@ -12,6 +12,7 @@ import (
 	"XrayHelper/main/shareurls/vless"
 	"XrayHelper/main/shareurls/vmess"
 	"XrayHelper/main/shareurls/vmessaead"
+	"XrayHelper/main/shareurls/wireguard"
 	"encoding/json"
 	"net/url"
 	"strings"
@@ -497,4 +498,54 @@ func parseHysteria2(hysteria2Url string) (ShareUrl, error) {
 		}
 	}
 	return ht, nil
+}
+
+// parseWireguard parse wireguard url
+func parseWireguard(wireguardUrl string) (ShareUrl, error) {
+	wg := new(wireguard.Wireguard)
+	wgParse, err := url.Parse(wireguardUrl)
+	if err != nil {
+		return nil, e.New("wireguard url parse err, ", err).WithPrefix(tagParser)
+	}
+	wg.Remarks = wgParse.Fragment
+	wg.Server = wgParse.Hostname()
+	wg.Port = wgParse.Port()
+	wg.SecretKey = wgParse.User.Username()
+	wgQuery, err := url.ParseQuery(wgParse.RawQuery)
+	if err != nil {
+		return nil, e.New("wireguard url parse query err, ", err).WithPrefix(tagParser)
+	}
+	//parse wireguard address
+	if address, ok := wgQuery["address"]; ok {
+		if len(address) > 1 {
+			return nil, e.New("multiple wireguard address").WithPrefix(tagParser)
+		} else {
+			wg.Address = address[0]
+		}
+	}
+	//parse wireguard reserved
+	if reserved, ok := wgQuery["reserved"]; ok {
+		if len(reserved) > 1 {
+			return nil, e.New("multiple wireguard reserved").WithPrefix(tagParser)
+		} else {
+			wg.Reserved = reserved[0]
+		}
+	}
+	//parse wireguard publickey
+	if publickey, ok := wgQuery["publickey"]; ok {
+		if len(publickey) > 1 {
+			return nil, e.New("multiple wireguard publickey").WithPrefix(tagParser)
+		} else {
+			wg.PublicKey = publickey[0]
+		}
+	}
+	//parse wireguard mtu
+	if mtu, ok := wgQuery["mtu"]; ok {
+		if len(mtu) > 1 {
+			return nil, e.New("multiple wireguard mtu").WithPrefix(tagParser)
+		} else {
+			wg.Mtu = mtu[0]
+		}
+	}
+	return wg, nil
 }
