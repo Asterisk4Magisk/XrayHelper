@@ -17,6 +17,7 @@ const (
 	hysteriaPrefix  = "hysteria://"
 	hysteria2Prefix = "hysteria2://"
 	hy2Prefix       = "hy2://"
+	wireguardPrefix = "wireguard://"
 )
 
 // ShareUrl implement this interface, that node can be converted to core OutboundObject
@@ -48,6 +49,9 @@ func Parse(link string) (ShareUrl, error) {
 	}
 	if strings.HasPrefix(link, hysteria2Prefix) || strings.HasPrefix(link, hy2Prefix) {
 		return parseHysteria2(link)
+	}
+	if strings.HasPrefix(link, wireguardPrefix) {
+		return parseWireguard(link)
 	}
 	return nil, e.New("not a supported share link").WithPrefix(tagShareurl)
 }

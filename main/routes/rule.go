@@ -75,14 +75,10 @@ func loadRule() {
 }
 
 // AddRule add a rule
-func AddRule(index int, r *serial.OrderedMap) bool {
+func AddRule(r *serial.OrderedMap) bool {
 	loadRule()
-	if index >= 0 && index <= len(rule) {
-		rule = append(rule[:index+1], rule[index:]...)
-		rule[index] = *r
-		return true
-	}
-	return false
+	rule = append(rule, *r)
+	return true
 }
 
 // DeleteRule delete a rule
