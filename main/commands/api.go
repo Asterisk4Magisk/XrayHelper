@@ -225,17 +225,15 @@ func setRule(api *API, response *serial.OrderedMap) {
 
 func addRule(api *API, response *serial.OrderedMap) {
 	response.Set("ok", false)
-	if len(api.Addon) == 2 {
-		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
-			var ruleMap serial.OrderedMap
-			if decode, err := common.DecodeBase64(api.Addon[1]); err == nil {
-				api.Addon[1] = decode
-			}
-			if err = json.Unmarshal([]byte(api.Addon[1]), &ruleMap); err == nil {
-				if routes.AddRule(index, &ruleMap) {
-					if err := routes.ApplyRule(); err == nil {
-						response.Set("ok", true)
-					}
+	if len(api.Addon) == 1 {
+		var ruleMap serial.OrderedMap
+		if decode, err := common.DecodeBase64(api.Addon[0]); err == nil {
+			api.Addon[0] = decode
+		}
+		if err := json.Unmarshal([]byte(api.Addon[0]), &ruleMap); err == nil {
+			if routes.AddRule(&ruleMap) {
+				if err := routes.ApplyRule(); err == nil {
+					response.Set("ok", true)
 				}
 			}
 		}
