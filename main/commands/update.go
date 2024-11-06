@@ -487,7 +487,7 @@ func updateSubscribe() error {
 	for _, subUrl := range v2rayNgUrl {
 		rawData, err := common.GetRawData(subUrl)
 		if err != nil {
-			log.HandleError("get data from " + subUrl + " failed, " + err.Error())
+			log.HandleError(err)
 			continue
 		}
 		subData, err := common.DecodeBase64(string(rawData))
@@ -507,7 +507,7 @@ func updateSubscribe() error {
 	for index, subUrl := range clashUrl {
 		rawData, err := common.GetRawData(subUrl)
 		if err != nil {
-			log.HandleError("get data from " + subUrl + " failed, " + err.Error())
+			log.HandleError(err)
 			continue
 		}
 		subData, err := common.DecodeBase64(string(rawData))
@@ -573,64 +573,64 @@ func updateYacdMeta() error {
 
 // updateMetacubexd update metacubexd
 func updateMetacubexd() error {
-    metacubexdTgzPath := path.Join(builds.Config.XrayHelper.DataDir, "compressed-dist.tgz")
-    if err := common.DownloadFile(metacubexdTgzPath, metacubexDownloadUrl); err != nil {
-        return err
-    }
+	metacubexdTgzPath := path.Join(builds.Config.XrayHelper.DataDir, "compressed-dist.tgz")
+	if err := common.DownloadFile(metacubexdTgzPath, metacubexDownloadUrl); err != nil {
+		return err
+	}
 
-    file, err := os.Open(metacubexdTgzPath)
-    if err != nil {
-        return e.New("open tgz file failed, ", err).WithPrefix(tagUpdate)
-    }
-    defer func() {
-        _ = file.Close()
-        _ = os.Remove(metacubexdTgzPath)
-    }()
+	file, err := os.Open(metacubexdTgzPath)
+	if err != nil {
+		return e.New("open tgz file failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer func() {
+		_ = file.Close()
+		_ = os.Remove(metacubexdTgzPath)
+	}()
 
-    gzr, err := gzip.NewReader(file)
-    if err != nil {
-        return e.New("create gzip reader failed, ", err).WithPrefix(tagUpdate)
-    }
-    defer gzr.Close()
+	gzr, err := gzip.NewReader(file)
+	if err != nil {
+		return e.New("create gzip reader failed, ", err).WithPrefix(tagUpdate)
+	}
+	defer gzr.Close()
 
-    tarReader := tar.NewReader(gzr)
+	tarReader := tar.NewReader(gzr)
 
-    if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "Yacd-meta-gh-pages/")); err != nil {
-        return e.New("remove old metacubex files failed, ", err).WithPrefix(tagUpdate)
-    }
+	if err := os.RemoveAll(path.Join(builds.Config.XrayHelper.DataDir, "Yacd-meta-gh-pages/")); err != nil {
+		return e.New("remove old metacubex files failed, ", err).WithPrefix(tagUpdate)
+	}
 
-    for {
-        header, err := tarReader.Next()
-        if err == io.EOF {
-            break
-        }
-        if err != nil {
-            return e.New("read tar file failed, ", err).WithPrefix(tagUpdate)
-        }
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return e.New("read tar file failed, ", err).WithPrefix(tagUpdate)
+		}
 
-        target := filepath.Join(builds.Config.XrayHelper.DataDir,"Yacd-meta-gh-pages", header.Name)
+		target := filepath.Join(builds.Config.XrayHelper.DataDir, "Yacd-meta-gh-pages", header.Name)
 
-        switch header.Typeflag {
-        case tar.TypeDir:
-            if err := os.MkdirAll(target, 0755); err != nil {
-                return e.New("create dir "+target+" failed, ", err).WithPrefix(tagUpdate)
-            }
-        case tar.TypeReg:
-            f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
-            if err != nil {
-                return e.New("open file "+target+" failed, ", err).WithPrefix(tagUpdate)
-            }
-            if _, err := io.Copy(f, tarReader); err != nil {
-                _ = f.Close()
-                return e.New("copy file "+target+" failed, ", err).WithPrefix(tagUpdate)
-            }
-            _ = f.Close()
-        default:
-            return e.New("unknown type: " + string(header.Typeflag)).WithPrefix(tagUpdate)
-        }
-    }
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(target, 0755); err != nil {
+				return e.New("create dir "+target+" failed, ", err).WithPrefix(tagUpdate)
+			}
+		case tar.TypeReg:
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
+			if err != nil {
+				return e.New("open file "+target+" failed, ", err).WithPrefix(tagUpdate)
+			}
+			if _, err := io.Copy(f, tarReader); err != nil {
+				_ = f.Close()
+				return e.New("copy file "+target+" failed, ", err).WithPrefix(tagUpdate)
+			}
+			_ = f.Close()
+		default:
+			return e.New("unknown type: " + string(header.Typeflag)).WithPrefix(tagUpdate)
+		}
+	}
 
-    return nil
+	return nil
 }
 
 // getDownloadUrlLatest use GitHub api to get latest download url
