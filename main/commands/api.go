@@ -54,6 +54,8 @@ func parse(api *API) (response *serial.OrderedMap) {
 			getSwitch(api, response)
 		case "rule":
 			getRule(api, response)
+		case "ruleset":
+			getRuleset(api, response)
 		}
 	case "set":
 		switch api.Object {
@@ -61,11 +63,15 @@ func parse(api *API) (response *serial.OrderedMap) {
 			setSwitch(api, response)
 		case "rule":
 			setRule(api, response)
+		case "ruleset":
+			setRuleset(api, response)
 		}
 	case "add":
 		switch api.Object {
 		case "rule":
 			addRule(api, response)
+		case "ruleset":
+			addRuleset(api, response)
 		}
 	case "exchange":
 		switch api.Object {
@@ -76,6 +82,8 @@ func parse(api *API) (response *serial.OrderedMap) {
 		switch api.Object {
 		case "rule":
 			deleteRule(api, response)
+		case "ruleset":
+			deleteRuleset(api, response)
 		}
 	case "misc":
 		switch api.Object {
@@ -255,6 +263,59 @@ func deleteRule(api *API, response *serial.OrderedMap) {
 		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
 			if routes.DeleteRule(index) {
 				if err := routes.ApplyRule(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
+}
+
+func getRuleset(api *API, response *serial.OrderedMap) {
+	response.Set("result", routes.GetRuleset())
+}
+
+func setRuleset(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			var rulesetMap serial.OrderedMap
+			if decode, err := common.DecodeBase64(api.Addon[1]); err == nil {
+				api.Addon[1] = decode
+			}
+			if err = json.Unmarshal([]byte(api.Addon[1]), &rulesetMap); err == nil {
+				if routes.SetRuleset(index, &rulesetMap) {
+					if err := routes.ApplyRuleset(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func addRuleset(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		var rulesetMap serial.OrderedMap
+		if decode, err := common.DecodeBase64(api.Addon[0]); err == nil {
+			api.Addon[0] = decode
+		}
+		if err := json.Unmarshal([]byte(api.Addon[0]), &rulesetMap); err == nil {
+			if routes.AddRuleset(&rulesetMap) {
+				if err := routes.ApplyRuleset(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
+}
+
+func deleteRuleset(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			if routes.DeleteRuleset(index) {
+				if err := routes.ApplyRuleset(); err == nil {
 					response.Set("ok", true)
 				}
 			}
