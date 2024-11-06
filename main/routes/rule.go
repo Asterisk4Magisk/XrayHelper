@@ -105,6 +105,18 @@ func SetRule(index int, r *serial.OrderedMap) bool {
 	return false
 }
 
+// ExchangeRule exchange two rules' order
+func ExchangeRule(a int, b int) bool {
+	loadRule()
+	if a >= 0 && a < len(rule) && b >= 0 && b < len(rule) {
+		tmp := rule[a]
+		rule[a] = rule[b]
+		rule[b] = tmp
+		return true
+	}
+	return false
+}
+
 // GetRule get rules
 func GetRule() serial.OrderedArray {
 	loadRule()

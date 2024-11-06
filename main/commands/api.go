@@ -2,6 +2,7 @@ package commands
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/routes"
 	"XrayHelper/main/serial"
@@ -65,6 +66,11 @@ func parse(api *API) (response *serial.OrderedMap) {
 		switch api.Object {
 		case "rule":
 			addRule(api, response)
+		}
+	case "exchange":
+		switch api.Object {
+		case "rule":
+			exchangeRule(api, response)
 		}
 	case "delete":
 		switch api.Object {
@@ -195,6 +201,9 @@ func setRule(api *API, response *serial.OrderedMap) {
 	if len(api.Addon) == 2 {
 		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
 			var ruleMap serial.OrderedMap
+			if decode, err := common.DecodeBase64(api.Addon[1]); err == nil {
+				api.Addon[1] = decode
+			}
 			if err = json.Unmarshal([]byte(api.Addon[1]), &ruleMap); err == nil {
 				if routes.SetRule(index, &ruleMap) {
 					if err := routes.ApplyRule(); err == nil {
@@ -211,8 +220,26 @@ func addRule(api *API, response *serial.OrderedMap) {
 	if len(api.Addon) == 2 {
 		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
 			var ruleMap serial.OrderedMap
+			if decode, err := common.DecodeBase64(api.Addon[1]); err == nil {
+				api.Addon[1] = decode
+			}
 			if err = json.Unmarshal([]byte(api.Addon[1]), &ruleMap); err == nil {
 				if routes.AddRule(index, &ruleMap) {
+					if err := routes.ApplyRule(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func exchangeRule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if a, err := strconv.Atoi(api.Addon[0]); err == nil {
+			if b, err := strconv.Atoi(api.Addon[1]); err == nil {
+				if routes.ExchangeRule(a, b) {
 					if err := routes.ApplyRule(); err == nil {
 						response.Set("ok", true)
 					}
