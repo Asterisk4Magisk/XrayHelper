@@ -2,14 +2,12 @@ package routes
 
 import (
 	"XrayHelper/main/builds"
+	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
-	"XrayHelper/main/log"
 	"XrayHelper/main/serial"
 	"XrayHelper/main/shareurls"
 	"XrayHelper/main/switches"
 	"encoding/json"
-	"os"
-	"path"
 	"strconv"
 	"strings"
 )
@@ -23,12 +21,11 @@ func loadRule() {
 	if len(rule) > 0 {
 		return
 	}
-	read := func(c []byte) bool {
+	read := func(c []byte) (bool, []byte, error) {
 		var jsonMap serial.OrderedMap
 		err := json.Unmarshal(c, &jsonMap)
 		if err != nil {
-			log.HandleDebug("json unmarshal failed, " + err.Error())
-			return false
+			return false, nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRule)
 		}
 		switch builds.Config.XrayHelper.CoreType {
 		case "xray":
@@ -36,7 +33,7 @@ func loadRule() {
 				routingMap := routing.Value.(serial.OrderedMap)
 				if rules, ok := routingMap.Get("rules"); ok {
 					rule = rules.Value.(serial.OrderedArray)
-					return true
+					return false, nil, nil
 				}
 			}
 		case "sing-box":
@@ -44,34 +41,13 @@ func loadRule() {
 				routeMap := route.Value.(serial.OrderedMap)
 				if rules, ok := routeMap.Get("rules"); ok {
 					rule = rules.Value.(serial.OrderedArray)
-					return true
+					return false, nil, nil
 				}
 			}
 		}
-		return false
+		return false, nil, e.New("cannot find rule from your config").WithPrefix(tagRule)
 	}
-	confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig)
-	if err != nil {
-		log.HandleDebug("open core config file failed, " + err.Error())
-		return
-	}
-	if confInfo.IsDir() {
-		if confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig); err == nil {
-			for _, conf := range confDir {
-				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
-					if confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name())); err == nil {
-						if read(confByte) {
-							break
-						}
-					}
-				}
-			}
-		}
-	} else {
-		if confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig); err == nil {
-			read(confByte)
-		}
-	}
+	_ = common.HandleCoreConfDir(read)
 }
 
 // AddRule add a rule
@@ -124,11 +100,11 @@ func ApplyRule() error {
 	if err := replaceOutbounds(); err != nil {
 		return err
 	}
-	replace := func(c []byte) ([]byte, error) {
+	replace := func(c []byte) (bool, []byte, error) {
 		var jsonMap serial.OrderedMap
 		err := json.Unmarshal(c, &jsonMap)
 		if err != nil {
-			return nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRule)
+			return false, nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRule)
 		}
 		replaced := false
 		switch builds.Config.XrayHelper.CoreType {
@@ -157,49 +133,14 @@ func ApplyRule() error {
 			// marshal
 			marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 			if err != nil {
-				return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRule)
+				return false, nil, e.New("marshal config json failed, ", err).WithPrefix(tagRule)
 			}
-			return marshal, nil
+			return true, marshal, nil
 		} else {
-			return nil, e.New("cannot found rules from your config").WithPrefix(tagRule)
+			return false, nil, e.New("cannot found rules from your config").WithPrefix(tagRule)
 		}
 	}
-	confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig)
-	if err != nil {
-		return e.New("open core config file failed, " + err.Error()).WithPrefix(tagRule)
-	}
-	if confInfo.IsDir() {
-		if confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig); err == nil {
-			for _, conf := range confDir {
-				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
-					if confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name())); err == nil {
-						if confByte, err = replace(confByte); err == nil {
-							if err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), confByte, 0644); err == nil {
-								break
-							} else {
-								log.HandleDebug("write new config failed, " + err.Error())
-							}
-						} else {
-							log.HandleDebug(err)
-						}
-					}
-				}
-			}
-		}
-	} else {
-		if confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig); err == nil {
-			if confByte, err = replace(confByte); err == nil {
-				if err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig), confByte, 0644); err != nil {
-					return e.New("write new config failed, " + err.Error()).WithPrefix(tagRule)
-				}
-			} else {
-				return err
-			}
-		} else {
-			return e.New("read core config file failed").WithPrefix(tagRule)
-		}
-	}
-	return nil
+	return common.HandleCoreConfDir(replace)
 }
 
 func replaceOutbounds() error {
@@ -219,15 +160,15 @@ func replaceOutbounds() error {
 		}
 		return
 	}
-	replace := func(c []byte) ([]byte, error) {
+	replace := func(c []byte) (bool, []byte, error) {
 		s, err := switches.NewSwitch(builds.Config.XrayHelper.CoreType)
 		if err != nil {
-			return nil, err
+			return false, nil, err
 		}
 		var jsonMap serial.OrderedMap
 		err = json.Unmarshal(c, &jsonMap)
 		if err != nil {
-			return nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRule)
+			return false, nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRule)
 		}
 		if outbounds, ok := jsonMap.Get("outbounds"); ok {
 			outboundsArray := outbounds.Value.(serial.OrderedArray)
@@ -273,46 +214,11 @@ func replaceOutbounds() error {
 			// marshal
 			marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 			if err != nil {
-				return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRule)
+				return false, nil, e.New("marshal config json failed, ", err).WithPrefix(tagRule)
 			}
-			return marshal, nil
+			return true, marshal, nil
 		}
-		return nil, e.New("cannot found outbounds from your config").WithPrefix(tagRule)
+		return false, nil, e.New("cannot found outbounds from your config").WithPrefix(tagRule)
 	}
-	confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig)
-	if err != nil {
-		return e.New("open core config file failed, " + err.Error()).WithPrefix(tagRule)
-	}
-	if confInfo.IsDir() {
-		if confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig); err == nil {
-			for _, conf := range confDir {
-				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
-					if confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name())); err == nil {
-						if confByte, err = replace(confByte); err == nil {
-							if err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), confByte, 0644); err == nil {
-								break
-							} else {
-								log.HandleDebug("write new config failed, " + err.Error())
-							}
-						} else {
-							log.HandleDebug(err)
-						}
-					}
-				}
-			}
-		}
-	} else {
-		if confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig); err == nil {
-			if confByte, err = replace(confByte); err == nil {
-				if err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig), confByte, 0644); err != nil {
-					return e.New("write new config failed, " + err.Error()).WithPrefix(tagRule)
-				}
-			} else {
-				return err
-			}
-		} else {
-			return e.New("read core config file failed").WithPrefix(tagRule)
-		}
-	}
-	return nil
+	return common.HandleCoreConfDir(replace)
 }
