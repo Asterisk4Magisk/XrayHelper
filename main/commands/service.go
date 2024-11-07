@@ -13,7 +13,6 @@ import (
 	"os/signal"
 	"path"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -315,87 +314,47 @@ func ignoreSignals() {
 }
 
 func handleRayDNS(ipv6 bool) error {
-	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
-		return e.New("open core config file failed, ", err).WithPrefix(tagService)
-	} else {
-		if confInfo.IsDir() {
-			confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig)
-			if err != nil {
-				return e.New("open config dir failed, ", err).WithPrefix(tagService)
-			}
-			for _, conf := range confDir {
-				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
-					confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()))
-					if err != nil {
-						return e.New("read config file failed, ", err).WithPrefix(tagService)
-					}
-					newConfByte, err := replaceRayDNSStrategy(confByte, ipv6)
-					if err != nil {
-						log.HandleDebug(err)
-						continue
-					}
-					if err := os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), newConfByte, 0644); err != nil {
-						return e.New("write new config failed, ", err).WithPrefix(tagService)
-					}
+	replace := func(c []byte) (bool, []byte, error) {
+		// unmarshal
+		var jsonMap serial.OrderedMap
+		if err := json.Unmarshal(c, &jsonMap); err != nil {
+			return false, nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagService)
+		}
+		if dns, ok := jsonMap.Get("dns"); ok {
+			dnsMap := dns.Value.(serial.OrderedMap)
+			switch builds.Config.XrayHelper.CoreType {
+			case "xray":
+				if ipv6 {
+					dnsMap.Set("queryStrategy", "UseIP")
+				} else {
+					dnsMap.Set("queryStrategy", "UseIPv4")
 				}
+			case "v2ray":
+				if ipv6 {
+					dnsMap.Set("queryStrategy", "USE_IP")
+				} else {
+					dnsMap.Set("queryStrategy", "USE_IP4")
+				}
+			case "sing-box":
+				if ipv6 {
+					dnsMap.Set("strategy", "prefer_ipv4")
+				} else {
+					dnsMap.Set("strategy", "ipv4_only")
+				}
+			default:
+				return false, nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
 			}
-		} else {
-			confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig)
+			jsonMap.Set("dns", dnsMap)
+			// marshal
+			marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 			if err != nil {
-				return e.New("read config file failed, ", err).WithPrefix(tagService)
+				return false, nil, e.New("marshal config json failed, ", err).WithPrefix(tagService)
 			}
-			newConfByte, err := replaceRayDNSStrategy(confByte, ipv6)
-			if err != nil {
-				return err
-			}
-			if err := os.WriteFile(builds.Config.XrayHelper.CoreConfig, newConfByte, 0644); err != nil {
-				return e.New("write new config failed, ", err).WithPrefix(tagService)
-			}
+			return true, marshal, nil
 		}
+		return false, nil, e.New("cannot find dns from your config").WithPrefix(tagService)
 	}
-	return nil
-}
-
-func replaceRayDNSStrategy(conf []byte, ipv6 bool) (replacedConf []byte, err error) {
-	// unmarshal
-	var jsonMap serial.OrderedMap
-	err = json.Unmarshal(conf, &jsonMap)
-	if err != nil {
-		return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagService)
-	}
-	if dns, ok := jsonMap.Get("dns"); ok {
-		dnsMap := dns.Value.(serial.OrderedMap)
-		switch builds.Config.XrayHelper.CoreType {
-		case "xray":
-			if ipv6 {
-				dnsMap.Set("queryStrategy", "UseIP")
-			} else {
-				dnsMap.Set("queryStrategy", "UseIPv4")
-			}
-		case "v2ray":
-			if ipv6 {
-				dnsMap.Set("queryStrategy", "USE_IP")
-			} else {
-				dnsMap.Set("queryStrategy", "USE_IP4")
-			}
-		case "sing-box":
-			if ipv6 {
-				dnsMap.Set("strategy", "prefer_ipv4")
-			} else {
-				dnsMap.Set("strategy", "ipv4_only")
-			}
-		default:
-			return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagService)
-		}
-		jsonMap.Set("dns", dnsMap)
-		// marshal
-		marshal, err := json.MarshalIndent(jsonMap, "", "    ")
-		if err != nil {
-			return nil, e.New("marshal config json failed, ", err).WithPrefix(tagService)
-		}
-		return marshal, nil
-	}
-	return nil, e.New("cannot find dns object from provided conf").WithPrefix(tagService)
+	return common.HandleCoreConfDir(replace)
 }
 
 func overrideClashConfig(template string, target string) error {
