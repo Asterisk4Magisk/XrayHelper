@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const tagApi = "api"
@@ -49,13 +50,17 @@ func parse(api *API) (response *serial.OrderedMap) {
 	case "get":
 		switch api.Object {
 		case "status":
-			getStatus(response)
+			getStatus(api, response)
 		case "switch":
 			getSwitch(api, response)
 		case "rule":
 			getRule(api, response)
 		case "ruleset":
 			getRuleset(api, response)
+		case "dns":
+			getDns(api, response)
+		case "dnsrule":
+			getDnsrule(api, response)
 		}
 	case "set":
 		switch api.Object {
@@ -65,6 +70,10 @@ func parse(api *API) (response *serial.OrderedMap) {
 			setRule(api, response)
 		case "ruleset":
 			setRuleset(api, response)
+		case "dns":
+			setDns(api, response)
+		case "dnsrule":
+			setDnsrule(api, response)
 		}
 	case "add":
 		switch api.Object {
@@ -72,11 +81,17 @@ func parse(api *API) (response *serial.OrderedMap) {
 			addRule(api, response)
 		case "ruleset":
 			addRuleset(api, response)
+		case "dns":
+			addDns(api, response)
+		case "dnsrule":
+			addDnsrule(api, response)
 		}
 	case "exchange":
 		switch api.Object {
 		case "rule":
 			exchangeRule(api, response)
+		case "dnsrule":
+			exchangeDnsrule(api, response)
 		}
 	case "delete":
 		switch api.Object {
@@ -84,6 +99,10 @@ func parse(api *API) (response *serial.OrderedMap) {
 			deleteRule(api, response)
 		case "ruleset":
 			deleteRuleset(api, response)
+		case "dns":
+			deleteDns(api, response)
+		case "dnsrule":
+			deleteDnsrule(api, response)
 		}
 	case "misc":
 		switch api.Object {
@@ -94,7 +113,7 @@ func parse(api *API) (response *serial.OrderedMap) {
 	return
 }
 
-func getStatus(response *serial.OrderedMap) {
+func getStatus(api *API, response *serial.OrderedMap) {
 	response.Set("api", builds.Version())
 	response.Set("coreType", builds.Config.XrayHelper.CoreType)
 	response.Set("pid", getServicePid())
@@ -314,6 +333,141 @@ func deleteRuleset(api *API, response *serial.OrderedMap) {
 		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
 			if routes.DeleteRuleset(index) {
 				if err := routes.ApplyRuleset(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
+}
+
+func getDns(api *API, response *serial.OrderedMap) {
+	response.Set("result", routes.GetDns())
+}
+
+func setDns(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			var rulesetMap serial.OrderedMap
+			if decode, err := common.DecodeBase64(api.Addon[1]); err == nil {
+				api.Addon[1] = decode
+			}
+			if err = json.Unmarshal([]byte(api.Addon[1]), &rulesetMap); err == nil {
+				if routes.SetDns[serial.OrderedMap](index, &rulesetMap) {
+					if err := routes.ApplyDns(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			} else {
+				str := strings.ReplaceAll(api.Addon[1], "\"", "")
+				if routes.SetDns[string](index, &str) {
+					if err := routes.ApplyDns(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func addDns(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		var rulesetMap serial.OrderedMap
+		if decode, err := common.DecodeBase64(api.Addon[0]); err == nil {
+			api.Addon[0] = decode
+		}
+		if err := json.Unmarshal([]byte(api.Addon[0]), &rulesetMap); err == nil {
+			if routes.AddDns[serial.OrderedMap](&rulesetMap) {
+				if err := routes.ApplyDns(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		} else {
+			str := strings.ReplaceAll(api.Addon[0], "\"", "")
+			if routes.AddDns[string](&str) {
+				if err := routes.ApplyDns(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
+}
+
+func deleteDns(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			if routes.DeleteDns(index) {
+				if err := routes.ApplyDns(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
+}
+
+func getDnsrule(api *API, response *serial.OrderedMap) {
+	response.Set("result", routes.GetDnsrule())
+}
+
+func setDnsrule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			var ruleMap serial.OrderedMap
+			if decode, err := common.DecodeBase64(api.Addon[1]); err == nil {
+				api.Addon[1] = decode
+			}
+			if err = json.Unmarshal([]byte(api.Addon[1]), &ruleMap); err == nil {
+				if routes.SetDnsrule(index, &ruleMap) {
+					if err := routes.ApplyDnsrule(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func addDnsrule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		var ruleMap serial.OrderedMap
+		if decode, err := common.DecodeBase64(api.Addon[0]); err == nil {
+			api.Addon[0] = decode
+		}
+		if err := json.Unmarshal([]byte(api.Addon[0]), &ruleMap); err == nil {
+			if routes.AddDnsrule(&ruleMap) {
+				if err := routes.ApplyDnsrule(); err == nil {
+					response.Set("ok", true)
+				}
+			}
+		}
+	}
+}
+
+func exchangeDnsrule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 2 {
+		if a, err := strconv.Atoi(api.Addon[0]); err == nil {
+			if b, err := strconv.Atoi(api.Addon[1]); err == nil {
+				if routes.ExchangeDnsrule(a, b) {
+					if err := routes.ApplyDnsrule(); err == nil {
+						response.Set("ok", true)
+					}
+				}
+			}
+		}
+	}
+}
+
+func deleteDnsrule(api *API, response *serial.OrderedMap) {
+	response.Set("ok", false)
+	if len(api.Addon) == 1 {
+		if index, err := strconv.Atoi(api.Addon[0]); err == nil {
+			if routes.DeleteDnsrule(index) {
+				if err := routes.ApplyDnsrule(); err == nil {
 					response.Set("ok", true)
 				}
 			}
