@@ -85,79 +85,107 @@ func change(index int) error {
 	if index < 0 || index >= len(shareUrls) {
 		return e.New("invalid number").WithPrefix(tagRayswitch)
 	}
-	if confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig); err != nil {
-		return e.New("open core config file failed, ", err).WithPrefix(tagRayswitch)
-	} else {
-		if confInfo.IsDir() {
-			confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig)
-			if err != nil {
-				return e.New("open config dir failed, ", err).WithPrefix(tagRayswitch)
+	if builds.Config.XrayHelper.CoreType == "xray" {
+		replaceXrayHost := func(c []byte) (bool, []byte, error) {
+			// unmarshal
+			var jsonMap serial.OrderedMap
+			if err := json.Unmarshal(c, &jsonMap); err != nil {
+				return false, nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
 			}
-			hostFlag := false
-			replaceFlag := false
-			if builds.Config.XrayHelper.CoreType != "xray" {
-				hostFlag = true
-			}
-			for _, conf := range confDir {
-				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
-					confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()))
-					if err != nil {
-						log.HandleDebug("read config file failed, " + err.Error())
-						continue
-					}
-					if !hostFlag {
-						confByte, err = replaceXrayHost(confByte, index)
-						if err != nil {
-							log.HandleDebug(err)
-						} else {
-							err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), confByte, 0644)
-							if err != nil {
-								log.HandleDebug("write new config failed, " + err.Error())
-							} else {
-								hostFlag = true
-							}
-						}
-					}
-					if !replaceFlag {
-						confByte, err = replaceProxyNode(confByte, index)
-						if err != nil {
-							log.HandleDebug(err)
-						} else {
-							err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), confByte, 0644)
-							if err != nil {
-								log.HandleDebug("write new config failed, " + err.Error())
-							} else {
-								replaceFlag = true
-							}
-						}
-					}
-					if hostFlag && replaceFlag {
-						return nil
-					}
+			// asset dns
+			if dns, ok := jsonMap.Get("dns"); ok {
+				dnsMap := dns.Value.(serial.OrderedMap)
+				// replace
+				var hostsMap serial.OrderedMap
+				nodeInfo := shareUrls[index].GetNodeInfo()
+				result, err := common.LookupIP(nodeInfo.Host)
+				if err == nil {
+					hostsMap.Set(nodeInfo.Host, result)
+					dnsMap.Set("hosts", hostsMap)
 				}
-			}
-		} else {
-			confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig)
-			if err != nil {
-				return e.New("read config file failed, ", err).WithPrefix(tagRayswitch)
-			}
-			if builds.Config.XrayHelper.CoreType == "xray" {
-				confByte, err = replaceXrayHost(confByte, index)
+				jsonMap.Set("dns", dnsMap)
+				// marshal
+				marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 				if err != nil {
-					return err
+					return false, nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
 				}
+				return true, marshal, nil
 			}
-			confByte, err = replaceProxyNode(confByte, index)
-			if err != nil {
-				return err
-			}
-			if err := os.WriteFile(builds.Config.XrayHelper.CoreConfig, confByte, 0644); err != nil {
-				return e.New("write new config failed, ", err).WithPrefix(tagRayswitch)
-			}
-			return nil
+			return false, nil, e.New("cannot find dns from your config").WithPrefix(tagRayswitch)
+		}
+		if err := common.HandleCoreConfDir(replaceXrayHost); err != nil {
+			return err
 		}
 	}
-	return e.New("write new config failed").WithPrefix(tagRayswitch)
+	replaceProxyNode := func(c []byte) (bool, []byte, error) {
+		switch builds.Config.XrayHelper.CoreType {
+		case "xray", "sing-box":
+			// unmarshal
+			var jsonMap serial.OrderedMap
+			err := json.Unmarshal(c, &jsonMap)
+			if err != nil {
+				return false, nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
+			}
+			if outbounds, ok := jsonMap.Get("outbounds"); ok {
+				outboundArray := outbounds.Value.(serial.OrderedArray)
+				for i, outbound := range outboundArray {
+					outboundMap := outbound.(serial.OrderedMap)
+					if tag, ok := outboundMap.Get("tag"); ok {
+						if tag.Value == builds.Config.XrayHelper.ProxyTag {
+							// replace
+							outbound, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
+							if err != nil {
+								return false, nil, err
+							}
+							outboundArray[i] = outbound
+							jsonMap.Set("outbounds", outboundArray)
+							// marshal
+							marshal, err := json.MarshalIndent(jsonMap, "", "    ")
+							if err != nil {
+								return false, nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
+							}
+							return true, marshal, nil
+						}
+					}
+				}
+				return false, nil, e.New("cannot found outbounds tag: " + builds.Config.XrayHelper.ProxyTag).WithPrefix(tagRayswitch)
+			}
+			return false, nil, e.New("cannot found outbounds from provided conf").WithPrefix(tagRayswitch)
+		case "hysteria2":
+			// unmarshal
+			var yamlMap serial.OrderedMap
+			err := yaml.Unmarshal(c, &yamlMap)
+			if err != nil {
+				return false, nil, e.New("unmarshal config yaml failed, ", err).WithPrefix(tagRayswitch)
+			}
+			// get hysteria client config from shareUrl
+			clientObject, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, "")
+			if err != nil {
+				return false, nil, err
+			}
+			// replace
+			if server, ok := clientObject.Get("server"); ok {
+				yamlMap.SetValue(server)
+			}
+			if auth, ok := clientObject.Get("auth"); ok {
+				yamlMap.SetValue(auth)
+			}
+			if obfs, ok := clientObject.Get("obfs"); ok {
+				yamlMap.SetValue(obfs)
+			}
+			if tls, ok := clientObject.Get("tls"); ok {
+				yamlMap.SetValue(tls)
+			}
+			// marshal
+			marshal, err := yaml.Marshal(yamlMap)
+			if err != nil {
+				return false, nil, e.New("marshal config yaml failed, ", err).WithPrefix(tagRayswitch)
+			}
+			return true, marshal, nil
+		}
+		return false, nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagRayswitch)
+	}
+	return common.HandleCoreConfDir(replaceProxyNode)
 }
 
 func loadShareUrl(custom bool) error {
@@ -200,102 +228,4 @@ func printProxyNode() {
 	for index, shareUrl := range shareUrls {
 		fmt.Printf(color.GreenString("[%d]")+" %s\n", index, shareUrl.GetNodeInfoStr())
 	}
-}
-
-func replaceProxyNode(conf []byte, index int) ([]byte, error) {
-	switch builds.Config.XrayHelper.CoreType {
-	case "xray", "sing-box":
-		// unmarshal
-		var jsonMap serial.OrderedMap
-		err := json.Unmarshal(conf, &jsonMap)
-		if err != nil {
-			return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
-		}
-		if outbounds, ok := jsonMap.Get("outbounds"); ok {
-			outboundArray := outbounds.Value.(serial.OrderedArray)
-			for i, outbound := range outboundArray {
-				outboundMap := outbound.(serial.OrderedMap)
-				if tag, ok := outboundMap.Get("tag"); ok {
-					if tag.Value == builds.Config.XrayHelper.ProxyTag {
-						// replace
-						outbound, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, builds.Config.XrayHelper.ProxyTag)
-						if err != nil {
-							return nil, err
-						}
-						outboundArray[i] = outbound
-						jsonMap.Set("outbounds", outboundArray)
-						// marshal
-						marshal, err := json.MarshalIndent(jsonMap, "", "    ")
-						if err != nil {
-							return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
-						}
-						return marshal, nil
-					}
-				}
-			}
-			return nil, e.New("cannot found outbounds tag: " + builds.Config.XrayHelper.ProxyTag).WithPrefix(tagRayswitch)
-		}
-		return nil, e.New("cannot found outbounds from provided conf").WithPrefix(tagRayswitch)
-	case "hysteria2":
-		// unmarshal
-		var yamlMap serial.OrderedMap
-		err := yaml.Unmarshal(conf, &yamlMap)
-		if err != nil {
-			return nil, e.New("unmarshal config yaml failed, ", err).WithPrefix(tagRayswitch)
-		}
-		// get hysteria client config from shareUrl
-		clientObject, err := shareUrls[index].ToOutboundWithTag(builds.Config.XrayHelper.CoreType, "")
-		if err != nil {
-			return nil, err
-		}
-		// replace
-		if server, ok := clientObject.Get("server"); ok {
-			yamlMap.SetValue(server)
-		}
-		if auth, ok := clientObject.Get("auth"); ok {
-			yamlMap.SetValue(auth)
-		}
-		if obfs, ok := clientObject.Get("obfs"); ok {
-			yamlMap.SetValue(obfs)
-		}
-		if tls, ok := clientObject.Get("tls"); ok {
-			yamlMap.SetValue(tls)
-		}
-		// marshal
-		marshal, err := yaml.Marshal(yamlMap)
-		if err != nil {
-			return nil, e.New("marshal config yaml failed, ", err).WithPrefix(tagRayswitch)
-		}
-		return marshal, nil
-	}
-	return nil, e.New("unsupported core type " + builds.Config.XrayHelper.CoreType).WithPrefix(tagRayswitch)
-}
-
-func replaceXrayHost(conf []byte, index int) ([]byte, error) {
-	// unmarshal
-	var jsonMap serial.OrderedMap
-	err := json.Unmarshal(conf, &jsonMap)
-	if err != nil {
-		return nil, e.New("unmarshal config json failed, ", err).WithPrefix(tagRayswitch)
-	}
-	// asset dns
-	if dns, ok := jsonMap.Get("dns"); ok {
-		dnsMap := dns.Value.(serial.OrderedMap)
-		// replace
-		var hostsMap serial.OrderedMap
-		nodeInfo := shareUrls[index].GetNodeInfo()
-		result, err := common.LookupIP(nodeInfo.Host)
-		if err == nil {
-			hostsMap.Set(nodeInfo.Host, result)
-			dnsMap.Set("hosts", hostsMap)
-		}
-		jsonMap.Set("dns", dnsMap)
-		// marshal
-		marshal, err := json.MarshalIndent(jsonMap, "", "    ")
-		if err != nil {
-			return nil, e.New("marshal config json failed, ", err).WithPrefix(tagRayswitch)
-		}
-		return marshal, nil
-	}
-	return nil, e.New("cannot find dns from provided conf").WithPrefix(tagRayswitch)
 }
