@@ -1,11 +1,13 @@
 package common
 
 import (
+	"XrayHelper/main/builds"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
 	"encoding/base64"
 	"io"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -87,4 +89,48 @@ func WildcardMatch(str string, ptr string) bool {
 		}
 	}
 	return dp[m][n]
+}
+
+// HandleCoreConfDir handle conf dir type json core config like xray, sing-box
+func HandleCoreConfDir(handler func(c []byte) (bool, []byte, error)) error {
+	confInfo, err := os.Stat(builds.Config.XrayHelper.CoreConfig)
+	if err != nil {
+		return e.New("open core config file failed, " + err.Error()).WithPrefix(tagUtil)
+	}
+	if confInfo.IsDir() {
+		if confDir, err := os.ReadDir(builds.Config.XrayHelper.CoreConfig); err == nil {
+			for _, conf := range confDir {
+				if !conf.IsDir() && strings.HasSuffix(conf.Name(), ".json") {
+					if confByte, err := os.ReadFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name())); err == nil {
+						needSave, confByte, err := handler(confByte)
+						if err != nil {
+							log.HandleDebug(err)
+							continue
+						}
+						if needSave {
+							if err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig, conf.Name()), confByte, 0644); err != nil {
+								log.HandleDebug("write new config failed, " + err.Error())
+							}
+						}
+						break
+					}
+				}
+			}
+		}
+	} else {
+		if confByte, err := os.ReadFile(builds.Config.XrayHelper.CoreConfig); err == nil {
+			needSave, confByte, err := handler(confByte)
+			if err != nil {
+				return err
+			}
+			if needSave {
+				if err = os.WriteFile(path.Join(builds.Config.XrayHelper.CoreConfig), confByte, 0644); err != nil {
+					return e.New("write new config failed, " + err.Error()).WithPrefix(tagUtil)
+				}
+			}
+		} else {
+			return e.New("read core config file failed").WithPrefix(tagUtil)
+		}
+	}
+	return nil
 }
