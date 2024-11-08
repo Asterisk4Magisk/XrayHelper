@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"XrayHelper/main/builds"
 	"XrayHelper/main/common"
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
@@ -23,14 +22,11 @@ func loadRuleset() {
 		if err != nil {
 			return false, nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRuleset)
 		}
-		switch builds.Config.XrayHelper.CoreType {
-		case "sing-box":
-			if route, ok := jsonMap.Get("route"); ok {
-				routeMap := route.Value.(serial.OrderedMap)
-				if ruleSet, ok := routeMap.Get("rule_set"); ok {
-					ruleset = ruleSet.Value.(serial.OrderedArray)
-					return false, nil, nil
-				}
+		if route, ok := jsonMap.Get("route"); ok {
+			routeMap := route.Value.(serial.OrderedMap)
+			if ruleSet, ok := routeMap.Get("rule_set"); ok {
+				ruleset = ruleSet.Value.(serial.OrderedArray)
+				return false, nil, nil
 			}
 		}
 		return false, nil, e.New("cannot find rule_set from your config").WithPrefix(tagRuleset)
@@ -79,29 +75,21 @@ func ApplyRuleset() error {
 		if err != nil {
 			return false, nil, e.New("json unmarshal failed, " + err.Error()).WithPrefix(tagRuleset)
 		}
-		replaced := false
-		switch builds.Config.XrayHelper.CoreType {
-		case "sing-box":
-			if routeMap, ok := jsonMap.Get("route"); ok {
-				route := routeMap.Value.(serial.OrderedMap)
-				if _, ok := route.Get("rule_set"); ok {
-					route.Set("rule_set", ruleset)
-				}
-				// replace
-				jsonMap.Set("route", route)
-				replaced = true
+		if routeMap, ok := jsonMap.Get("route"); ok {
+			route := routeMap.Value.(serial.OrderedMap)
+			if _, ok := route.Get("rule_set"); ok {
+				route.Set("rule_set", ruleset)
 			}
-		}
-		if replaced {
+			// replace
+			jsonMap.Set("route", route)
 			// marshal
 			marshal, err := json.MarshalIndent(jsonMap, "", "    ")
 			if err != nil {
 				return false, nil, e.New("marshal config json failed, ", err).WithPrefix(tagRuleset)
 			}
 			return true, marshal, nil
-		} else {
-			return false, nil, e.New("cannot found ruleset from your config").WithPrefix(tagRuleset)
 		}
+		return false, nil, e.New("cannot found ruleset from your config").WithPrefix(tagRuleset)
 	}
 	return common.HandleCoreConfDir(replace)
 }
