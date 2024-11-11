@@ -32,6 +32,8 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
   `xrayhelper update subscribe`, update your subscribe, should configure **xrayHelper.subList** first
 - update yacd-meta  
   `xrayhelper update yacd-meta`, update yacd-meta for mihomo, dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`
+- update metacubexd
+  `xrayhelper update metacubexd`, update metacubexd for mihomo, dest path is `${xrayHelper.dataDir}/Yacd-meta-gh-pages`
 
 ## Switch Proxy Node
 ### xray, sing-box, hysteria2
@@ -58,3 +60,4 @@ XrayHelper use yml format configuration file, default is `/data/adb/xray/xrayhel
 - [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - ~~[@haishanh/yacd](https://github.com/haishanh/yacd)~~
 - [@MetaCubeX/Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)
+- [@MetaCubeX/metacubexd](https://github.com/MetaCubeX/metacubexd)

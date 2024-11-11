@@ -56,6 +56,7 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `geodata`从 [Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) 更新 GEO 数据文件
     - `subscribe`更新订阅节点（或 clash 订阅）到`${xrayHelper.dataDir}/sub.txt`（或`${xrayHelper.dataDir}/clashSub#{index}.yaml`），需要指定 **xrayHelper.subList**
     - `yacd-meta`更新 [Yacd-meta](https://github.com/MetaCubeX/Yacd-meta) 到`${xrayHelper.dataDir}/Yacd-meta-gh-pages`
+    - `metacubexd`更新 [metacubexd](https://github.com/MetaCubeX/metacubexd) 到`${xrayHelper.dataDir}/Yacd-meta-gh-pages`
 ### xray、sing-box、hysteria2
 - switch
     - 不带任何参数时，从订阅`${xrayHelper.dataDir}/sub.txt`获取节点信息并选择
@@ -77,3 +78,4 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
 - [@heiher/hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)
 - ~~[@haishanh/yacd](https://github.com/haishanh/yacd)~~
 - [@MetaCubeX/Yacd-meta](https://github.com/MetaCubeX/Yacd-meta)
+- [@MetaCubeX/metacubexd](https://github.com/MetaCubeX/metacubexd)
