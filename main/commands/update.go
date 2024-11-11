@@ -43,7 +43,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		return e.New("not specify operation, available operation [core|adghome|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
+		return e.New("not specify operation, available operation [core|adghome|tun2socks|geodata|subscribe|yacd-meta|metacubexd]").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	if len(args) > 1 {
 		return e.New("too many arguments").WithPrefix(tagUpdate).WithPathObj(*this)
@@ -107,7 +107,7 @@ func (this *UpdateCommand) Execute(args []string) error {
 		}
 		log.HandleInfo("update: update success")
 	default:
-		return e.New("unknown operation " + args[0] + ", available operation [core|adghome|tun2socks|geodata|subscribe|yacd-meta]").WithPrefix(tagUpdate).WithPathObj(*this)
+		return e.New("unknown operation " + args[0] + ", available operation [core|adghome|tun2socks|geodata|subscribe|yacd-meta|metacubexd]").WithPrefix(tagUpdate).WithPathObj(*this)
 	}
 	return nil
 }

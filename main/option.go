@@ -11,7 +11,7 @@ import (
 )
 
 var Option struct {
-	BypassSelf       bool   `short:"b" long:"bypass-self" description:"bypass xrayhelper self network traffic (tproxy only)"`
+	BypassSelf       bool   `short:"b" long:"bypass-self" description:"bypass xrayhelper self network traffic (tproxy/tun2socks only)"`
 	ConfigFilePath   string `short:"c" long:"config" default:"/data/adb/xray/xrayhelper.yml" description:"specify configuration file"`
 	CoreStartTimeout int    `short:"t" long:"core-start-timeout" default:"15" description:"core listen check timeout (second)"`
 	VerboseFlag      bool   `short:"v" long:"verbose" description:"show verbose debug information"`
@@ -19,7 +19,7 @@ var Option struct {
 
 	Service commands.ServiceCommand `command:"service" description:"control core service"`
 	Proxy   commands.ProxyCommand   `command:"proxy" description:"control system proxy"`
-	Update  commands.UpdateCommand  `command:"update" description:"update core, adghome, tun2socks, geodata, yacd-meta or subscribe"`
+	Update  commands.UpdateCommand  `command:"update" description:"update core, adghome, tun2socks, geodata, yacd-meta, metacubexd or subscribe"`
 	Switch  commands.SwitchCommand  `command:"switch" description:"switch proxy node or clash config"`
 	Api     commands.ApiCommand     `command:"api" description:"xrayhelper api for webui"`
 }
