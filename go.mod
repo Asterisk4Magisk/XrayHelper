@@ -7,7 +7,7 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.18.0
 	github.com/jessevdk/go-flags v1.6.1
-	golang.org/x/net v0.35.0
+	golang.org/x/net v0.36.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
