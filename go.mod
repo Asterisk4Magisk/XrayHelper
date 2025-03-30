@@ -2,12 +2,14 @@ module XrayHelper
 
 go 1.23.0
 
+toolchain go1.24.1
+
 require (
 	github.com/coreos/go-iptables v0.8.0
 	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.18.0
 	github.com/jessevdk/go-flags v1.6.1
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
