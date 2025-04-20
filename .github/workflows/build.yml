@@ -46,7 +46,7 @@ jobs:
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r27
+          ndk-version: r27c
 
       - name: Show workflow information
         run: |
