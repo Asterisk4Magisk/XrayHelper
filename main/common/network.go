@@ -72,7 +72,8 @@ func CheckLocalPort(pid string, port string, timeout time.Duration) bool {
 			knetPath = "/proc/" + pid + "/net/tcp6"
 		}
 		i, _ := strconv.Atoi(port)
-		hex := fmt.Sprintf(":%X ", i)
+		// thx @young-zy, proc port always 4 characters hex width
+		hex := fmt.Sprintf(":%04X ", i)
 		if knet, err := os.ReadFile(knetPath); err == nil {
 			return strings.Contains(string(knet), hex)
 		}
