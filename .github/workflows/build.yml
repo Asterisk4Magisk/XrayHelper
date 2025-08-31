@@ -46,7 +46,7 @@ jobs:
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r27c
+          ndk-version: r27d
 
       - name: Show workflow information
         run: |
@@ -61,7 +61,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           check-latest: true
 
       - name: Get project dependencies

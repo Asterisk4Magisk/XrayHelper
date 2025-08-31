@@ -6,8 +6,9 @@ import (
 	"XrayHelper/main/log"
 	"errors"
 	"fmt"
-	"github.com/jessevdk/go-flags"
 	"os"
+
+	"github.com/jessevdk/go-flags"
 )
 
 var Option struct {

@@ -2,8 +2,9 @@ package serial
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestOrderedMap(t *testing.T) {

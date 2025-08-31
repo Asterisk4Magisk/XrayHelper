@@ -20,7 +20,7 @@ const (
 	dns        = "223.5.5.5:53"
 )
 
-// getHttpClient get a http client with custom dns
+// getHttpClient get an http client with custom dns
 func getHttpClient(dns string, timeout time.Duration) *http.Client {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -72,7 +72,8 @@ func CheckLocalPort(pid string, port string, timeout time.Duration) bool {
 			knetPath = "/proc/" + pid + "/net/tcp6"
 		}
 		i, _ := strconv.Atoi(port)
-		hex := fmt.Sprintf(":%X ", i)
+		// thx @young-zy, proc port always 4 characters hex width
+		hex := fmt.Sprintf(":%04X ", i)
 		if knet, err := os.ReadFile(knetPath); err == nil {
 			return strings.Contains(string(knet), hex)
 		}

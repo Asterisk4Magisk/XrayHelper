@@ -6,11 +6,12 @@ import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/serial"
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 const tagClashswitch = "clashswitch"
