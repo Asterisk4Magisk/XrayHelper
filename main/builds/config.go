@@ -3,9 +3,10 @@ package builds
 import (
 	e "XrayHelper/main/errors"
 	"XrayHelper/main/log"
+	"os"
+
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 const tagConfig = "config"

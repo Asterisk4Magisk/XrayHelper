@@ -9,7 +9,6 @@ import (
 	"XrayHelper/main/shareurls/addon"
 	"context"
 	"encoding/json"
-	"golang.org/x/net/proxy"
 	"io"
 	"net"
 	"net/http"
@@ -18,6 +17,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"golang.org/x/net/proxy"
 )
 
 const (

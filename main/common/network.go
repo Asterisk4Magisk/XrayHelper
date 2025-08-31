@@ -20,7 +20,7 @@ const (
 	dns        = "223.5.5.5:53"
 )
 
-// getHttpClient get a http client with custom dns
+// getHttpClient get an http client with custom dns
 func getHttpClient(dns string, timeout time.Duration) *http.Client {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,

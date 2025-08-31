@@ -1,8 +1,9 @@
 package common
 
 import (
-	"github.com/coreos/go-iptables/iptables"
 	"net"
+
+	"github.com/coreos/go-iptables/iptables"
 )
 
 const (

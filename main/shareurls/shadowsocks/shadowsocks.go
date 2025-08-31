@@ -5,8 +5,9 @@ import (
 	"XrayHelper/main/serial"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
-	"github.com/fatih/color"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 const tagShadowsocks = "shadowsocks"

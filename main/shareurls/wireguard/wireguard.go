@@ -5,9 +5,10 @@ import (
 	"XrayHelper/main/serial"
 	"XrayHelper/main/shareurls/addon"
 	"fmt"
-	"github.com/fatih/color"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 const tagWireguard = "wireguard"

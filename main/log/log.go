@@ -3,10 +3,11 @@ package log
 import (
 	"XrayHelper/main/serial"
 	"fmt"
-	"github.com/fatih/color"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 var Verbose *bool

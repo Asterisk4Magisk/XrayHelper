@@ -10,11 +10,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/color"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/fatih/color"
+	"gopkg.in/yaml.v3"
 )
 
 const tagRayswitch = "rayswitch"
