@@ -147,6 +147,23 @@ func parseAddon(aUrl string, network string, security string) (*addon.Addon, err
 		if serviceNames, ok := query["serviceName"]; ok && len(serviceNames) == 1 {
 			addon.Path = serviceNames[0]
 		}
+	case "xhttp":
+		//parse addon host
+		if hosts, ok := query["host"]; ok && len(hosts) == 1 {
+			addon.Host = hosts[0]
+		}
+		//parse addon path
+		if paths, ok := query["path"]; ok && len(paths) == 1 {
+			addon.Path = paths[0]
+		}
+		//parse addon mode
+		if modes, ok := query["mode"]; ok && len(modes) == 1 {
+			addon.Type = modes[0]
+		}
+		//parse addon extra
+		if extras, ok := query["extra"]; ok && len(extras) == 1 {
+			addon.Extra = extras[0]
+		}
 	default:
 		return nil, e.New("unknown v2ray addon transport type " + network).WithPrefix(tagParser)
 	}
@@ -184,6 +201,10 @@ func parseAddon(aUrl string, network string, security string) (*addon.Addon, err
 		//parse addon reality ShortId
 		if shortIds, ok := query["sid"]; ok && len(shortIds) == 1 {
 			addon.ShortId = shortIds[0]
+		}
+		//parse addon reality Mldsa65Verify
+		if mldsa65Verify, ok := query["pqv"]; ok && len(mldsa65Verify) == 1 {
+			addon.Mldsa65Verify = mldsa65Verify[0]
 		}
 		//parse addon reality SpiderX
 		if spiderX, ok := query["spx"]; ok && len(spiderX) == 1 {
