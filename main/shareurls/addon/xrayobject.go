@@ -3,6 +3,7 @@ package addon
 import (
 	"XrayHelper/main/builds"
 	"XrayHelper/main/serial"
+	"encoding/json"
 	"strings"
 )
 
@@ -135,6 +136,24 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 			grpcSettingsObject.Set("serviceName", addon.Path)
 		}
 		streamSettingsObject.Set("grpcSettings", grpcSettingsObject)
+	case "xhttp":
+		var xhttpSettingsObject serial.OrderedMap
+		if len(addon.Host) > 0 {
+			xhttpSettingsObject.Set("host", addon.Host)
+		}
+		if len(addon.Path) > 0 {
+			xhttpSettingsObject.Set("path", addon.Path)
+		}
+		if len(addon.Type) > 0 {
+			xhttpSettingsObject.Set("mode", addon.Type)
+		}
+		if len(addon.Extra) > 0 {
+			var extraObject serial.OrderedMap
+			if err := json.Unmarshal([]byte(addon.Extra), &extraObject); err == nil {
+				xhttpSettingsObject.Set("extra", extraObject)
+			}
+		}
+		streamSettingsObject.Set("xhttpSettings", xhttpSettingsObject)
 	}
 	switch security {
 	case "tls":
@@ -169,8 +188,11 @@ func GetStreamSettingsObjectXray(addon *Addon, network string, security string) 
 		if len(addon.Sni) > 0 {
 			realitySettingsObject.Set("serverName", addon.Sni)
 		}
-		realitySettingsObject.Set("publicKey", addon.PublicKey)
+		realitySettingsObject.Set("password", addon.PublicKey)
 		realitySettingsObject.Set("shortId", addon.ShortId)
+		if len(addon.Mldsa65Verify) > 0 {
+			realitySettingsObject.Set("mldsa65Verify", addon.Mldsa65Verify)
+		}
 		realitySettingsObject.Set("spiderX", addon.SpiderX)
 		if builds.Config.XrayHelper.AllowInsecure {
 			realitySettingsObject.Set("allowInsecure", true)
