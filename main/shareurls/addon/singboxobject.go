@@ -46,14 +46,6 @@ func GetTransportObjectSingbox(addon *Addon, network string) serial.OrderedMap {
 		if len(addon.Path) > 0 {
 			transportObject.Set("path", addon.Path)
 		}
-	case "splithttp":
-		transportObject.Set("type", "splithttp")
-		if len(addon.Host) > 0 {
-			transportObject.Set("host", addon.Host)
-		}
-		if len(addon.Path) > 0 {
-			transportObject.Set("path", addon.Path)
-		}
 	}
 	return transportObject
 }
