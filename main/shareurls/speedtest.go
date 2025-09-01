@@ -217,7 +217,8 @@ func genSingboxTestConfig(configPath string, results []*Result) error {
 	var dnsObj serial.OrderedMap
 	var dnsServersArr serial.OrderedArray
 	var dnsServerObj serial.OrderedMap
-	dnsServerObj.Set("address", "223.5.5.5")
+	dnsServerObj.Set("type", "udp")
+	dnsServerObj.Set("server", "223.5.5.5")
 	dnsServerObj.Set("detour", "direct")
 	dnsServersArr = append(dnsServersArr, dnsServerObj)
 	dnsObj.Set("servers", dnsServersArr)
@@ -231,8 +232,6 @@ func genSingboxTestConfig(configPath string, results []*Result) error {
 		socksObj.Set("listen", "::")
 		socksObj.Set("listen_port", result.Port)
 		socksObj.Set("type", "socks")
-		socksObj.Set("sniff", true)
-		socksObj.Set("sniff_override_destination", true)
 		inboundsArr = append(inboundsArr, socksObj)
 	}
 	config.Set("inbounds", inboundsArr)
@@ -255,6 +254,11 @@ func genSingboxTestConfig(configPath string, results []*Result) error {
 	var route serial.OrderedMap
 	route.Set("final", "direct")
 	var rulesArr serial.OrderedArray
+	// enable sniff
+	var sniff serial.OrderedMap
+	sniff.Set("action", "sniff")
+	sniff.Set("timeout", "1s")
+	rulesArr = append(rulesArr, sniff)
 	for i, result := range results {
 		inTag := "in-" + strconv.Itoa(result.Port)
 		outTag := "out-" + strconv.Itoa(i)
