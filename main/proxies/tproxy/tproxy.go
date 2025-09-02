@@ -345,6 +345,12 @@ func createMangleChain(ipv6 bool) error {
 	if err := currentIpt.Insert("mangle", "PREROUTING", 1, "-j", "XRAY"); err != nil {
 		return e.New("apply mangle chain XRAY to PREROUTING failed, ", err).WithPrefix(tagTproxy)
 	}
+	// bypass ignore list
+	for _, ignore := range builds.Config.Proxy.IgnoreList {
+		if err := currentIpt.Insert("mangle", "XRAY", 1, "-i", ignore, "-j", "RETURN"); err != nil {
+			return e.New("apply ignore interface "+ignore+" on "+currentProto+" mangle chain XRAY failed, ", err).WithPrefix(tagTproxy)
+		}
+	}
 	return nil
 }
 
