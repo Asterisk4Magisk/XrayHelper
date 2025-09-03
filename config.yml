@@ -26,6 +26,10 @@ xrayHelper:
         - clash+https://testclashsuburl.com
     # Optional, custom User-Agent for http requests send by xrayhelper
     userAgent: 'ClashMeta'
+    # Optional, Default value: 223.5.5.5, custom DNS address used by XrayHelper
+    innerDNS: '1.1.1.1'
+    # Optional, Default value: https://www.google.com/generate_204, custom speedtest url used by XrayHelper
+    speedtestUrl: 'https://www.google.com/generate_204'
 clash:
     # Required for mihomo, Default value: 65533, all dns request will be redirected to the port which listen by mihomo
     dnsPort: 65533

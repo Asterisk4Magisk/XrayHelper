@@ -23,7 +23,6 @@ import (
 
 const (
 	tagSpeedtest = "speedtest"
-	testUrl      = "https://www.google.com/generate_204"
 )
 
 type Result struct {
@@ -89,11 +88,11 @@ func startTest(dialer proxy.Dialer) (result int) {
 	}
 	client := &http.Client{Transport: transport}
 	// start test
-	request, _ := http.NewRequest("GET", testUrl, nil)
+	request, _ := http.NewRequest("GET", builds.Config.XrayHelper.SpeedtestUrl, nil)
 	start := time.Now()
 	response, err := client.Do(request)
 	if err != nil {
-		log.HandleDebug("request google_204: " + err.Error())
+		log.HandleDebug("request speedtest url: " + err.Error())
 		return
 	}
 	// defer close body
@@ -102,7 +101,7 @@ func startTest(dialer proxy.Dialer) (result int) {
 	}(response.Body)
 	// get result
 	if response.StatusCode != 204 {
-		log.HandleDebug("request google_204 get " + strconv.Itoa(response.StatusCode))
+		log.HandleDebug("request speedtest url get " + strconv.Itoa(response.StatusCode))
 		return
 	}
 	result = int(time.Since(start).Milliseconds())
@@ -151,7 +150,7 @@ func genXrayTestConfig(configPath string, results []*Result) error {
 	}
 	dnsObj.Set("hosts", dnsHostsObj)
 	var dnsServersArr serial.OrderedArray
-	dnsServersArr = append(dnsServersArr, "223.5.5.5")
+	dnsServersArr = append(dnsServersArr, builds.Config.XrayHelper.InnerDNS)
 	dnsObj.Set("servers", dnsServersArr)
 	config.Set("dns", dnsObj)
 	// add inbounds
@@ -218,7 +217,7 @@ func genSingboxTestConfig(configPath string, results []*Result) error {
 	var dnsServersArr serial.OrderedArray
 	var dnsServerObj serial.OrderedMap
 	dnsServerObj.Set("type", "udp")
-	dnsServerObj.Set("server", "223.5.5.5")
+	dnsServerObj.Set("server", builds.Config.XrayHelper.InnerDNS)
 	dnsServersArr = append(dnsServersArr, dnsServerObj)
 	dnsObj.Set("servers", dnsServersArr)
 	config.Set("dns", dnsObj)

@@ -18,6 +18,8 @@ XrayHelper 使用 yml 格式的配置文件，默认使用`/data/adb/xray/xrayhe
     - `allowInsecure`默认值`false`，使用 XrayHelper 进行节点切换时，是否允许不安全的节点
     - `subList`可选，数组，节点订阅链接（SIP002/v2rayNg/Hysteria/Hysteria2），也支持 clash 订阅链接(需要在订阅链接前添加`clash+`前缀)
     - `userAgent`可选，自定义 XrayHelper http 请求的 User-Agent
+    - `innerDNS`默认值`223.5.5.5`，自定义 XrayHelper 内部使用的 DNS
+    - `speedtestUrl`默认值`https://www.google.com/generate_204 `，自定义 XrayHelper 测试延迟使用的 URL
 - clash
   - `dnsPort`使用`mihomo`时必填，默认值`65533`，mihomo 监听的 dns 端口, XrayHelper 会将本机 DNS 请求劫持到该端口
   - `template`可选，mihomo 配置模板，指定配置模板后，该模板会**覆盖（或注入）** mihomo 配置文件对应内容

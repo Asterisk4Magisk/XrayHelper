@@ -17,11 +17,10 @@ import (
 const (
 	tagNetwork = "network"
 	timeout    = 3000
-	dns        = "223.5.5.5:53"
 )
 
 // getHttpClient get an http client with custom dns
-func getHttpClient(dns string, timeout time.Duration) *http.Client {
+func getHttpClient(timeout time.Duration) *http.Client {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -30,7 +29,7 @@ func getHttpClient(dns string, timeout time.Duration) *http.Client {
 					PreferGo: false,
 					Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 						d := net.Dialer{Timeout: timeout}
-						return d.DialContext(ctx, "udp", dns)
+						return d.DialContext(ctx, "udp", builds.Config.XrayHelper.InnerDNS+":53")
 					},
 				},
 			}
@@ -50,7 +49,7 @@ func LookupIP(host string) ([]string, error) {
 		PreferGo: false,
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			d := net.Dialer{Timeout: timeout}
-			return d.DialContext(ctx, "udp", dns)
+			return d.DialContext(ctx, "udp", builds.Config.XrayHelper.InnerDNS+":53")
 		},
 	}
 	addrs, err := resolver.LookupIPAddr(context.Background(), host)
@@ -116,7 +115,7 @@ func CheckLocalDevice(dev string, timeout time.Duration) bool {
 // DownloadFile download file from url, and save to filepath
 func DownloadFile(filepath string, url string) error {
 	// get file from url
-	client := getHttpClient(dns, timeout*time.Millisecond)
+	client := getHttpClient(timeout * time.Millisecond)
 	request, _ := http.NewRequest("GET", url, nil)
 	if len(builds.Config.XrayHelper.UserAgent) > 0 {
 		request.Header.Set("User-Agent", builds.Config.XrayHelper.UserAgent)
@@ -148,7 +147,7 @@ func DownloadFile(filepath string, url string) error {
 
 // GetRawData get raw data from a url
 func GetRawData(url string) ([]byte, error) {
-	client := getHttpClient(dns, timeout*time.Millisecond)
+	client := getHttpClient(timeout * time.Millisecond)
 	request, _ := http.NewRequest("GET", url, nil)
 	if len(builds.Config.XrayHelper.UserAgent) > 0 {
 		request.Header.Set("User-Agent", builds.Config.XrayHelper.UserAgent)

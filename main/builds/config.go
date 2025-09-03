@@ -29,6 +29,8 @@ var Config struct {
 		AllowInsecure bool     `default:"false" yaml:"allowInsecure"`
 		SubList       []string `yaml:"subList"`
 		UserAgent     string   `yaml:"userAgent"`
+		InnerDNS      string   `default:"223.5.5.5" yaml:"innerDNS"`
+		SpeedtestUrl  string   `default:"https://www.google.com/generate_204" yaml:"speedtestUrl"`
 	} `yaml:"xrayHelper"`
 	Clash struct {
 		DNSPort  string `default:"65533" yaml:"dnsPort"`
