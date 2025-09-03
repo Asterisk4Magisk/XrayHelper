@@ -219,7 +219,6 @@ func genSingboxTestConfig(configPath string, results []*Result) error {
 	var dnsServerObj serial.OrderedMap
 	dnsServerObj.Set("type", "udp")
 	dnsServerObj.Set("server", "223.5.5.5")
-	dnsServerObj.Set("detour", "direct")
 	dnsServersArr = append(dnsServersArr, dnsServerObj)
 	dnsObj.Set("servers", dnsServersArr)
 	config.Set("dns", dnsObj)
