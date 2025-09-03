@@ -47,9 +47,9 @@ func parseShadowsocks(ssUrl string) (ShareUrl, error) {
 		if err != nil {
 			return nil, err
 		}
-		methodAndPassword := strings.Split(info, ":")
-		ss.Method = methodAndPassword[0]
-		ss.Password = methodAndPassword[1]
+		pos := strings.IndexRune(info, ':')
+		ss.Method = info[:pos]
+		ss.Password = info[pos+1:]
 		ssQuery, err := url.ParseQuery(ssParse.RawQuery)
 		if err != nil {
 			return nil, e.New("shadowsocks url parse query err, ", err).WithPrefix(tagParser)
