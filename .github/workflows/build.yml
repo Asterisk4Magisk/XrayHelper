@@ -98,7 +98,7 @@ jobs:
           mv build_assets XrayHelper-${{ env.ASSET_NAME }}
 
       - name: Upload files to Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: XrayHelper-${{ env.ASSET_NAME }}
           path: |
