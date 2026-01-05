@@ -449,7 +449,7 @@ func updateTun2socks() error {
 		return e.New("this feature only support arm64 device").WithPrefix(tagUpdate)
 	}
 	savePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "tun2socks")
-	if err := common.DownloadFile(savePath, tun2socksDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(savePath, tun2socksDownloadUrl); err != nil {
 		return err
 	}
 	return nil
