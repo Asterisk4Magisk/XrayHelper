@@ -160,7 +160,7 @@ func updateCore() error {
 func updateXray() (bool, error) {
 	serviceRunFlag := false
 	xrayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "xray.zip")
-	if err := common.DownloadFile(xrayZipPath, xrayCoreDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(xrayZipPath, xrayCoreDownloadUrl); err != nil {
 		return false, err
 	}
 	// update core need stop core service first
@@ -204,7 +204,7 @@ func updateXray() (bool, error) {
 func updateV2ray() (bool, error) {
 	serviceRunFlag := false
 	v2rayZipPath := path.Join(builds.Config.XrayHelper.DataDir, "v2ray.zip")
-	if err := common.DownloadFile(v2rayZipPath, v2rayCoreDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(v2rayZipPath, v2rayCoreDownloadUrl); err != nil {
 		return false, err
 	}
 	// update core need stop core service first
@@ -251,7 +251,7 @@ func updateHysteria2() (bool, error) {
 		return false, err
 	}
 	hysteria2Path := path.Join(builds.Config.XrayHelper.DataDir, "hysteria2")
-	if err := common.DownloadFile(hysteria2Path, hysteria2DownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(hysteria2Path, hysteria2DownloadUrl); err != nil {
 		return false, err
 	}
 	// update core need stop core service first
@@ -289,7 +289,7 @@ func updateSingbox() (bool, error) {
 		return false, err
 	}
 	singboxGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "sing-box.tar.gz")
-	if err := common.DownloadFile(singboxGzipPath, singboxDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(singboxGzipPath, singboxDownloadUrl); err != nil {
 		return false, err
 	}
 	// update core need stop core service first
@@ -347,7 +347,7 @@ func updateMihomo() (bool, error) {
 		return false, err
 	}
 	mihomoGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "mihomo.gz")
-	if err := common.DownloadFile(mihomoGzipPath, mihomoDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(mihomoGzipPath, mihomoDownloadUrl); err != nil {
 		return false, err
 	}
 	// update core need stop core service first
@@ -389,7 +389,7 @@ func updateAdgHome() error {
 	serviceRunFlag := false
 	adgHomePath := path.Join(path.Dir(builds.Config.XrayHelper.CorePath), "adguardhome")
 	adgHomeGzipPath := path.Join(builds.Config.XrayHelper.DataDir, "adghome.tar.gz")
-	if err := common.DownloadFile(adgHomeGzipPath, adgHomeDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(adgHomeGzipPath, adgHomeDownloadUrl); err != nil {
 		return err
 	}
 	// update core need stop core service first
@@ -460,10 +460,10 @@ func updateGeodata() error {
 	if err := os.MkdirAll(builds.Config.XrayHelper.DataDir, 0644); err != nil {
 		return e.New("create DataDir failed, ", err).WithPrefix(tagUpdate)
 	}
-	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(path.Join(builds.Config.XrayHelper.DataDir, "geoip.dat"), geoipDownloadUrl); err != nil {
 		return err
 	}
-	if err := common.DownloadFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(path.Join(builds.Config.XrayHelper.DataDir, "geosite.dat"), geositeDownloadUrl); err != nil {
 		return err
 	}
 	return nil
@@ -528,7 +528,7 @@ func updateSubscribe() error {
 // updateYacdMeta update yacd-meta
 func updateYacdMeta() error {
 	yacdMetaZipPath := path.Join(builds.Config.XrayHelper.DataDir, "yacd-meta.zip")
-	if err := common.DownloadFile(yacdMetaZipPath, yacdMetaDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(yacdMetaZipPath, yacdMetaDownloadUrl); err != nil {
 		return err
 	}
 	zipReader, err := zip.OpenReader(yacdMetaZipPath)
@@ -574,7 +574,7 @@ func updateYacdMeta() error {
 // updateMetacubexd update metacubexd
 func updateMetacubexd() error {
 	metacubexdTgzPath := path.Join(builds.Config.XrayHelper.DataDir, "compressed-dist.tgz")
-	if err := common.DownloadFile(metacubexdTgzPath, metacubexDownloadUrl); err != nil {
+	if err := safeDownloadAndUpdateFile(metacubexdTgzPath, metacubexDownloadUrl); err != nil {
 		return err
 	}
 
@@ -724,4 +724,28 @@ func getDownloadUrl(githubApi string, tagNameContent string, assetNameContent st
 		}
 	}
 	return "", e.New("cannot get download url from " + githubApi).WithPrefix(tagUpdate)
+}
+
+// safeDownloadAndUpdateFile safely downloads a file from a URL and atomically updates the target path.
+func safeDownloadAndUpdateFile(targetPath string, downloadUrl string) error {
+	tempPath := targetPath + ".tmp"
+
+	_ = os.Remove(tempPath)
+
+	log.HandleInfo("Downloading " + filepath.Base(targetPath) + "...")
+	if err := common.DownloadFile(tempPath, downloadUrl); err != nil {
+		_ = os.Remove(tempPath)
+		return err
+	}
+
+	log.HandleDebug("Activating new file by renaming " + filepath.Base(tempPath) + " to " + filepath.Base(targetPath))
+	if err := os.Rename(tempPath, targetPath); err != nil {
+		// If the rename fails, the original targetPath is still intact.
+		// The downloaded tempPath also still exists, which can be useful for debugging.
+		log.HandleError("Failed to activate new file: " + err.Error())
+		return e.New("failed to move downloaded file to destination: ", err).WithPrefix(tagUpdate)
+	}
+
+	log.HandleDebug("Update successful for " + filepath.Base(targetPath))
+	return nil
 }
